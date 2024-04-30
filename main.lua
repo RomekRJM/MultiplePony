@@ -2,6 +2,7 @@ function _init()
     frame = 0
     restartUnicorns()
     restartArrows()
+    restartPlayer()
 end
 
 function _draw()

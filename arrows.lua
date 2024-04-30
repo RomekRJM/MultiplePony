@@ -1,13 +1,13 @@
 arrow = sprite:new {
     next_element_pad_x = 32,
-    associatedAction = 0,
+    associatedAction = 1,
     actioned = false,
 }
 
 leftArrow = arrow:new()
-rightArrow = arrow:new { flip_x = true, associatedAction = 1 }
-topArrow = arrow:new { sprite = 2, flip_x = true, associatedAction = 2 }
-bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 3 }
+rightArrow = arrow:new { flip_x = true, associatedAction = 2 }
+topArrow = arrow:new { sprite = 2, flip_x = true, associatedAction = 4 }
+bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8 }
 
 halfArrowWidth = arrow.w * 4
 arrowPerfectX = 64 - halfArrowWidth
@@ -105,7 +105,7 @@ function updateArrows()
         end
     end
 
-    for _, deletedArrow in pairs(scheduledForDeletion) do
+    for deletedArrow in all(scheduledForDeletion) do
         del(visibleArrowQueue, deletedArrow)
         visibleArrowQueueLen = visibleArrowQueueLen - 1
     end

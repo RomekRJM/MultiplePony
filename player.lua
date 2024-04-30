@@ -2,14 +2,18 @@ player = {
     points = 0
 }
 
-pointsGroup = {
+pointGroups = {
     {
         maxAbsX = 0,
         points = 8,
     },
     {
-        maxAbsX = 2,
+        maxAbsX = 1,
         points = 6,
+    },
+    {
+        maxAbsX = 3,
+        points = 5,
     },
     {
         maxAbsX = 5,
@@ -36,10 +40,6 @@ function updatePlayer()
     local buttonPressed = btn()
 
     if nil == currentArrow then
-        printh('nil == currentArrow')
-        if player.points > 0 then
-            player.points -= 1
-        end
         return
     end
 
@@ -47,32 +47,19 @@ function updatePlayer()
         return
     end
 
-    if buttonPressed ~= nil then
+    if buttonPressed > 0 then
         currentArrow.actioned = true
     end
 
     if buttonPressed ~= currentArrow.associatedAction then
-        printh(buttonPressed .. ' ~= ' .. currentArrow.associatedAction)
-        if player.points > 0 then
-            player.points -= 1
-        end
-        return
-    end
-
-    if currentArrow.x > arrowMaxAcceptableX or currentArrow.x < arrowMinAcceptableX then
-        printh(currentArrow.x .. 'not in [' .. arrowMinAcceptableX .. ', ' .. arrowMaxAcceptableX .. ']')
-        if player.points > 0 then
-            player.points -= 1
-        end
         return
     end
 
     local absDiff = abs(arrowPerfectX - currentArrow.x)
 
     for pointGroup in all(pointGroups) do
-        if pointGroup.maxAbsX <= absDiff then
-            printh('points: ' .. pointGroup.points)
-            player.points = pointGroup.points
+        if absDiff <= pointGroup.maxAbsX then
+            player.points += pointGroup.points
             break
         end
     end

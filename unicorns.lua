@@ -81,21 +81,22 @@ function updateParticles(sourceX, sourceY)
 
     for p in all(particles) do
         p.y -= p.speed
-    p.duration - = 1
+
+    p.duration -= 1
 
     if p.duration <= 0 then
-    del(particles, p)
+        del(particles, p)
     elseif p.duration < 3 then
-    p.radius = 1
-    p.colour = 5
+        p.radius = 1
+        p.colour = 5
     elseif p.duration < 5 then
-    if p.radius == 3 then
-    p.radius = -0.3
-    end
-        p.colour = 9
-        elseif p.duration < 7 then
-        p.colour = 10
+        if p.radius == 3 then
+            p.radius = -0.3
         end
+        p.colour = 9
+    elseif p.duration < 7 then
+        p.colour = 10
+    end
     end
 end
 
