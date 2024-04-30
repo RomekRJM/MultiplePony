@@ -1,13 +1,13 @@
-arrow = sprite:new{
+arrow = sprite:new {
     next_element_pad_x = 32,
     associatedAction = 0,
     actioned = false,
 }
 
 leftArrow = arrow:new()
-rightArrow = arrow:new{ flip_x = true, associatedAction = 1}
-topArrow = arrow:new{ sprite = 2, flip_x = true, associatedAction = 2}
-bottomArrow = arrow:new{ sprite = 2, flip_y = true, associatedAction = 3}
+rightArrow = arrow:new { flip_x = true, associatedAction = 1 }
+topArrow = arrow:new { sprite = 2, flip_x = true, associatedAction = 2 }
+bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 3 }
 
 halfArrowWidth = arrow.w * 4
 arrowPerfectX = 64 - halfArrowWidth
@@ -38,7 +38,6 @@ function restartArrows()
     add(visibleArrowQueue, deepCopy(arrowQueue[1]))
     visibleArrowQueueLen = 1
 end
-
 
 rightArrowHitBoundary = 80
 leftArrowHitBoundary = 48

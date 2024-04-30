@@ -38,7 +38,7 @@ function updatePlayer()
     if nil == currentArrow then
         printh('nil == currentArrow')
         if player.points > 0 then
-           player.points -= 1
+            player.points -= 1
         end
         return
     end
@@ -54,7 +54,7 @@ function updatePlayer()
     if buttonPressed ~= currentArrow.associatedAction then
         printh(buttonPressed .. ' ~= ' .. currentArrow.associatedAction)
         if player.points > 0 then
-           player.points -= 1
+            player.points -= 1
         end
         return
     end
@@ -62,7 +62,7 @@ function updatePlayer()
     if currentArrow.x > arrowMaxAcceptableX or currentArrow.x < arrowMinAcceptableX then
         printh(currentArrow.x .. 'not in [' .. arrowMinAcceptableX .. ', ' .. arrowMaxAcceptableX .. ']')
         if player.points > 0 then
-           player.points -= 1
+            player.points -= 1
         end
         return
     end
