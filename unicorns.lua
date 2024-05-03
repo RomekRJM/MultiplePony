@@ -1,7 +1,7 @@
 leftUnicorn = sprite:new {
     x = 0,
     y = 10,
-    sprite = 8,
+    sprite = 33,
     w = 5,
     h = 4,
 }
@@ -9,7 +9,7 @@ leftUnicorn = sprite:new {
 rightUnicorn = sprite:new {
     x = 128 - 5 * 8, -- screen_width - w * default_sprite_width
     y = 10,
-    sprite = 8,
+    sprite = 33,
     w = 5,
     h = 4,
     flip_x = true
