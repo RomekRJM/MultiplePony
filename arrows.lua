@@ -8,6 +8,8 @@ leftArrow = arrow:new()
 rightArrow = arrow:new { flip_x = true, associatedAction = 2 }
 topArrow = arrow:new { sprite = 2, flip_x = true, associatedAction = 4 }
 bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8 }
+zArrow = arrow:new { sprite = 4, associatedAction = 16 }
+xArrow = arrow:new { sprite = 6, associatedAction = 32 }
 
 halfArrowWidth = arrow.w * 4
 arrowPerfectX = 64 - halfArrowWidth
@@ -25,7 +27,7 @@ function restartArrows()
     visibleArrowQueue = {}
     visibleArrowQueueMaxLen = 10
 
-    sequence = { leftArrow, rightArrow, topArrow, bottomArrow }
+    sequence = { leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow }
 
     for i = 1, arrowQueueLen do
         arrowQueue[i] = deepCopy(rnd(sequence))
