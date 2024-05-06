@@ -2,20 +2,24 @@ arrow = sprite:new {
     next_element_pad_x = 32,
     associatedAction = 1,
     actioned = false,
+    z = 1,
 }
 
-leftArrow = arrow:new{ }
-rightArrow = arrow:new { flip_x = true, associatedAction = 2 }
-topArrow = arrow:new { sprite = 2, associatedAction = 4 }
-bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8 }
-zArrow = arrow:new { sprite = 4, associatedAction = 16 }
-xArrow = arrow:new { sprite = 6, associatedAction = 32 }
-leftHalfArrow = arrow:new{ w = 1 }
-rightHalfArrow = arrow:new { flip_x = true, associatedAction = 2, w = 1 }
-topHalfArrow = arrow:new { sprite = 2, associatedAction = 4, w = 1 }
-bottomHalfArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, w = 1 }
-zHalfArrow = arrow:new { sprite = 8, associatedAction = 16, w = 1 }
-xHalfArrow = arrow:new { sprite = 8, associatedAction = 32, w = 1 }
+maxZ = 2
+
+leftArrow = arrow:new { z = 2, }
+rightArrow = arrow:new { flip_x = true, associatedAction = 2, }
+topArrow = arrow:new { sprite = 2, associatedAction = 4, }
+bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, }
+zArrow = arrow:new { sprite = 4, associatedAction = 16, }
+xArrow = arrow:new { sprite = 6, associatedAction = 32, }
+
+leftHalfArrow = arrow:new { w = 1, z = 1, next_element_pad_x = 8, parent = leftArrow, }
+rightHalfArrow = arrow:new { sprite = 1, flip_x = true, associatedAction = 2, w = 1, next_element_pad_x = 8, parent = rightArrow, }
+topHalfArrow = arrow:new { sprite = 2, associatedAction = 4, w = 1, next_element_pad_x = 8, parent = topArrow,  }
+bottomHalfArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, w = 1, next_element_pad_x = 8, parent = bottomArrow,  }
+zHalfArrow = arrow:new { sprite = 8, associatedAction = 16, w = 1, next_element_pad_x = 8, parent = zArrow,  }
+xHalfArrow = arrow:new { sprite = 8, associatedAction = 32, w = 1, next_element_pad_x = 8, parent = xArrow,  }
 
 halfArrowWidth = arrow.w * 4
 arrowPerfectX = 64 - halfArrowWidth
@@ -38,11 +42,36 @@ function restartArrows()
         leftHalfArrow, rightHalfArrow, topHalfArrow, bottomHalfArrow, zHalfArrow, xHalfArrow
     }
 
-    for i = 1, arrowQueueLen do
-        arrowQueue[i] = deepCopy(rnd(sequence))
+    halfArrowRepeats = { 4, 6, 8, 10 }
 
+    for i = 1, arrowQueueLen do
+        local currentArrow = rnd(sequence)
+        arrowQueue[i] = deepCopy(currentArrow)
+
+        if currentArrow.w == 1 then
+            -- half arrow
+            local halfArrowRepeat = rnd(halfArrowRepeats)
+            local j = 0
+
+            for _ = 1, halfArrowRepeat do
+                j += 1
+                local h = deepCopy(currentArrow)
+
+                if j == halfArrowRepeat then
+                    h.next_element_pad_x = 32
+                end
+
+                arrowQueue[i + j] = h
+            end
+
+            arrowQueue[i + j + 1] = deepCopy(currentArrow.parent)
+            i += j + 1
+        end
+    end
+
+    for i, currentArrow in pairs(arrowQueue) do
         if i <= arrowUpdateBatchLen then
-            arrowQueue[i].x = 128
+            currentArrow.x = 128
         end
     end
 
@@ -60,17 +89,25 @@ function drawArrows()
 
     circ(circleCentreX, circleCentreY, circleRadius)
 
-    for _, visible_arrow in pairs(visibleArrowQueue) do
+    for z = 1, maxZ do
+        for _, visible_arrow in pairs(visibleArrowQueue) do
 
-        if visible_arrow == currentArrow then
-            pal(7, 11)
-        end
+            if z ~= arrow.z then
+                goto continueInnerArrowLoop
+            end
 
-        spr(visible_arrow.sprite, visible_arrow.x, visible_arrow.y, visible_arrow.w, visible_arrow.h,
-                visible_arrow.flip_x, visible_arrow.flip_y)
+            if visible_arrow == currentArrow then
+                pal(7, 11)
+            end
 
-        if visible_arrow == currentArrow then
-            pal()
+            spr(visible_arrow.sprite, visible_arrow.x, visible_arrow.y, visible_arrow.w, visible_arrow.h,
+                    visible_arrow.flip_x, visible_arrow.flip_y)
+
+            if visible_arrow == currentArrow then
+                pal()
+            end
+
+            :: continueInnerArrowLoop ::
         end
     end
 
