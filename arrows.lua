@@ -2,15 +2,20 @@ arrow = sprite:new {
     next_element_pad_x = 32,
     associatedAction = 1,
     actioned = false,
-    repeatedSpriteIndex = 1,
 }
 
-leftArrow = arrow:new{ repeatedSpriteIndex = 0 }
-rightArrow = arrow:new { flip_x = true, associatedAction = 2, repeatedSpriteIndex = 0 }
+leftArrow = arrow:new{ }
+rightArrow = arrow:new { flip_x = true, associatedAction = 2 }
 topArrow = arrow:new { sprite = 2, associatedAction = 4 }
 bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8 }
 zArrow = arrow:new { sprite = 4, associatedAction = 16 }
 xArrow = arrow:new { sprite = 6, associatedAction = 32 }
+leftHalfArrow = arrow:new{ w = 1 }
+rightHalfArrow = arrow:new { flip_x = true, associatedAction = 2, w = 1 }
+topHalfArrow = arrow:new { sprite = 2, associatedAction = 4, w = 1 }
+bottomHalfArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, w = 1 }
+zHalfArrow = arrow:new { sprite = 8, associatedAction = 16, w = 1 }
+xHalfArrow = arrow:new { sprite = 8, associatedAction = 32, w = 1 }
 
 halfArrowWidth = arrow.w * 4
 arrowPerfectX = 64 - halfArrowWidth
@@ -28,7 +33,10 @@ function restartArrows()
     visibleArrowQueue = {}
     visibleArrowQueueMaxLen = 10
 
-    sequence = { leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow }
+    sequence = {
+        leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
+        leftHalfArrow, rightHalfArrow, topHalfArrow, bottomHalfArrow, zHalfArrow, xHalfArrow
+    }
 
     for i = 1, arrowQueueLen do
         arrowQueue[i] = deepCopy(rnd(sequence))
@@ -66,23 +74,7 @@ function drawArrows()
         end
     end
 
-    a = deepCopy(rightArrow)
-    a.x = 15
-    a.y = 55
-    drawHeldArrow(a, 16)
-
     print(stat(1), 0, 0)
-end
-
-function drawHeldArrow(arrow, repeatCount)
-    local secondArrowSpriteX = arrow.x + 13 - 8 * (1 - arrow.repeatedSpriteIndex)
-    local lastArrowSpriteX = secondArrowSpriteX + (repeatCount - 1) * 5
-
-    for x = lastArrowSpriteX, secondArrowSpriteX, -5 do
-        spr(arrow.sprite + arrow.repeatedSpriteIndex, x, arrow.y, arrow.w-1, arrow.h, arrow.flip_x, arrow.flip_y)
-    end
-
-    spr(arrow.sprite, arrow.x, arrow.y, arrow.w, arrow.h, arrow.flip_x, arrow.flip_y)
 end
 
 function logarrows()
