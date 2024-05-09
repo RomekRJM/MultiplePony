@@ -14,7 +14,7 @@ bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, }
 zArrow = arrow:new { sprite = 4, associatedAction = 16, }
 xArrow = arrow:new { sprite = 6, associatedAction = 32, }
 
-leftHalfArrow = arrow:new { w = 1, z = 1, next_element_pad_x = 8, parent = leftArrow, }
+leftHalfArrow = arrow:new { sprite = 1, w = 1, z = 1, next_element_pad_x = 8, parent = leftArrow, }
 rightHalfArrow = arrow:new { sprite = 1, flip_x = true, associatedAction = 2, w = 1, next_element_pad_x = 8, parent = rightArrow, }
 topHalfArrow = arrow:new { sprite = 2, associatedAction = 4, w = 1, next_element_pad_x = 8, parent = topArrow,  }
 bottomHalfArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, w = 1, next_element_pad_x = 8, parent = bottomArrow,  }
@@ -43,8 +43,9 @@ function restartArrows()
     }
 
     halfArrowRepeats = { 4, 6, 8, 10 }
+    local i = 1
 
-    for i = 1, arrowQueueLen do
+    while true do
         local currentArrow = rnd(sequence)
         arrowQueue[i] = deepCopy(currentArrow)
 
@@ -66,6 +67,10 @@ function restartArrows()
 
             arrowQueue[i + j + 1] = deepCopy(currentArrow.parent)
             i += j + 1
+
+            if i >= arrowQueueLen then
+                break
+            end
         end
     end
 
@@ -74,6 +79,8 @@ function restartArrows()
             currentArrow.x = 128
         end
     end
+
+    printh(tprint(arrowQueue))
 
     add(visibleArrowQueue, deepCopy(arrowQueue[1]))
     visibleArrowQueueLen = 1

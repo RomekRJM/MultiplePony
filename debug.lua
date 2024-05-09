@@ -4,12 +4,16 @@ function tprint (tbl, indent)
     end
     local toprint = "{\r\n"
     indent = indent + 2
+
     for k, v in pairs(tbl) do
+        toprint = toprint .. addIndent(indent)
+
         if (type(k) == "number") then
             toprint = toprint .. "[" .. k .. "] = "
         elseif (type(k) == "string") then
             toprint = toprint .. k .. "= "
         end
+
         if (type(v) == "number") then
             toprint = toprint .. v .. ",\r\n"
         elseif (type(v) == "string") then
@@ -20,6 +24,16 @@ function tprint (tbl, indent)
             toprint = toprint .. "\"" .. tostring(v) .. "\",\r\n"
         end
     end
-    toprint = toprint .. "}"
+    toprint = addIndent(indent) .. toprint .. "}"
     return toprint
+end
+
+function addIndent(indent)
+    local s = ''
+
+    for i = 1, indent do
+        s = s .. ' '
+    end
+
+    return s
 end
