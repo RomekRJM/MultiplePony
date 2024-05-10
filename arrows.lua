@@ -1,5 +1,5 @@
 arrow = sprite:new {
-    next_element_pad_x = 32,
+    nextElementPadX = 32,
     associatedAction = 1,
     actioned = false,
     z = 1,
@@ -15,27 +15,27 @@ zArrow = arrow:new { z = 2, sprite = 4, associatedAction = 16, }
 xArrow = arrow:new { z = 2, sprite = 6, associatedAction = 32, }
 
 leftHalfArrow = arrow:new {
-    sprite = 0, w = 1, z = 1, next_element_pad_x = 8,
+    sprite = 0, w = 1, z = 1, nextElementPadX = 8, firstElementPadX = 8,
     parent = leftArrow, parentBeforeRepeatSequence = false
 }
 rightHalfArrow = arrow:new {
-    sprite = 0, flip_x = true, associatedAction = 2, w = 1, next_element_pad_x = 8,
+    sprite = 0, flip_x = true, associatedAction = 2, w = 1, nextElementPadX = 8, firstElementPadX = 8,
     parent = rightArrow, parentBeforeRepeatSequence = true
 }
 topHalfArrow = arrow:new {
-    sprite = 3, associatedAction = 4, w = 1, next_element_pad_x = 8,
+    sprite = 3, associatedAction = 4, w = 1, nextElementPadX = 5, firstElementPadX = 13,
     parent = topArrow, parentBeforeRepeatSequence = true
 }
 bottomHalfArrow = arrow:new {
-    sprite = 3, flip_y = true, associatedAction = 8, w = 1, next_element_pad_x = 8,
+    sprite = 3, flip_y = true, associatedAction = 8, w = 1, nextElementPadX = 5, firstElementPadX = 13,
     parent = bottomArrow, parentBeforeRepeatSequence = true
 }
 zHalfArrow = arrow:new {
-    sprite = 8, z = 1, associatedAction = 16, w = 1, next_element_pad_x = 8,
+    sprite = 8, z = 1, associatedAction = 16, w = 1, nextElementPadX = 6, firstElementPadX = 8,
     parent = zArrow, parentBeforeRepeatSequence = true
 }
 xHalfArrow = arrow:new {
-    sprite = 8, z = 1, associatedAction = 32, w = 1, next_element_pad_x = 8,
+    sprite = 8, z = 1, associatedAction = 32, w = 1, nextElementPadX = 6, firstElementPadX = 8,
     parent = xArrow, parentBeforeRepeatSequence = true
 }
 
@@ -75,13 +75,17 @@ function restartArrows()
             for _ = 1, halfArrowRepeat do
                 j += 1
                 arrowQueue[i + j] = deepCopy(currentArrow)
+
+                if j == 1 then
+                    arrowQueue[i + j].nextElementPadX = currentArrow.firstElementPadX
+                end
             end
 
-            arrowQueue[i + j].next_element_pad_x = 32
+            arrowQueue[i + j].nextElementPadX = 32
 
             if currentArrow.parentBeforeRepeatSequence then
                 arrowQueue[i] = deepCopy(currentArrow.parent)
-                arrowQueue[i].next_element_pad_x = 8
+                arrowQueue[i].nextElementPadX = 8
             else
                 arrowQueue[i + j] = deepCopy(currentArrow.parent)
             end
@@ -164,9 +168,9 @@ function updateArrows()
 
     for _, visibleArrow in pairs(visibleArrowQueue) do
         visibleArrow.x = visibleArrow.x - arrowSpeed
-        visibleArrow.next_element_pad_x = visibleArrow.next_element_pad_x - arrowSpeed
+        visibleArrow.nextElementPadX = visibleArrow.nextElementPadX - arrowSpeed
 
-        if visibleArrow.next_element_pad_x == 0 and arrowQueueIndex < arrowQueueLen then
+        if visibleArrow.nextElementPadX == 0 and arrowQueueIndex < arrowQueueLen then
             add(visibleArrowQueue, deepCopy(arrowQueue[arrowQueueIndex]))
             arrowQueueIndex = arrowQueueIndex + 1
             visibleArrowQueueLen = visibleArrowQueueLen + 1
