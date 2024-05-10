@@ -11,15 +11,33 @@ leftArrow = arrow:new { z = 2, }
 rightArrow = arrow:new { flip_x = true, associatedAction = 2, }
 topArrow = arrow:new { sprite = 2, associatedAction = 4, }
 bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, }
-zArrow = arrow:new { sprite = 4, associatedAction = 16, }
-xArrow = arrow:new { sprite = 6, associatedAction = 32, }
+zArrow = arrow:new { z = 2, sprite = 4, associatedAction = 16, }
+xArrow = arrow:new { z = 2, sprite = 6, associatedAction = 32, }
 
-leftHalfArrow = arrow:new { sprite = 1, w = 1, z = 1, next_element_pad_x = 8, parent = leftArrow, }
-rightHalfArrow = arrow:new { sprite = 1, flip_x = true, associatedAction = 2, w = 1, next_element_pad_x = 8, parent = rightArrow, }
-topHalfArrow = arrow:new { sprite = 2, associatedAction = 4, w = 1, next_element_pad_x = 8, parent = topArrow,  }
-bottomHalfArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, w = 1, next_element_pad_x = 8, parent = bottomArrow,  }
-zHalfArrow = arrow:new { sprite = 8, associatedAction = 16, w = 1, next_element_pad_x = 8, parent = zArrow,  }
-xHalfArrow = arrow:new { sprite = 8, associatedAction = 32, w = 1, next_element_pad_x = 8, parent = xArrow,  }
+leftHalfArrow = arrow:new {
+    sprite = 0, w = 1, z = 1, next_element_pad_x = 8,
+    parent = leftArrow, parentBeforeRepeatSequence = false
+}
+rightHalfArrow = arrow:new {
+    sprite = 0, flip_x = true, associatedAction = 2, w = 1, next_element_pad_x = 8,
+    parent = rightArrow, parentBeforeRepeatSequence = true
+}
+topHalfArrow = arrow:new {
+    sprite = 3, associatedAction = 4, w = 1, next_element_pad_x = 8,
+    parent = topArrow, parentBeforeRepeatSequence = true
+}
+bottomHalfArrow = arrow:new {
+    sprite = 3, flip_y = true, associatedAction = 8, w = 1, next_element_pad_x = 8,
+    parent = bottomArrow, parentBeforeRepeatSequence = true
+}
+zHalfArrow = arrow:new {
+    sprite = 8, z = 1, associatedAction = 16, w = 1, next_element_pad_x = 8,
+    parent = zArrow, parentBeforeRepeatSequence = true
+}
+xHalfArrow = arrow:new {
+    sprite = 8, z = 1, associatedAction = 32, w = 1, next_element_pad_x = 8,
+    parent = xArrow, parentBeforeRepeatSequence = true
+}
 
 halfArrowWidth = arrow.w * 4
 arrowPerfectX = 64 - halfArrowWidth
@@ -46,31 +64,36 @@ function restartArrows()
     local i = 1
 
     while true do
+        local j = 0
         local currentArrow = rnd(sequence)
         arrowQueue[i] = deepCopy(currentArrow)
 
         if currentArrow.w == 1 then
             -- half arrow
             local halfArrowRepeat = rnd(halfArrowRepeats)
-            local j = 0
 
             for _ = 1, halfArrowRepeat do
                 j += 1
-                local h = deepCopy(currentArrow)
-
-                if j == halfArrowRepeat then
-                    h.next_element_pad_x = 32
-                end
-
-                arrowQueue[i + j] = h
+                arrowQueue[i + j] = deepCopy(currentArrow)
             end
 
-            arrowQueue[i + j + 1] = deepCopy(currentArrow.parent)
-            i += j + 1
+            arrowQueue[i + j].next_element_pad_x = 32
 
-            if i >= arrowQueueLen then
-                break
+            if currentArrow.parentBeforeRepeatSequence then
+                arrowQueue[i] = deepCopy(currentArrow.parent)
+                arrowQueue[i].next_element_pad_x = 8
+            else
+                arrowQueue[i + j] = deepCopy(currentArrow.parent)
             end
+
+            i += j
+
+        end
+
+        i += 1
+
+        if i >= arrowQueueLen then
+            break
         end
     end
 
@@ -99,7 +122,7 @@ function drawArrows()
     for z = 1, maxZ do
         for _, visible_arrow in pairs(visibleArrowQueue) do
 
-            if z ~= arrow.z then
+            if z ~= visible_arrow.z then
                 goto continueInnerArrowLoop
             end
 
