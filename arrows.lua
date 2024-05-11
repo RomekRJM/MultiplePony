@@ -27,11 +27,11 @@ topHalfArrow = arrow:new {
     parent = topArrow, parentBeforeRepeatSequence = true
 }
 bottomHalfArrow = arrow:new {
-    sprite = 3, flip_y = true, associatedAction = 8, w = 1, nextElementPadX = 5, firstElementPadX = 13,
+    sprite = 3, flip_y = true, associatedAction = 8, w = 1, nextElementPadX = 5, firstElementPadX = 8,
     parent = bottomArrow, parentBeforeRepeatSequence = true
 }
 zHalfArrow = arrow:new {
-    sprite = 8, z = 1, associatedAction = 16, w = 1, nextElementPadX = 6, firstElementPadX = 8,
+    sprite = 8, z = 1, associatedAction = 16, w = 1, nextElementPadX = 6, firstElementPadX = 15,
     parent = zArrow, parentBeforeRepeatSequence = true
 }
 xHalfArrow = arrow:new {
@@ -43,6 +43,12 @@ halfArrowWidth = arrow.w * 4
 arrowPerfectX = 64 - halfArrowWidth
 arrowMinAcceptableX = arrowPerfectX - halfArrowWidth
 arrowMaxAcceptableX = arrowPerfectX + halfArrowWidth
+
+quarterArrowWidth = arrow.w * 2
+halfArrowPerfectX = 64 - quarterArrowWidth
+halfArrowMinAcceptableX = halfArrowPerfectX - quarterArrowWidth
+halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
+
 currentArrow = nil
 
 function restartArrows()
@@ -56,8 +62,7 @@ function restartArrows()
     visibleArrowQueueMaxLen = 10
 
     sequence = {
-        leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
-        leftHalfArrow, rightHalfArrow, topHalfArrow, bottomHalfArrow, zHalfArrow, xHalfArrow
+         topHalfArrow
     }
 
     halfArrowRepeats = { 4, 6, 8, 10 }
@@ -77,15 +82,16 @@ function restartArrows()
                 arrowQueue[i + j] = deepCopy(currentArrow)
 
                 if j == 1 then
-                    arrowQueue[i + j].nextElementPadX = currentArrow.firstElementPadX
+                    arrowQueue[i].nextElementPadX = currentArrow.firstElementPadX
                 end
             end
 
             arrowQueue[i + j].nextElementPadX = 32
 
             if currentArrow.parentBeforeRepeatSequence then
+                local firstElementPadX = arrowQueue[i].firstElementPadX
                 arrowQueue[i] = deepCopy(currentArrow.parent)
-                arrowQueue[i].nextElementPadX = 8
+                arrowQueue[i].nextElementPadX = firstElementPadX
             else
                 arrowQueue[i + j] = deepCopy(currentArrow.parent)
             end
@@ -165,6 +171,8 @@ function updateArrows()
     end
 
     local scheduledForDeletion = {}
+    local currentArrowMinAcceptableX = 0;
+    local currentArrowMaxAcceptableX = 0;
 
     for _, visibleArrow in pairs(visibleArrowQueue) do
         visibleArrow.x = visibleArrow.x - arrowSpeed
@@ -176,7 +184,15 @@ function updateArrows()
             visibleArrowQueueLen = visibleArrowQueueLen + 1
         end
 
-        if visibleArrow.x > arrowMinAcceptableX and visibleArrow.x < arrowMaxAcceptableX then
+        if visibleArrow.w == 1 then
+            currentArrowMinAcceptableX = halfArrowMinAcceptableX
+            currentArrowMaxAcceptableX = halfArrowMaxAcceptableX
+        else
+            currentArrowMinAcceptableX = arrowMinAcceptableX
+            currentArrowMaxAcceptableX = arrowMaxAcceptableX
+        end
+
+        if visibleArrow.x > currentArrowMinAcceptableX and visibleArrow.x < currentArrowMaxAcceptableX then
             if currentArrow == nil then
                 currentArrow = visibleArrow
             end
