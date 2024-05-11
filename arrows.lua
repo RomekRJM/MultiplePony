@@ -91,13 +91,9 @@ function restartArrows()
                         currentZ = maxZ - 1
                     end
                 end
-
-                if j == 1 then
-                    arrowQueue[i].nextElementPadX = currentArrow.firstElementPadX
-                end
             end
 
-            arrowQueue[i + j].nextElementPadX = 32
+            arrowQueue[i + j].nextElementPadX = currentArrow.parent.nextElementPadX
 
             if currentArrow.parentBeforeRepeatSequence then
                 local firstElementPadX = arrowQueue[i].firstElementPadX
