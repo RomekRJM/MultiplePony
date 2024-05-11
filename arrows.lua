@@ -5,21 +5,21 @@ arrow = sprite:new {
     z = 1,
 }
 
-maxZ = 2
+maxZ = 11
 
 leftArrow = arrow:new { z = 2, }
 rightArrow = arrow:new { flip_x = true, associatedAction = 2, }
 topArrow = arrow:new { sprite = 2, associatedAction = 4, }
 bottomArrow = arrow:new { sprite = 2, flip_y = true, associatedAction = 8, }
-zArrow = arrow:new { z = 2, sprite = 4, associatedAction = 16, }
-xArrow = arrow:new { z = 2, sprite = 6, associatedAction = 32, }
+zArrow = arrow:new { z = maxZ, sprite = 4, associatedAction = 16, }
+xArrow = arrow:new { z = maxZ, sprite = 6, associatedAction = 32, }
 
 leftHalfArrow = arrow:new {
     sprite = 0, w = 1, z = 1, nextElementPadX = 8, firstElementPadX = 8,
     parent = leftArrow, parentBeforeRepeatSequence = false
 }
 rightHalfArrow = arrow:new {
-    sprite = 0, flip_x = true, associatedAction = 2, w = 1, nextElementPadX = 8, firstElementPadX = 8,
+    sprite = 0, flip_x = true, associatedAction = 2, w = 1, nextElementPadX = 8, firstElementPadX = 16,
     parent = rightArrow, parentBeforeRepeatSequence = true
 }
 topHalfArrow = arrow:new {
@@ -27,16 +27,16 @@ topHalfArrow = arrow:new {
     parent = topArrow, parentBeforeRepeatSequence = true
 }
 bottomHalfArrow = arrow:new {
-    sprite = 3, flip_y = true, associatedAction = 8, w = 1, nextElementPadX = 5, firstElementPadX = 8,
+    sprite = 3, flip_y = true, associatedAction = 8, w = 1, nextElementPadX = 5, firstElementPadX = 13,
     parent = bottomArrow, parentBeforeRepeatSequence = true
 }
 zHalfArrow = arrow:new {
-    sprite = 8, z = 1, associatedAction = 16, w = 1, nextElementPadX = 6, firstElementPadX = 15,
-    parent = zArrow, parentBeforeRepeatSequence = true
+    sprite = 8, associatedAction = 16, w = 1, nextElementPadX = 5, firstElementPadX = 10,
+    parent = zArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 xHalfArrow = arrow:new {
-    sprite = 8, z = 1, associatedAction = 32, w = 1, nextElementPadX = 6, firstElementPadX = 8,
-    parent = xArrow, parentBeforeRepeatSequence = true
+    sprite = 8, associatedAction = 32, w = 1, nextElementPadX = 5, firstElementPadX = 10,
+    parent = xArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 
 halfArrowWidth = arrow.w * 4
@@ -62,7 +62,8 @@ function restartArrows()
     visibleArrowQueueMaxLen = 10
 
     sequence = {
-         topHalfArrow
+        leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
+        leftHalfArrow, rightHalfArrow, topHalfArrow, bottomHalfArrow, zHalfArrow, xHalfArrow
     }
 
     halfArrowRepeats = { 4, 6, 8, 10 }
@@ -76,10 +77,20 @@ function restartArrows()
         if currentArrow.w == 1 then
             -- half arrow
             local halfArrowRepeat = rnd(halfArrowRepeats)
+            local currentZ = maxZ - 1
 
             for _ = 1, halfArrowRepeat do
                 j += 1
                 arrowQueue[i + j] = deepCopy(currentArrow)
+
+                if currentArrow.changeZSequentially then
+                    arrowQueue[i + j].z = currentZ
+                    currentZ -= 1
+
+                    if currentZ < 1 then
+                        currentZ = maxZ - 1
+                    end
+                end
 
                 if j == 1 then
                     arrowQueue[i].nextElementPadX = currentArrow.firstElementPadX
@@ -103,6 +114,9 @@ function restartArrows()
         i += 1
 
         if i >= arrowQueueLen then
+            if currentArrow.parentBeforeRepeatSequence == false then
+               arrowQueue[arrowQueueLen-1] = deepCopy(currentArrow.parent)
+            end
             break
         end
     end
