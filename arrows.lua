@@ -51,16 +51,31 @@ halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 
 currentArrow = nil
 
-function restartArrows()
-    arrowQueueIndex = 1
-    arrowUpdateBatchLen = 10
-    arrowSpeed = 1
+levelData = "L8,R32,T32,B32,X16,Z8" --l32r5
 
-    arrowQueue = {}
-    arrowQueueLen = 32
-    visibleArrowQueue = {}
-    visibleArrowQueueMaxLen = 10
+symbolMapping = {
+    ['L'] = leftArrow,
+    ['R'] = rightArrow,
+    ['T'] = topArrow,
+    ['B'] = bottomArrow,
+    ['X'] = xArrow,
+    ['Z'] = zArrow
+}
 
+function generateLevelFromParsedData()
+    data = split(levelData)
+    arrowQueueLen = #data
+
+    for instruction in all(data) do
+        local arrowLetter = sub(instruction, 1, 1)
+        printh(arrowLetter)
+        add(arrowQueue, deepCopy(symbolMapping[arrowLetter]))
+    end
+
+    printh(tprint(arrowQueue))
+end
+
+function generateRandomLevel()
     sequence = {
         leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
         leftHalfArrow, rightHalfArrow, topHalfArrow, bottomHalfArrow, zHalfArrow, xHalfArrow
@@ -115,6 +130,24 @@ function restartArrows()
             end
             break
         end
+    end
+end
+
+function restartArrows()
+    arrowQueueIndex = 1
+    arrowUpdateBatchLen = 10
+    arrowSpeed = 1
+
+    arrowQueue = {}
+    arrowQueueLen = 32
+    visibleArrowQueue = {}
+    visibleArrowQueueMaxLen = 10
+
+
+    if false then
+        generateRandomLevel()
+    else
+        generateLevelFromParsedData()
     end
 
     for i, currentArrow in pairs(arrowQueue) do
