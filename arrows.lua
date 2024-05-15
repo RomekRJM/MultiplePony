@@ -6,6 +6,7 @@ arrow = sprite:new {
 }
 
 maxZ = 11
+generatorCntr = 1
 
 leftArrow = arrow:new { z = 2, }
 rightArrow = arrow:new { flip_x = true, associatedAction = 2, }
@@ -62,31 +63,68 @@ symbolMapping = {
     ['Z'] = zArrow
 }
 
-function generateLevelFromParsedData()
+function prepareLevelFromParsedData()
+    generatorCntr = 0
+
     data = split(levelData)
     arrowQueueLen = #data
+    tmpArrowQueue = {}
 
     for instruction in all(data) do
         local arrowLetter = sub(instruction, 1, 1)
         printh(arrowLetter)
-        add(arrowQueue, deepCopy(symbolMapping[arrowLetter]))
+        add(tmpArrowQueue, deepCopy(symbolMapping[arrowLetter]))
     end
-
-    printh(tprint(arrowQueue))
 end
 
-function generateRandomLevel()
+function prepareRandomData()
+    generatorCntr = 0
+
     sequence = {
         leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
         leftHalfArrow, rightHalfArrow, topHalfArrow, bottomHalfArrow, zHalfArrow, xHalfArrow
     }
 
     halfArrowRepeats = { 4, 6, 8, 10 }
+end
+
+function nextRandomArrow()
+    generatorCntr += 1
+
+    if generatorCntr <= arrowQueueLen then
+       return rnd(sequence)
+    end
+
+    return nil
+end
+
+function nextArrowFromParsedData()
+    generatorCntr += 1
+
+    if generatorCntr <= arrowQueueLen then
+       return tmpArrowQueue[generatorCntr]
+    end
+
+    return nil
+end
+
+function generateLevel(generateRandom)
     local i = 1
 
+    if generateRandom then
+        prepareRandomData()
+    else
+        prepareLevelFromParsedData()
+    end
+
     while true do
+        local currentArrow = generateRandom and nextRandomArrow() or nextArrowFromParsedData()
+
+        if currentArrow == nil then
+            break
+        end
+
         local j = 0
-        local currentArrow = rnd(sequence)
         arrowQueue[i] = deepCopy(currentArrow)
 
         if currentArrow.w == 1 then
@@ -102,9 +140,9 @@ function generateRandomLevel()
                     arrowQueue[i + j].z = currentZ
                     currentZ -= 1
 
-                    if currentZ < 1 then
-                        currentZ = maxZ - 1
-                    end
+            if currentZ < 1 then
+            currentZ = maxZ - 1
+                end
                 end
             end
 
@@ -123,13 +161,6 @@ function generateRandomLevel()
         end
 
         i += 1
-
-        if i >= arrowQueueLen then
-            if currentArrow.parentBeforeRepeatSequence == false then
-               arrowQueue[arrowQueueLen-1] = deepCopy(currentArrow.parent)
-            end
-            break
-        end
     end
 end
 
@@ -143,12 +174,7 @@ function restartArrows()
     visibleArrowQueue = {}
     visibleArrowQueueMaxLen = 10
 
-
-    if false then
-        generateRandomLevel()
-    else
-        generateLevelFromParsedData()
-    end
+    generateLevel(false)
 
     for i, currentArrow in pairs(arrowQueue) do
         if i <= arrowUpdateBatchLen then
