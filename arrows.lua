@@ -52,7 +52,7 @@ halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 
 currentArrow = nil
 
-levelData = "L8,R32,T32,B32,X16,Z8" --l32r5
+levelData = "L-8,R-32,T-32,B-32,X-16,Z-8,l-8-32,R-10" --l32r5
 
 symbolMapping = {
     ['L'] = leftArrow,
@@ -60,7 +60,13 @@ symbolMapping = {
     ['T'] = topArrow,
     ['B'] = bottomArrow,
     ['X'] = xArrow,
-    ['Z'] = zArrow
+    ['Z'] = zArrow,
+    ['l'] = leftHalfArrow,
+    ['r'] = rightHalfArrow,
+    ['t'] = topHalfArrow,
+    ['b'] = bottomHalfArrow,
+    ['x'] = xHalfArrow,
+    ['z'] = zHalfArrow
 }
 
 function prepareLevelFromParsedData()
@@ -71,9 +77,20 @@ function prepareLevelFromParsedData()
     tmpArrowQueue = {}
 
     for instruction in all(data) do
-        local arrowLetter = sub(instruction, 1, 1)
-        printh(arrowLetter)
-        add(tmpArrowQueue, deepCopy(symbolMapping[arrowLetter]))
+        local parts = split(instruction, "-")
+        local element = 1
+        local arrowLetter = parts[element]
+        element += 1
+
+        currentArrow = deepCopy(symbolMapping[arrowLetter])
+
+        if ord(arrowLetter) >= 65 and ord(arrowLetter) <= 90 then
+           currentArrow.r = tonum(parts[element])
+           element += 1
+        end
+
+        currentArrow.r = tonum(parts[element])
+        add(tmpArrowQueue, currentArrow)
     end
 end
 
@@ -92,7 +109,9 @@ function nextRandomArrow()
     generatorCntr += 1
 
     if generatorCntr <= arrowQueueLen then
-       return rnd(sequence)
+        currentArrow = rnd(sequence)
+        currentArrow.r = rnd(halfArrowRepeats)
+        return rnd(sequence)
     end
 
     return nil
@@ -102,7 +121,7 @@ function nextArrowFromParsedData()
     generatorCntr += 1
 
     if generatorCntr <= arrowQueueLen then
-       return tmpArrowQueue[generatorCntr]
+        return tmpArrowQueue[generatorCntr]
     end
 
     return nil
@@ -129,10 +148,9 @@ function generateLevel(generateRandom)
 
         if currentArrow.w == 1 then
             -- half arrow
-            local halfArrowRepeat = rnd(halfArrowRepeats)
             local currentZ = maxZ - 1
 
-            for _ = 1, halfArrowRepeat do
+            for _ = 1, currentArrow.r do
                 j += 1
                 arrowQueue[i + j] = deepCopy(currentArrow)
 
@@ -140,9 +158,9 @@ function generateLevel(generateRandom)
                     arrowQueue[i + j].z = currentZ
                     currentZ -= 1
 
-            if currentZ < 1 then
-            currentZ = maxZ - 1
-                end
+                    if currentZ < 1 then
+                        currentZ = maxZ - 1
+                    end
                 end
             end
 
