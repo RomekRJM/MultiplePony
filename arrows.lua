@@ -52,7 +52,7 @@ halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 
 currentArrow = nil
 
-levelData = "L-32,R-32,T-32,B-32,X-16,Z-64,l-8-32,R-10" --l32r5
+levelData = "L-32,R-32,T-32,B-32,X-16,Z-64,l-8-8,R-40,x-4-5,z-4-5"
 
 symbolMapping = {
     ['L'] = leftArrow,
