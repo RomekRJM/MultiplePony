@@ -52,7 +52,7 @@ halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 
 currentArrow = nil
 
-levelData = "L-8,R-32,T-32,B-32,X-16,Z-8,l-8-32,R-10" --l32r5
+levelData = "L-32,R-32,T-32,B-32,X-16,Z-64,l-8-32,R-10" --l32r5
 
 symbolMapping = {
     ['L'] = leftArrow,
@@ -84,12 +84,14 @@ function prepareLevelFromParsedData()
 
         currentArrow = deepCopy(symbolMapping[arrowLetter])
 
-        if ord(arrowLetter) >= 65 and ord(arrowLetter) <= 90 then
+        if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
+           printh(ord(arrowLetter))
            currentArrow.r = tonum(parts[element])
+           arrowQueueLen += currentArrow.r
            element += 1
         end
 
-        currentArrow.r = tonum(parts[element])
+        currentArrow.nextElementPadX = tonum(parts[element])
         add(tmpArrowQueue, currentArrow)
     end
 end
@@ -149,6 +151,7 @@ function generateLevel(generateRandom)
         if currentArrow.w == 1 then
             -- half arrow
             local currentZ = maxZ - 1
+            printh(tprint(currentArrow))
 
             for _ = 1, currentArrow.r do
                 j += 1
@@ -199,8 +202,6 @@ function restartArrows()
             currentArrow.x = 128
         end
     end
-
-    printh(tprint(arrowQueue))
 
     add(visibleArrowQueue, deepCopy(arrowQueue[1]))
     visibleArrowQueueLen = 1
