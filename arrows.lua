@@ -146,7 +146,7 @@ function generateLevel(generateRandom)
         end
 
         local j = 0
-        arrowQueue[i] = deepCopy(currentArrow)
+        arrowQueue[1][i] = deepCopy(currentArrow)
 
         if currentArrow.w == 1 then
             -- half arrow
@@ -155,10 +155,10 @@ function generateLevel(generateRandom)
 
             for _ = 1, currentArrow.r do
                 j += 1
-                arrowQueue[i + j] = deepCopy(currentArrow)
+                arrowQueue[1][i + j] = deepCopy(currentArrow)
 
                 if currentArrow.changeZSequentially then
-                    arrowQueue[i + j].z = currentZ
+                    arrowQueue[1][i + j].z = currentZ
                     currentZ -= 1
 
                     if currentZ < 1 then
@@ -167,14 +167,14 @@ function generateLevel(generateRandom)
                 end
             end
 
-            arrowQueue[i + j].nextElementPadX = currentArrow.parent.nextElementPadX
+            arrowQueue[1][i + j].nextElementPadX = currentArrow.parent.nextElementPadX
 
             if currentArrow.parentBeforeRepeatSequence then
-                local firstElementPadX = arrowQueue[i].firstElementPadX
-                arrowQueue[i] = deepCopy(currentArrow.parent)
-                arrowQueue[i].nextElementPadX = firstElementPadX
+                local firstElementPadX = arrowQueue[1][i].firstElementPadX
+                arrowQueue[1][i] = deepCopy(currentArrow.parent)
+                arrowQueue[1][i].nextElementPadX = firstElementPadX
             else
-                arrowQueue[i + j] = deepCopy(currentArrow.parent)
+                arrowQueue[1][i + j] = deepCopy(currentArrow.parent)
             end
 
             i += j
@@ -191,34 +191,40 @@ function restartArrows()
     arrowSpeed = 1
 
     arrowQueue = {}
+    arrowQueue[1] = {}
+    arrowQueue[2] = {}
     arrowQueueLen = 32
     visibleArrowQueue = {}
+    visibleArrowQueue[1] = {}
+    visibleArrowQueue[2] = {}
     visibleArrowQueueMaxLen = 10
 
     generateLevel(false)
 
-    for i, currentArrow in pairs(arrowQueue) do
+    for i, currentArrow in pairs(arrowQueue[1]) do
         if i <= arrowUpdateBatchLen then
             currentArrow.x = 128
         end
     end
 
-    add(visibleArrowQueue, deepCopy(arrowQueue[1]))
+    add(visibleArrowQueue[1], deepCopy(arrowQueue[1][1]))
     visibleArrowQueueLen = 1
 end
 
 rightArrowHitBoundary = 80
 leftArrowHitBoundary = 48
 circleCentreX = (rightArrowHitBoundary - leftArrowHitBoundary) / 2 + leftArrowHitBoundary - 1
-circleCentreY = defaultSpriteY + 8 * (defaultSpriteH - 1)
+circleTopCentreY = defaultSpriteY + 8 * (defaultSpriteH - 1)
+circleBottomCentreY = circleTopCentreY + 25
 circleRadius = defaultSpriteH * 4 + 2
 
 function drawArrows()
 
-    circ(circleCentreX, circleCentreY, circleRadius)
+    circ(circleCentreX, circleTopCentreY, circleRadius)
+    circ(circleCentreX, circleBottomCentreY, circleRadius)
 
     for z = 1, maxZ do
-        for _, visible_arrow in pairs(visibleArrowQueue) do
+        for _, visible_arrow in pairs(visibleArrowQueue[1]) do
 
             if z ~= visible_arrow.z then
                 goto continueInnerArrowLoop
@@ -246,7 +252,7 @@ function logarrows()
     printh("arrowQueueIndex: " .. tostring(arrowQueueIndex))
     printh("visibleArrowQueueLen: " .. tostring(visibleArrowQueueLen))
 
-    for _, visibleArrow in pairs(visibleArrowQueue) do
+    for _, visibleArrow in pairs(visibleArrowQueue[1]) do
         printh(tostring(i) .. ": " .. tostring(visibleArrow.x))
     end
 end
@@ -262,12 +268,12 @@ function updateArrows()
     local currentArrowMinAcceptableX = 0;
     local currentArrowMaxAcceptableX = 0;
 
-    for _, visibleArrow in pairs(visibleArrowQueue) do
+    for _, visibleArrow in pairs(visibleArrowQueue[1]) do
         visibleArrow.x = visibleArrow.x - arrowSpeed
         visibleArrow.nextElementPadX = visibleArrow.nextElementPadX - arrowSpeed
 
         if visibleArrow.nextElementPadX == 0 and arrowQueueIndex < arrowQueueLen then
-            add(visibleArrowQueue, deepCopy(arrowQueue[arrowQueueIndex]))
+            add(visibleArrowQueue[1], deepCopy(arrowQueue[1][arrowQueueIndex]))
             arrowQueueIndex = arrowQueueIndex + 1
             visibleArrowQueueLen = visibleArrowQueueLen + 1
         end
@@ -292,7 +298,7 @@ function updateArrows()
     end
 
     for deletedArrow in all(scheduledForDeletion) do
-        del(visibleArrowQueue, deletedArrow)
+        del(visibleArrowQueue[1], deletedArrow)
         visibleArrowQueueLen = visibleArrowQueueLen - 1
     end
 end
