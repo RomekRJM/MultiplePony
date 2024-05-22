@@ -6,7 +6,9 @@ arrow = sprite:new {
 }
 
 maxZ = 11
-generatorCntr = 1
+generatorCntr = {}
+generatorCntr[1] = 0
+generatorCntr[2] = 0
 
 leftArrow = arrow:new { z = 2, }
 rightArrow = arrow:new { flip_x = true, associatedAction = 2, }
@@ -70,7 +72,8 @@ symbolMapping = {
 }
 
 function prepareLevelFromParsedData()
-    generatorCntr = 0
+    generatorCntr[1] = 0
+    generatorCntr[2] = 0
 
     data = split(levelData)
     arrowQueueLen = {}
@@ -78,28 +81,31 @@ function prepareLevelFromParsedData()
     arrowQueueLen[2] = #data
     tmpArrowQueue = {}
 
-    for instruction in all(data) do
-        local parts = split(instruction, "-")
-        local element = 1
-        local arrowLetter = parts[element]
-        element += 1
+    for q = 1, 2 do
+        for instruction in all(data) do
+            local parts = split(instruction, "-")
+            local element = 1
+            local arrowLetter = parts[element]
+            element += 1
 
-        currentArrow = deepCopy(symbolMapping[arrowLetter])
+            currentArrow = deepCopy(symbolMapping[arrowLetter])
 
-        if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
-           printh(ord(arrowLetter))
-           currentArrow.r = tonum(parts[element])
-           arrowQueueLen[1] += currentArrow.r
-           element += 1
+            if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
+                printh(ord(arrowLetter))
+                currentArrow.r = tonum(parts[element])
+                arrowQueueLen[q] += currentArrow.r
+                element += 1
+            end
+
+            currentArrow.nextElementPadX = tonum(parts[element])
+            add(tmpArrowQueue, currentArrow)
         end
-
-        currentArrow.nextElementPadX = tonum(parts[element])
-        add(tmpArrowQueue, currentArrow)
     end
 end
 
 function prepareRandomData()
-    generatorCntr = 0
+    generatorCntr[1] = 0
+    generatorCntr[2] = 0
 
     sequence = {
         leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
@@ -109,10 +115,10 @@ function prepareRandomData()
     halfArrowRepeats = { 4, 6, 8, 10 }
 end
 
-function nextRandomArrow()
-    generatorCntr += 1
+function nextRandomArrow(qn)
+    generatorCntr[qn] += 1
 
-    if generatorCntr <= arrowQueueLen then
+    if generatorCntr[qn] <= arrowQueueLen[qn] then
         currentArrow = rnd(sequence)
         currentArrow.r = rnd(halfArrowRepeats)
         return rnd(sequence)
@@ -121,69 +127,74 @@ function nextRandomArrow()
     return nil
 end
 
-function nextArrowFromParsedData()
-    generatorCntr += 1
+function nextArrowFromParsedData(qn)
+    generatorCntr[qn] += 1
 
-    if generatorCntr <= arrowQueueLen[1] then
-        return tmpArrowQueue[generatorCntr]
+    if generatorCntr[qn] <= arrowQueueLen[qn] then
+        return tmpArrowQueue[generatorCntr[qn]]
     end
 
     return nil
 end
 
 function generateLevel(generateRandom)
-    local i = 1
-
     if generateRandom then
         prepareRandomData()
     else
         prepareLevelFromParsedData()
     end
 
-    while true do
-        local currentArrow = generateRandom and nextRandomArrow() or nextArrowFromParsedData()
+    for q = 1, 2 do
+        local i = 1
+        while true do
+            local currentArrow = generateRandom and nextRandomArrow(q) or nextArrowFromParsedData(q)
 
-        if currentArrow == nil then
-            break
-        end
+            if currentArrow == nil then
+                break
+            end
 
-        local j = 0
-        arrowQueue[1][i] = deepCopy(currentArrow)
+            if q == 2 then
+                currentArrow.y += circlePadY
+            end
 
-        if currentArrow.w == 1 then
-            -- half arrow
-            local currentZ = maxZ - 1
-            printh(tprint(currentArrow))
+            local j = 0
+            arrowQueue[q][i] = deepCopy(currentArrow)
 
-            for _ = 1, currentArrow.r do
-                j += 1
-                arrowQueue[1][i + j] = deepCopy(currentArrow)
+            if currentArrow.w == 1 then
+                -- half arrow
+                local currentZ = maxZ - 1
+                printh(tprint(currentArrow))
 
-                if currentArrow.changeZSequentially then
-                    arrowQueue[1][i + j].z = currentZ
-                    currentZ -= 1
+                for _ = 1, currentArrow.r do
+                    j += 1
+                    arrowQueue[q][i + j] = deepCopy(currentArrow)
 
-                    if currentZ < 1 then
-                        currentZ = maxZ - 1
+                    if currentArrow.changeZSequentially then
+                        arrowQueue[q][i + j].z = currentZ
+                        currentZ -= 1
+
+                        if currentZ < 1 then
+                            currentZ = maxZ - 1
+                        end
                     end
                 end
+
+                arrowQueue[q][i + j].nextElementPadX = currentArrow.parent.nextElementPadX
+
+                if currentArrow.parentBeforeRepeatSequence then
+                    local firstElementPadX = arrowQueue[q][i].firstElementPadX
+                    arrowQueue[q][i] = deepCopy(currentArrow.parent)
+                    arrowQueue[q][i].nextElementPadX = firstElementPadX
+                else
+                    arrowQueue[q][i + j] = deepCopy(currentArrow.parent)
+                end
+
+                i += j
+
             end
 
-            arrowQueue[1][i + j].nextElementPadX = currentArrow.parent.nextElementPadX
-
-            if currentArrow.parentBeforeRepeatSequence then
-                local firstElementPadX = arrowQueue[1][i].firstElementPadX
-                arrowQueue[1][i] = deepCopy(currentArrow.parent)
-                arrowQueue[1][i].nextElementPadX = firstElementPadX
-            else
-                arrowQueue[1][i + j] = deepCopy(currentArrow.parent)
-            end
-
-            i += j
-
+            i += 1
         end
-
-        i += 1
     end
 end
 
@@ -224,7 +235,8 @@ rightArrowHitBoundary = 80
 leftArrowHitBoundary = 48
 circleCentreX = (rightArrowHitBoundary - leftArrowHitBoundary) / 2 + leftArrowHitBoundary - 1
 circleTopCentreY = defaultSpriteY + 8 * (defaultSpriteH - 1)
-circleBottomCentreY = circleTopCentreY + 25
+circlePadY = 25
+circleBottomCentreY = circleTopCentreY + circlePadY
 circleRadius = defaultSpriteH * 4 + 2
 
 function drawArrows()
