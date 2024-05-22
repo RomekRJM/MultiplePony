@@ -6,7 +6,9 @@ arrow = sprite:new {
 }
 
 maxZ = 11
-generatorCntr = 1
+generatorCntr = {}
+generatorCntr[1] = 0
+generatorCntr[2] = 0
 
 leftArrow = arrow:new { z = 2, }
 rightArrow = arrow:new { flip_x = true, associatedAction = 2, }
@@ -70,34 +72,40 @@ symbolMapping = {
 }
 
 function prepareLevelFromParsedData()
-    generatorCntr = 0
+    generatorCntr[1] = 0
+    generatorCntr[2] = 0
 
     data = split(levelData)
-    arrowQueueLen = #data
+    arrowQueueLen = {}
+    arrowQueueLen[1] = #data
+    arrowQueueLen[2] = #data
     tmpArrowQueue = {}
 
-    for instruction in all(data) do
-        local parts = split(instruction, "-")
-        local element = 1
-        local arrowLetter = parts[element]
-        element += 1
+    for q = 1, 2 do
+        for instruction in all(data) do
+            local parts = split(instruction, "-")
+            local element = 1
+            local arrowLetter = parts[element]
+            element += 1
 
-        currentArrow = deepCopy(symbolMapping[arrowLetter])
+            currentArrow = deepCopy(symbolMapping[arrowLetter])
 
-        if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
-           printh(ord(arrowLetter))
-           currentArrow.r = tonum(parts[element])
-           arrowQueueLen += currentArrow.r
-           element += 1
+            if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
+                printh(ord(arrowLetter))
+                currentArrow.r = tonum(parts[element])
+                arrowQueueLen[q] += currentArrow.r
+                element += 1
+            end
+
+            currentArrow.nextElementPadX = tonum(parts[element])
+            add(tmpArrowQueue, currentArrow)
         end
-
-        currentArrow.nextElementPadX = tonum(parts[element])
-        add(tmpArrowQueue, currentArrow)
     end
 end
 
 function prepareRandomData()
-    generatorCntr = 0
+    generatorCntr[1] = 0
+    generatorCntr[2] = 0
 
     sequence = {
         leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
@@ -107,10 +115,10 @@ function prepareRandomData()
     halfArrowRepeats = { 4, 6, 8, 10 }
 end
 
-function nextRandomArrow()
-    generatorCntr += 1
+function nextRandomArrow(qn)
+    generatorCntr[qn] += 1
 
-    if generatorCntr <= arrowQueueLen then
+    if generatorCntr[qn] <= arrowQueueLen[qn] then
         currentArrow = rnd(sequence)
         currentArrow.r = rnd(halfArrowRepeats)
         return rnd(sequence)
@@ -119,123 +127,152 @@ function nextRandomArrow()
     return nil
 end
 
-function nextArrowFromParsedData()
-    generatorCntr += 1
+function nextArrowFromParsedData(qn)
+    generatorCntr[qn] += 1
 
-    if generatorCntr <= arrowQueueLen then
-        return tmpArrowQueue[generatorCntr]
+    if generatorCntr[qn] <= arrowQueueLen[qn] then
+        return tmpArrowQueue[generatorCntr[qn]]
     end
 
     return nil
 end
 
 function generateLevel(generateRandom)
-    local i = 1
-
     if generateRandom then
         prepareRandomData()
     else
         prepareLevelFromParsedData()
     end
 
-    while true do
-        local currentArrow = generateRandom and nextRandomArrow() or nextArrowFromParsedData()
+    for q = 1, 2 do
+        local i = 1
+        while true do
+            local currentArrow = generateRandom and nextRandomArrow(q) or nextArrowFromParsedData(q)
 
-        if currentArrow == nil then
-            break
-        end
+            if currentArrow == nil then
+                break
+            end
 
-        local j = 0
-        arrowQueue[i] = deepCopy(currentArrow)
+            if q == 2 then
+                currentArrow.y += circlePadY
+            end
 
-        if currentArrow.w == 1 then
-            -- half arrow
-            local currentZ = maxZ - 1
-            printh(tprint(currentArrow))
+            local j = 0
+            arrowQueue[q][i] = deepCopy(currentArrow)
 
-            for _ = 1, currentArrow.r do
-                j += 1
-                arrowQueue[i + j] = deepCopy(currentArrow)
+            if currentArrow.w == 1 then
+                -- half arrow
+                local currentZ = maxZ - 1
+                printh(tprint(currentArrow))
 
-                if currentArrow.changeZSequentially then
-                    arrowQueue[i + j].z = currentZ
-                    currentZ -= 1
+                for _ = 1, currentArrow.r do
+                    j += 1
+                    arrowQueue[q][i + j] = deepCopy(currentArrow)
 
-                    if currentZ < 1 then
-                        currentZ = maxZ - 1
+                    if currentArrow.changeZSequentially then
+                        arrowQueue[q][i + j].z = currentZ
+                        currentZ -= 1
+
+                        if currentZ < 1 then
+                            currentZ = maxZ - 1
+                        end
                     end
                 end
+
+                arrowQueue[q][i + j].nextElementPadX = currentArrow.parent.nextElementPadX
+
+                if currentArrow.parentBeforeRepeatSequence then
+                    local firstElementPadX = arrowQueue[q][i].firstElementPadX
+                    arrowQueue[q][i] = deepCopy(currentArrow.parent)
+                    arrowQueue[q][i].nextElementPadX = firstElementPadX
+
+                    if q == 2 then
+                        arrowQueue[q][i].y += circlePadY
+                    end
+                else
+                    arrowQueue[q][i + j] = deepCopy(currentArrow.parent)
+
+                    if q == 2 then
+                        arrowQueue[q][i + j].y += circlePadY
+                    end
+                end
+
+                i += j
+
             end
 
-            arrowQueue[i + j].nextElementPadX = currentArrow.parent.nextElementPadX
-
-            if currentArrow.parentBeforeRepeatSequence then
-                local firstElementPadX = arrowQueue[i].firstElementPadX
-                arrowQueue[i] = deepCopy(currentArrow.parent)
-                arrowQueue[i].nextElementPadX = firstElementPadX
-            else
-                arrowQueue[i + j] = deepCopy(currentArrow.parent)
-            end
-
-            i += j
-
+            i += 1
         end
-
-        i += 1
     end
 end
 
 function restartArrows()
-    arrowQueueIndex = 1
+    arrowQueueIndex = {}
+    arrowQueueIndex[1] = 1
+    arrowQueueIndex[2] = 1
     arrowUpdateBatchLen = 10
     arrowSpeed = 1
 
     arrowQueue = {}
+    arrowQueue[1] = {}
+    arrowQueue[2] = {}
     arrowQueueLen = 32
     visibleArrowQueue = {}
+    visibleArrowQueue[1] = {}
+    visibleArrowQueue[2] = {}
+    visibleArrowQueueLen = {}
     visibleArrowQueueMaxLen = 10
 
     generateLevel(false)
 
-    for i, currentArrow in pairs(arrowQueue) do
-        if i <= arrowUpdateBatchLen then
-            currentArrow.x = 128
+    for q = 1, 2 do
+        for i, currentArrow in pairs(arrowQueue[1]) do
+            if i <= arrowUpdateBatchLen then
+                currentArrow.x = 128
+            end
         end
     end
 
-    add(visibleArrowQueue, deepCopy(arrowQueue[1]))
-    visibleArrowQueueLen = 1
+    for q = 1, 2 do
+        add(visibleArrowQueue[q], deepCopy(arrowQueue[q][1]))
+        visibleArrowQueueLen[q] = 1
+    end
 end
 
 rightArrowHitBoundary = 80
 leftArrowHitBoundary = 48
 circleCentreX = (rightArrowHitBoundary - leftArrowHitBoundary) / 2 + leftArrowHitBoundary - 1
-circleCentreY = defaultSpriteY + 8 * (defaultSpriteH - 1)
+circleTopCentreY = defaultSpriteY + 8 * (defaultSpriteH - 1)
+circlePadY = 25
+circleBottomCentreY = circleTopCentreY + circlePadY
 circleRadius = defaultSpriteH * 4 + 2
 
 function drawArrows()
 
-    circ(circleCentreX, circleCentreY, circleRadius)
+    circ(circleCentreX, circleTopCentreY, circleRadius)
+    circ(circleCentreX, circleBottomCentreY, circleRadius)
 
-    for z = 1, maxZ do
-        for _, visible_arrow in pairs(visibleArrowQueue) do
+    for q = 1, 2 do
+        for z = 1, maxZ do
+            for _, visible_arrow in pairs(visibleArrowQueue[q]) do
 
-            if z ~= visible_arrow.z then
-                goto continueInnerArrowLoop
+                if z ~= visible_arrow.z then
+                    goto continueInnerArrowLoop
+                end
+
+                if visible_arrow == currentArrow then
+                    pal(7, 11)
+                end
+
+                spr(visible_arrow.sprite, visible_arrow.x, visible_arrow.y, visible_arrow.w, visible_arrow.h,
+                        visible_arrow.flip_x, visible_arrow.flip_y)
+
+                if visible_arrow == currentArrow then
+                    pal()
+                end
+
+                :: continueInnerArrowLoop ::
             end
-
-            if visible_arrow == currentArrow then
-                pal(7, 11)
-            end
-
-            spr(visible_arrow.sprite, visible_arrow.x, visible_arrow.y, visible_arrow.w, visible_arrow.h,
-                    visible_arrow.flip_x, visible_arrow.flip_y)
-
-            if visible_arrow == currentArrow then
-                pal()
-            end
-
-            :: continueInnerArrowLoop ::
         end
     end
 
@@ -243,56 +280,64 @@ function drawArrows()
 end
 
 function logarrows()
-    printh("arrowQueueIndex: " .. tostring(arrowQueueIndex))
-    printh("visibleArrowQueueLen: " .. tostring(visibleArrowQueueLen))
-
-    for _, visibleArrow in pairs(visibleArrowQueue) do
-        printh(tostring(i) .. ": " .. tostring(visibleArrow.x))
+    for q = 1, 2 do
+        for _, visibleArrow in pairs(visibleArrowQueue[q]) do
+            printh("arrowQueueIndex: " .. tostring(arrowQueueIndex[q]))
+            printh("visibleArrowQueueLen: " .. tostring(visibleArrowQueueLen[q]))
+            printh(tostring(i) .. ": " .. tostring(visibleArrow.x))
+        end
     end
 end
 
 function updateArrows()
     currentArrow = nil
 
-    if visibleArrowQueueLen == 0 and arrowQueueIndex == arrowQueueLen then
-        return
-    end
-
     local scheduledForDeletion = {}
+    scheduledForDeletion[1] = {}
+    scheduledForDeletion[2] = {}
+
     local currentArrowMinAcceptableX = 0;
     local currentArrowMaxAcceptableX = 0;
 
-    for _, visibleArrow in pairs(visibleArrowQueue) do
-        visibleArrow.x = visibleArrow.x - arrowSpeed
-        visibleArrow.nextElementPadX = visibleArrow.nextElementPadX - arrowSpeed
-
-        if visibleArrow.nextElementPadX == 0 and arrowQueueIndex < arrowQueueLen then
-            add(visibleArrowQueue, deepCopy(arrowQueue[arrowQueueIndex]))
-            arrowQueueIndex = arrowQueueIndex + 1
-            visibleArrowQueueLen = visibleArrowQueueLen + 1
+    for q = 1, 2 do
+        if visibleArrowQueueLen[q] == 0 and arrowQueueIndex[q] == arrowQueueLen[q] then
+            return
         end
 
-        if visibleArrow.w == 1 then
-            currentArrowMinAcceptableX = halfArrowMinAcceptableX
-            currentArrowMaxAcceptableX = halfArrowMaxAcceptableX
-        else
-            currentArrowMinAcceptableX = arrowMinAcceptableX
-            currentArrowMaxAcceptableX = arrowMaxAcceptableX
-        end
+        for _, visibleArrow in pairs(visibleArrowQueue[q]) do
+            visibleArrow.x = visibleArrow.x - arrowSpeed
+            visibleArrow.nextElementPadX = visibleArrow.nextElementPadX - arrowSpeed
 
-        if visibleArrow.x > currentArrowMinAcceptableX and visibleArrow.x < currentArrowMaxAcceptableX then
-            if currentArrow == nil then
-                currentArrow = visibleArrow
+            if visibleArrow.nextElementPadX == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
+                add(visibleArrowQueue[q], deepCopy(arrowQueue[q][arrowQueueIndex[q]]))
+                arrowQueueIndex[q] += 1
+                visibleArrowQueueLen[q] += 1
             end
-        end
 
-        if visibleArrow.x < visibleArrow.w * -8 then
-            add(scheduledForDeletion, visibleArrow)
+            if visibleArrow.w == 1 then
+                currentArrowMinAcceptableX = halfArrowMinAcceptableX
+                currentArrowMaxAcceptableX = halfArrowMaxAcceptableX
+            else
+                currentArrowMinAcceptableX = arrowMinAcceptableX
+                currentArrowMaxAcceptableX = arrowMaxAcceptableX
+            end
+
+            if visibleArrow.x > currentArrowMinAcceptableX and visibleArrow.x < currentArrowMaxAcceptableX then
+                if currentArrow == nil then
+                    currentArrow = visibleArrow
+                end
+            end
+
+            if visibleArrow.x < visibleArrow.w * -8 then
+                add(scheduledForDeletion[q], visibleArrow)
+            end
         end
     end
 
-    for deletedArrow in all(scheduledForDeletion) do
-        del(visibleArrowQueue, deletedArrow)
-        visibleArrowQueueLen = visibleArrowQueueLen - 1
+    for q = 1, 2 do
+        for deletedArrow in all(scheduledForDeletion[q]) do
+            del(visibleArrowQueue[q], deletedArrow)
+            visibleArrowQueueLen[q] -= 1
+        end
     end
 end
