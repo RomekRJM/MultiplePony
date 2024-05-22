@@ -185,8 +185,16 @@ function generateLevel(generateRandom)
                     local firstElementPadX = arrowQueue[q][i].firstElementPadX
                     arrowQueue[q][i] = deepCopy(currentArrow.parent)
                     arrowQueue[q][i].nextElementPadX = firstElementPadX
+
+                    if q == 2 then
+                        arrowQueue[q][i].y += circlePadY
+                    end
                 else
                     arrowQueue[q][i + j] = deepCopy(currentArrow.parent)
+
+                    if q == 2 then
+                        arrowQueue[q][i + j].y += circlePadY
+                    end
                 end
 
                 i += j
