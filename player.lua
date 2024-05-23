@@ -38,30 +38,32 @@ end
 
 function updatePlayer()
     local buttonPressed = btn()
+    printh(tprint(currentArrow))
 
-    if nil == currentArrow then
-        return
-    end
+    for q = 1, 1 do
+        if nil == currentArrow[q] then
+            return
+        end
 
-    if currentArrow.actioned then
-        return
-    end
+        if currentArrow[q].actioned then
+            return
+        end
 
-    if buttonPressed > 0 then
-        currentArrow.actioned = true
-    end
+        if buttonPressed > 0 then
+            currentArrow[q].actioned = true
+        end
 
-    if buttonPressed ~= currentArrow.associatedAction then
-        return
-    end
+        if not (buttonPressed and currentArrow[q].associatedAction) then
+            return
+        end
 
-    local absDiff = abs(arrowPerfectX - currentArrow.x)
+        local absDiff = abs(arrowPerfectX - currentArrow[q].x)
 
-    for pointGroup in all(pointGroups) do
-        if absDiff <= pointGroup.maxAbsX then
-            player.points += pointGroup.points
-            break
+        for pointGroup in all(pointGroups) do
+            if absDiff <= pointGroup.maxAbsX then
+                player.points += pointGroup.points
+                break
+            end
         end
     end
-
 end
