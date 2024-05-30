@@ -76,13 +76,14 @@ function prepareLevelFromParsedData()
     generatorCntr[1] = 0
     generatorCntr[2] = 0
     arrowQueueLen = {}
+    tmpArrowQueue = {}
 
     for q = 1, 2 do
         local levelSource = q == 1 and levelData or levelData2
 
         data = split(levelSource)
         arrowQueueLen[q] = #data
-        tmpArrowQueue = {}
+        tmpArrowQueue[q] = {}
 
         for instruction in all(data) do
             local parts = split(instruction, "-")
@@ -99,7 +100,7 @@ function prepareLevelFromParsedData()
             end
 
             currentArrow.nextElementPadX = tonum(parts[element])
-            add(tmpArrowQueue, currentArrow)
+            add(tmpArrowQueue[q], currentArrow)
         end
     end
 end
@@ -132,7 +133,7 @@ function nextArrowFromParsedData(qn)
     generatorCntr[qn] += 1
 
     if generatorCntr[qn] <= arrowQueueLen[qn] then
-        return tmpArrowQueue[generatorCntr[qn]]
+        return tmpArrowQueue[qn][generatorCntr[qn]]
     end
 
     return nil
