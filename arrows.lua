@@ -52,9 +52,10 @@ halfArrowPerfectX = 64 - quarterArrowWidth
 halfArrowMinAcceptableX = halfArrowPerfectX - quarterArrowWidth
 halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 
-currentArrow = nil
+currentArrow = {}
 
-levelData = "L-32,R-32,T-32,B-32,X-16,Z-64,l-8-8,R-40,x-4-5,z-4-5"
+levelData = "L-32,R-32,T-32,B-32,l-8-8,R-40"
+levelData2 = "X-16,Z-64,x-4-5,z-4-5"
 
 symbolMapping = {
     ['L'] = leftArrow,
@@ -74,31 +75,32 @@ symbolMapping = {
 function prepareLevelFromParsedData()
     generatorCntr[1] = 0
     generatorCntr[2] = 0
-
-    data = split(levelData)
     arrowQueueLen = {}
-    arrowQueueLen[1] = #data
-    arrowQueueLen[2] = #data
     tmpArrowQueue = {}
 
     for q = 1, 2 do
+        local levelSource = q == 1 and levelData or levelData2
+
+        data = split(levelSource)
+        arrowQueueLen[q] = #data
+        tmpArrowQueue[q] = {}
+
         for instruction in all(data) do
             local parts = split(instruction, "-")
             local element = 1
             local arrowLetter = parts[element]
             element += 1
 
-            currentArrow = deepCopy(symbolMapping[arrowLetter])
+            local currentArrow = deepCopy(symbolMapping[arrowLetter])
 
             if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
-                printh(ord(arrowLetter))
                 currentArrow.r = tonum(parts[element])
                 arrowQueueLen[q] += currentArrow.r
                 element += 1
             end
 
             currentArrow.nextElementPadX = tonum(parts[element])
-            add(tmpArrowQueue, currentArrow)
+            add(tmpArrowQueue[q], currentArrow)
         end
     end
 end
@@ -119,7 +121,7 @@ function nextRandomArrow(qn)
     generatorCntr[qn] += 1
 
     if generatorCntr[qn] <= arrowQueueLen[qn] then
-        currentArrow = rnd(sequence)
+        local currentArrow = rnd(sequence)
         currentArrow.r = rnd(halfArrowRepeats)
         return rnd(sequence)
     end
@@ -131,7 +133,7 @@ function nextArrowFromParsedData(qn)
     generatorCntr[qn] += 1
 
     if generatorCntr[qn] <= arrowQueueLen[qn] then
-        return tmpArrowQueue[generatorCntr[qn]]
+        return tmpArrowQueue[qn][generatorCntr[qn]]
     end
 
     return nil
@@ -163,7 +165,6 @@ function generateLevel(generateRandom)
             if currentArrow.w == 1 then
                 -- half arrow
                 local currentZ = maxZ - 1
-                printh(tprint(currentArrow))
 
                 for _ = 1, currentArrow.r do
                     j += 1
@@ -260,14 +261,14 @@ function drawArrows()
                     goto continueInnerArrowLoop
                 end
 
-                if visible_arrow == currentArrow then
+                if visible_arrow == currentArrow[q] then
                     pal(7, 11)
                 end
 
                 spr(visible_arrow.sprite, visible_arrow.x, visible_arrow.y, visible_arrow.w, visible_arrow.h,
                         visible_arrow.flip_x, visible_arrow.flip_y)
 
-                if visible_arrow == currentArrow then
+                if visible_arrow == currentArrow[q] then
                     pal()
                 end
 
@@ -290,8 +291,6 @@ function logarrows()
 end
 
 function updateArrows()
-    currentArrow = nil
-
     local scheduledForDeletion = {}
     scheduledForDeletion[1] = {}
     scheduledForDeletion[2] = {}
@@ -300,6 +299,8 @@ function updateArrows()
     local currentArrowMaxAcceptableX = 0;
 
     for q = 1, 2 do
+        currentArrow[q] = nil
+
         if visibleArrowQueueLen[q] == 0 and arrowQueueIndex[q] == arrowQueueLen[q] then
             return
         end
@@ -323,8 +324,8 @@ function updateArrows()
             end
 
             if visibleArrow.x > currentArrowMinAcceptableX and visibleArrow.x < currentArrowMaxAcceptableX then
-                if currentArrow == nil then
-                    currentArrow = visibleArrow
+                if currentArrow[q] == nil then
+                    currentArrow[q] = visibleArrow
                 end
             end
 

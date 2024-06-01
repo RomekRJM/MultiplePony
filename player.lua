@@ -36,32 +36,47 @@ function drawPlayerPoints()
     print(player.points, 63, 0)
 end
 
+function dbgpoints()
+    print(tprint(buttonPressed))
+    for c in all(currentArrow) do
+        print(tprint(c))
+    end
+end
+
 function updatePlayer()
     local buttonPressed = btn()
 
-    if nil == currentArrow then
-        return
-    end
-
-    if currentArrow.actioned then
-        return
-    end
-
-    if buttonPressed > 0 then
-        currentArrow.actioned = true
-    end
-
-    if buttonPressed ~= currentArrow.associatedAction then
-        return
-    end
-
-    local absDiff = abs(arrowPerfectX - currentArrow.x)
-
-    for pointGroup in all(pointGroups) do
-        if absDiff <= pointGroup.maxAbsX then
-            player.points += pointGroup.points
-            break
+    for q = 1, 2 do
+        if nil == currentArrow[q] then
+            return
         end
-    end
 
+        if currentArrow[q].actioned then
+            goto continueInnerPlayerLoop
+        end
+
+        if buttonPressed > 0 then
+            currentArrow[q].actioned = true
+        end
+
+        --printh(tostring(currentArrow[q].associatedAction))
+        --printh(tostring(currentArrow[q].actioned))
+        --printh(tostring(buttonPressed) .. ' & ' .. tostring(currentArrow[q].associatedAction) .. ' = ' .. tostring(buttonPressed & currentArrow[q].associatedAction))
+
+        if (buttonPressed & currentArrow[q].associatedAction) == 0 then
+            goto continueInnerPlayerLoop
+        end
+
+        local absDiff = abs(arrowPerfectX - currentArrow[q].x)
+
+        for pointGroup in all(pointGroups) do
+            if absDiff <= pointGroup.maxAbsX then
+                --printh(tostring(q) .. ': ' .. tostring(pointGroup.points))
+                player.points += pointGroup.points
+                break
+            end
+        end
+
+        :: continueInnerPlayerLoop ::
+    end
 end
