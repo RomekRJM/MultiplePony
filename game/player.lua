@@ -72,6 +72,7 @@ function updatePlayer()
         for pointGroup in all(pointGroups) do
             if absDiff <= pointGroup.maxAbsX then
                 --printh(tostring(q) .. ': ' .. tostring(pointGroup.points))
+                sendScore(pointGroup.points, frame)
                 player.points += pointGroup.points
                 break
             end
