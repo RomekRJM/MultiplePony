@@ -6,3 +6,6 @@ notes.txt
 
 # audio
 *.mp3
+
+# JS
+node_modules/

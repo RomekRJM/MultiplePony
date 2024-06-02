@@ -1,0 +1,14 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Server for MultiplePony pico-8 multiplayer game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No test specified\""
+  },
+  "author": "Roman Subik",
+  "license": "ISC",
+  "dependencies": {
+    "pico-socket": "^2.0.0"
+  }
+}
