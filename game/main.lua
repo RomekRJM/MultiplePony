@@ -1,3 +1,5 @@
+frame = 0
+
 function _init()
     frame = 0
     restartUnicorns()

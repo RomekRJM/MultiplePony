@@ -53,6 +53,10 @@ halfArrowMinAcceptableX = halfArrowPerfectX - quarterArrowWidth
 halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 
 currentArrow = {}
+visibleArrowQueue = {}
+visibleArrowQueueLen = {}
+arrowQueue = {}
+arrowQueueIndex = {}
 
 levelData = "L-32,R-32,T-32,B-32,l-8-8,R-40"
 levelData2 = "X-16,Z-64,x-4-5,z-4-5"
@@ -208,26 +212,22 @@ function generateLevel(generateRandom)
 end
 
 function restartArrows()
-    arrowQueueIndex = {}
     arrowQueueIndex[1] = 1
     arrowQueueIndex[2] = 1
     arrowUpdateBatchLen = 10
     arrowSpeed = 1
 
-    arrowQueue = {}
     arrowQueue[1] = {}
     arrowQueue[2] = {}
     arrowQueueLen = 32
-    visibleArrowQueue = {}
     visibleArrowQueue[1] = {}
     visibleArrowQueue[2] = {}
-    visibleArrowQueueLen = {}
     visibleArrowQueueMaxLen = 10
 
     generateLevel(false)
 
     for q = 1, 2 do
-        for i, currentArrow in pairs(arrowQueue[1]) do
+        for i, currentArrow in pairs(arrowQueue[q]) do
             if i <= arrowUpdateBatchLen then
                 currentArrow.x = 128
             end
