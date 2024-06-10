@@ -10,10 +10,10 @@ createPicoSocketServer({
     // index to determine the player id
     playerIdIndex: 1, // PLAYER_ID
 
-    // indicies that contain player specific data
+    // each player has: score_delta, timestamp
     playerDataIndicies: [
-      [2], // PLAYER_0_Y
-      [3], // PLAYER_1_Y
+      [2, 3], // PLAYER_0
+      [3, 4], // PLAYER_1
     ],
   },
 });
