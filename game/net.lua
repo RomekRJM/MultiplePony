@@ -5,10 +5,15 @@ player_score_timestamp_addr = 0x5f83 -- index 3
 
 function establishConnection()
     poke(room_id_addr, 0) -- hard code to room 0
+
+    -- wipe initial pins
+    for pin=player_score_delta_addr, player_score_timestamp_addr do
+        poke(pin)
+    end
 end
 
 function sendScore(scoreDelta, timestamp)
     poke(player_id_addr, 0) -- hard code to player 0
     poke(player_score_delta_addr, scoreDelta)
-    poke(player_score_timestamp_addr, timestamp)
+    poke(player_score_timestamp_addr, 11)
 end
