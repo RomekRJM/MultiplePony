@@ -238,6 +238,8 @@ function restartArrows()
         add(visibleArrowQueue[q], deepCopy(arrowQueue[q][1]))
         visibleArrowQueueLen[q] = 1
     end
+
+    establishConnection()
 end
 
 rightArrowHitBoundary = 80
