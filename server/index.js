@@ -1,6 +1,6 @@
 const { createPicoSocketServer } = require("pico-socket");
 
-createPicoSocketServer({
+const {app, server, io} = createPicoSocketServer({
   assetFilesPath: ".",
   htmlGameFilePath: "./game.html",
 
@@ -16,4 +16,43 @@ createPicoSocketServer({
       [3, 4], // PLAYER_1
     ],
   },
+});
+
+const logData = (data) => {
+  const emptyArray = new Array(data.length);
+  data.forEach((element, index) => {
+    if (element !== null) {
+      emptyArray[index] = element;
+    }
+  });
+  return emptyArray;
+};
+
+// replace default logic
+io.removeAllListeners("connection")
+
+io.on("connection", (socket) => {
+  // save a `roomId` variable for this socket connection
+  // when sending / recieving data, it will only go to people in the same room
+  let roomId;
+  socket.on("disconnect", () => {});
+  // attach a room id to the socket connection
+  socket.on("room_join", (evtData) => {
+    socket.join(evtData.roomId);
+    roomId = evtData.roomId;
+
+    // if DEBUG=true, log when clients join
+    if (process.env.DEBUG) {
+      console.log("pony joined room: ", roomId);
+    }
+  });
+  // when the server recives an update from the client, send it to every client with the same room id
+  socket.on("update", (updatedData) => {
+    socket.to(roomId).volatile.emit("update_from_server", updatedData);
+
+    // if DEBUG=true, log the data we get
+    if (process.env.DEBUG) {
+      console.log(`${roomId}: `, logData(updatedData));
+    }
+  });
 });
