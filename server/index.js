@@ -2,7 +2,7 @@ const { createPicoSocketServer } = require("pico-socket");
 
 createPicoSocketServer({
   assetFilesPath: ".",
-//  htmlGameFilePath: "./sample.html",
+  htmlGameFilePath: "./game.html",
 
   clientConfig: {
     roomIdIndex: 0, // ROOM_ID
