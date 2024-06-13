@@ -28,6 +28,17 @@ const logData = (data) => {
   return emptyArray;
 };
 
+const handleConnection = (data) => {
+  const roomId = data[0];
+
+  if (roomId !== 0) {
+    return;
+  }
+
+  console.log(String.fromCharCode(data.slice(1)));
+
+};
+
 // replace default logic
 io.removeAllListeners("connection")
 
@@ -38,6 +49,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {});
   // attach a room id to the socket connection
   socket.on("room_join", (evtData) => {
+    handleConnection(data);
     socket.join(evtData.roomId);
     roomId = evtData.roomId;
 
