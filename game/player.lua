@@ -26,7 +26,6 @@ pointGroups = {
 }
 
 arrowMaxPoints = 8
-botchedPoints = -1
 
 function restartPlayer()
     player.points = 0
