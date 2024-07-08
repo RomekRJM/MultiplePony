@@ -2,7 +2,7 @@ const { createPicoSocketServer } = require("pico-socket");
 
 const {app, server, io} = createPicoSocketServer({
   assetFilesPath: ".",
-  htmlGameFilePath: "./game.html",
+  htmlGameFilePath: "./server/game.html",
 
   clientConfig: {
     roomIdIndex: 0, // ROOM_ID
@@ -58,13 +58,12 @@ io.on("connection", (socket) => {
       console.log("pony joined room: ", roomId);
     }
   });
-  // when the server recives an update from the client, send it to every client with the same room id
-  socket.on("update", (updatedData) => {
-    socket.to(roomId).volatile.emit("update_from_server", updatedData);
 
-    // if DEBUG=true, log the data we get
+  socket.on("update", (payload) => {
+    dispatch_request(socket, payload);
+
     if (process.env.DEBUG) {
-      console.log(`${roomId}: `, logData(updatedData));
+      console.log(`${roomId}: `, logData(payload));
     }
   });
 });
