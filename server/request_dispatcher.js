@@ -22,10 +22,12 @@ function dispatch_request(socket, request_data) {
     return CLIENT_REQUESTS_HANDLERS[command](socket, roomId, playerId, request_data.slice(3));
 }
 
-function handle_(socket, roomId, playerId, payload) {
+function handle(socket, roomId, playerId, payload) {
 
 }
 
 function unhandled(socket, roomId, playerId) {
-    return;
+
 }
+
+module.exports = {dispatch_request};

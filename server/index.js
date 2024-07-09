@@ -1,4 +1,5 @@
 const { createPicoSocketServer } = require("pico-socket");
+const { dispatch_request } = require("./request_dispatcher");
 
 const {app, server, io} = createPicoSocketServer({
   assetFilesPath: ".",
@@ -49,7 +50,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {});
   // attach a room id to the socket connection
   socket.on("room_join", (evtData) => {
-    handleConnection(data);
+    handleConnection(evtData);
     socket.join(evtData.roomId);
     roomId = evtData.roomId;
 
