@@ -5,18 +5,21 @@ let assert = require('assert');
 
 function sendMessage(payload){
     let socket = io.connect("http://localhost:5000/");
-    socket.emit("room_join", 1);
+    socket.emit("room_join", payload);
     // send data to server (volatile means unsent data can be dropped)
     socket.emit("update", payload);
 }
 
 function send() {
-    var payload = new Uint8Array(128);
-    payload[0] = 0; // room id
-    payload[1] = 0; // command
-    payload[2] = 0; // player id
-    payload[3] = 'A'.charCodeAt(0);
-    sendMessage(payload);
+    let bufferArray = new ArrayBuffer(128);
+    let buffer = new Uint8Array(bufferArray);
+    buffer[0] = 0; // room id
+    buffer[1] = 0; // command
+    buffer[2] = 0; // player id
+    buffer[3] = 'A'.charCodeAt(0);
+    buffer[4] = 'Z'.charCodeAt(0);
+    buffer[5] = 'L'.charCodeAt(0);
+    sendMessage(bufferArray);
 }
 
 test('connect and send data', t => {

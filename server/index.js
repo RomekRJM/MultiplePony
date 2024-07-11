@@ -42,6 +42,7 @@ const handleConnection = (data) => {
 
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
+const payloadDataStart = 3;
 
 const roomData = [
     {
@@ -102,14 +103,17 @@ io.on("connection", (socket) => {
     });
     // attach a room id to the socket connection
     socket.on("room_join", (evtData) => {
-        let playerAssignment = assignToRoomAndTeam(evtData)
+        let buffer = new Uint8Array(evtData);
+        console.log(buffer);
+        let playerName = Buffer.from(buffer, payloadDataStart).toString();
+        let playerAssignment = assignToRoomAndTeam(playerName);
         handleConnection(evtData);
-        socket.join(evtData.roomId);
-        roomId = evtData.roomId;
+        roomId = playerAssignment.roomId;
+        socket.join(roomId);
 
         // if DEBUG=true, log when clients join
         if (process.env.DEBUG) {
-            console.log("pony joined room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
+            console.log(playerName, " joined room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
         }
     });
 
