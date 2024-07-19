@@ -15,6 +15,8 @@ function dispatch_request(socket, request_data) {
     const command = request_data[1];
     const playerId = request_data[2];
 
+    console.log("Request dispatcher");
+
     if (roomId === 0) {
         return unhandled(roomId, playerId);
     }

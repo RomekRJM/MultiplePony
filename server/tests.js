@@ -5,12 +5,17 @@ let assert = require('assert');
 
 function sendMessage(payload){
     let socket = io.connect("http://localhost:5000/");
-    socket.emit("room_join", payload);
+    socket.emit("JOIN_SERVER_CMD", payload);
     // send data to server (volatile means unsent data can be dropped)
-    socket.emit("update", payload);
+
+    socket.on("CONNECTED_TO_ROOM_RESP", ({roomId, playerId}) => {
+
+        console.log("I", playerId, "have joined room:", roomId);
+        socket.emit("UPDATE", payload);
+    });
 }
 
-function send() {
+function send(uniqueId) {
     let bufferArray = new ArrayBuffer(128);
     let buffer = new Uint8Array(bufferArray);
     buffer[0] = 0; // room id
@@ -19,9 +24,12 @@ function send() {
     buffer[3] = 'A'.charCodeAt(0);
     buffer[4] = 'Z'.charCodeAt(0);
     buffer[5] = 'L'.charCodeAt(0);
-    sendMessage(bufferArray);
+    buffer[3] = uniqueId.charCodeAt(0);
+    buffer[4] = uniqueId.charCodeAt(1);
+    buffer[5] = uniqueId.charCodeAt(2);
+    sendMessage(bufferArray, uniqueId);
 }
 
 test('connect and send data', t => {
-    send();
+    send('PKC');
 });

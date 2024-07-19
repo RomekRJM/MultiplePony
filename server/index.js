@@ -62,7 +62,7 @@ const roomData = [
     },
 ];
 
-const assignToRoomAndTeam = (playerId) => {
+const assignToRoomAndTeam = (playerName) => {
     let roomIdToJoin = roomData.findIndex((room) => {
         if (room.gameInProgress) {
             return false;
@@ -76,19 +76,21 @@ const assignToRoomAndTeam = (playerId) => {
     }
 
     let roomToJoin = roomData[roomIdToJoin];
+    let playerId = roomToJoin.team1Players.length + roomToJoin.team2Players.length;
     let teamToJoin;
 
     if (roomToJoin.team1Players.length > roomToJoin.team2Players.length) {
         teamToJoin = 2;
-        roomToJoin.team2Players.push(playerId);
+        roomToJoin.team2Players.push(playerName);
     } else {
         teamToJoin = 1;
-        roomToJoin.team1Players.push(playerId);
+        roomToJoin.team1Players.push(playerName);
     }
 
     return {
         roomId: roomIdToJoin,
         team: teamToJoin,
+        playerId: playerId,
     };
 }
 
@@ -102,22 +104,22 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
     });
     // attach a room id to the socket connection
-    socket.on("room_join", (evtData) => {
+    socket.on("JOIN_SERVER_CMD", (evtData) => {
         let buffer = new Uint8Array(evtData);
         console.log(buffer);
         let playerName = Buffer.from(buffer, payloadDataStart).toString();
         let playerAssignment = assignToRoomAndTeam(playerName);
         handleConnection(evtData);
         roomId = playerAssignment.roomId;
+        let playerId = playerAssignment.playerId;
         socket.join(roomId);
+        socket.emit("CONNECTED_TO_ROOM_RESP", {roomId, playerId});
 
         // if DEBUG=true, log when clients join
-        if (process.env.DEBUG) {
-            console.log(playerName, " joined room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
-        }
+        console.log(playerName, " joined room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
     });
 
-    socket.on("update", (payload) => {
+    socket.on("UPDATE", (payload) => {
         dispatch_request(socket, payload);
 
         if (process.env.DEBUG) {
