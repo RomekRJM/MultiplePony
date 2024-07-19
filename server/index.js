@@ -112,14 +112,19 @@ io.on("connection", (socket) => {
         handleConnection(evtData);
         roomId = playerAssignment.roomId;
         let playerId = playerAssignment.playerId;
-        socket.join(roomId);
-        socket.emit("CONNECTED_TO_ROOM_RESP", {roomId, playerId});
+        socket.join(roomId.toString());
+        socket.emit("CONNECTED_TO_SERVER_RESP", {roomId, playerId});
 
         // if DEBUG=true, log when clients join
-        console.log(playerName, " joined room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
+        console.log(playerName, " joined server, redirected to room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
     });
 
-    socket.on("UPDATE", (payload) => {
+    socket.on("JOIN_ROOM_CMD", (roomId, playerId) => {
+        console.log(playerId, " joined room: ", roomId);
+        socket.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {roomId, playerId});
+    });
+
+    socket.on("UPDATE", (playerId) => {
         dispatch_request(socket, payload);
 
         if (process.env.DEBUG) {

@@ -8,10 +8,9 @@ function sendMessage(payload){
     socket.emit("JOIN_SERVER_CMD", payload);
     // send data to server (volatile means unsent data can be dropped)
 
-    socket.on("CONNECTED_TO_ROOM_RESP", ({roomId, playerId}) => {
-
+    socket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId}) => {
         console.log("I", playerId, "have joined room:", roomId);
-        socket.emit("UPDATE", payload);
+        io.to(roomId.toString()).emit("JOIN_ROOM_CMD", {roomId, playerId});
     });
 }
 
