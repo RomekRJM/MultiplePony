@@ -119,10 +119,9 @@ io.on("connection", (socket) => {
         console.log(playerName, " joined server, redirected to room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
     });
 
-    socket.on("JOIN_ROOM_CMD", (roomId, playerId) => {
-        console.log(playerId, " joined room: ", roomId);
-        socket.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {roomId, playerId});
-    });
+    setInterval(() => {
+        socket.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {roomId});
+    }, 5000);
 
     socket.on("UPDATE", (playerId) => {
         dispatch_request(socket, payload);

@@ -10,7 +10,10 @@ function sendMessage(payload){
 
     socket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId}) => {
         console.log("I", playerId, "have joined room:", roomId);
-        io.to(roomId.toString()).emit("JOIN_ROOM_CMD", {roomId, playerId});
+    });
+
+    socket.on("UPDATE_TEAM_NAMES", ({roomId}) => {
+        console.log("Received ping in ", roomId);
     });
 }
 
