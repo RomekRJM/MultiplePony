@@ -29,20 +29,8 @@ const logData = (data) => {
     return emptyArray;
 };
 
-const handleConnection = (data) => {
-    const roomId = data[0];
-
-    if (roomId !== 0) {
-        return;
-    }
-
-    console.log(String.fromCharCode(data.slice(1)));
-
-};
-
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
-const payloadDataStart = 3;
 
 const roomData = [
     {
@@ -104,30 +92,21 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
     });
     // attach a room id to the socket connection
-    socket.on("JOIN_SERVER_CMD", (evtData) => {
-        let buffer = new Uint8Array(evtData);
-        console.log(buffer);
-        let playerName = Buffer.from(buffer, payloadDataStart).toString();
+    socket.on("JOIN_SERVER_CMD", (playerName) => {
         let playerAssignment = assignToRoomAndTeam(playerName);
-        handleConnection(evtData);
         roomId = playerAssignment.roomId;
         let playerId = playerAssignment.playerId;
         socket.join(roomId.toString());
         socket.emit("CONNECTED_TO_SERVER_RESP", {roomId, playerId});
+        setTimeout(() => {
+            console.log("Updated team names");
+            io.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
+                team1Players: roomData[roomId].team1Players,
+                team2Players: roomData[roomId].team2Players,
+            });
+        }, 5000)
 
         // if DEBUG=true, log when clients join
         console.log(playerName, " joined server, redirected to room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
-    });
-
-    setInterval(() => {
-        socket.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {roomId});
-    }, 5000);
-
-    socket.on("UPDATE", (playerId) => {
-        dispatch_request(socket, payload);
-
-        if (process.env.DEBUG) {
-            console.log(`${roomId}: `, logData(payload));
-        }
     });
 });
