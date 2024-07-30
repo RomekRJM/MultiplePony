@@ -104,7 +104,7 @@ io.on("connection", (socket) => {
                 team1Players: roomData[roomId].team1Players,
                 team2Players: roomData[roomId].team2Players,
             });
-        }, 5000)
+        }, 1000)
 
         // if DEBUG=true, log when clients join
         console.log(playerName, " joined server, redirected to room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
