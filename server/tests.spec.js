@@ -1,5 +1,5 @@
-import { beforeAll, afterAll, describe, it, expect } from "vitest";
-import { io as ioc } from "socket.io-client";
+import {beforeAll, afterAll, beforeEach, describe, it, expect} from "vitest";
+import {io as ioc} from "socket.io-client";
 
 describe.sequential("multiple pony server", () => {
     let io, clientSocket;
@@ -16,18 +16,24 @@ describe.sequential("multiple pony server", () => {
         clientSocket.disconnect();
     });
 
-    it("should allow player to connect", () => {
+    beforeEach(() => {
         return new Promise((resolve) => {
             clientSocket.emit("RESET");
             clientSocket.on("RESETED_ROOMS", () => {
-                let p1Name = 'PLAYER1';
-                clientSocket.emit("JOIN_SERVER_CMD", p1Name);
+                resolve();
+            });
+        });
+    });
 
-                clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId}) => {
-                    expect(playerId).toEqual(0);
-                    expect(roomId).toEqual(0);
-                    resolve();
-                });
+    it("should allow player to connect", () => {
+        return new Promise((resolve) => {
+            let p1Name = 'PLAYER1';
+            clientSocket.emit("JOIN_SERVER_CMD", p1Name);
+
+            clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId}) => {
+                expect(playerId).toEqual(0);
+                expect(roomId).toEqual(0);
+                resolve();
             });
         });
     });
@@ -42,22 +48,19 @@ describe.sequential("multiple pony server", () => {
 
     const connectPlayers = (noPlayers, expectedTeamNamesResponse) => {
         return new Promise((resolve) => {
-            clientSocket.emit("RESET");
-            clientSocket.on("RESETED_ROOMS", () => {
-                let count = 0;
-                for (let i = 0; i < noPlayers; i++) {
-                    clientSocket.emit("JOIN_SERVER_CMD", i.toString());
-                    console.log(i);
+            let count = 0;
+            for (let i = 0; i < noPlayers; i++) {
+                clientSocket.emit("JOIN_SERVER_CMD", i.toString());
+                console.log(i);
+            }
+
+            clientSocket.on("UPDATE_TEAM_NAMES", (teams) => {
+                count += 1;
+
+                if (count === noPlayers) {
+                    expect(teams).toEqual(expectedTeamNamesResponse);
+                    resolve();
                 }
-
-                clientSocket.on("UPDATE_TEAM_NAMES", (teams) => {
-                    count += 1;
-
-                    if (count === noPlayers) {
-                        expect(teams).toEqual(expectedTeamNamesResponse);
-                        resolve();
-                    }
-                });
             });
         });
     }
