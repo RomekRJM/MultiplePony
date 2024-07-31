@@ -2,11 +2,15 @@ import {afterAll, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
 
 describe("multiple pony server", () => {
-    let io, clientSocket;
+    let io;
 
     beforeEach(() => {
         return new Promise((resolve) => {
-            let clientSocket = ioc.connect("http://localhost:5000/");
+            let clientSocket = ioc.connect("http://localhost:5000/", {
+                auth: {
+                    token: "1234"
+                }
+            });
             clientSocket.emit("RESET");
             clientSocket.on("RESETED_ROOMS", () => {
                 resolve();
@@ -21,7 +25,12 @@ describe("multiple pony server", () => {
 
     it("should allow player to connect", () => {
         return new Promise((resolve) => {
-            let clientSocket = ioc.connect("http://localhost:5000/");
+            let clientSocket = ioc.connect("http://localhost:5000/",
+                {
+                    auth: {
+                        token: "1234"
+                    }
+                });
             let p1Name = 'PLAYER1';
             clientSocket.emit("JOIN_SERVER_CMD", p1Name);
 
@@ -46,7 +55,12 @@ describe("multiple pony server", () => {
         return new Promise((resolve) => {
             let clientSockets = [];
             for (let i = 0; i < noPlayers; i++) {
-                clientSockets.push(ioc.connect("http://localhost:5000/"));
+                clientSockets.push(ioc.connect("http://localhost:5000/",
+                    {
+                        auth: {
+                            token: `PLAYER${i}`
+                        }
+                    }));
                 clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
                 clientSockets[i].on("UPDATE_TEAM_NAMES", (teams) => {

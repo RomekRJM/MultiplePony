@@ -86,10 +86,36 @@ const assignToRoomAndTeam = (playerName) => {
 io.removeAllListeners("connection");
 
 io.on("connection", (socket) => {
-    // save a `roomId` variable for this socket connection
-    // when sending / recieving data, it will only go to people in the same room
-    let roomId;
-    socket.on("disconnect", () => {
+    let playerName = socket.handshake.auth.token;
+
+    socket.on("disconnecting", (_reason) => {
+        let roomId = 0;
+        let teamId = 0;
+
+        for (const room of roomData) {
+            if (room.team1Players.includes(playerName)) {
+                room.team1Players.splice(room.team1Players.indexOf(playerName), 1);
+                teamId = 1;
+                break;
+            } else if (room.team2Players.includes(playerName)) {
+                room.team2Players.splice(room.team2Players.indexOf(playerName), 1);
+                teamId = 2;
+                break;
+            }
+
+            ++roomId;
+        }
+
+        for (const room of socket.rooms) {
+            if (room !== socket.id) {
+                socket.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
+                    team1Players: roomData[roomId].team1Players,
+                    team2Players: roomData[roomId].team2Players,
+                });
+            }
+        }
+
+        console.log("Player ", playerName, " disconnected from room ", roomId, " and team ", teamId);
     });
 
     socket.on("RESET", () => {
@@ -104,9 +130,9 @@ io.on("connection", (socket) => {
         socket.emit("RESETED_ROOMS");
     })
     // attach a room id to the socket connection
-    socket.on("JOIN_SERVER_CMD", (playerName) => {
+    socket.on("JOIN_SERVER_CMD", () => {
         let playerAssignment = assignToRoomAndTeam(playerName);
-        roomId = playerAssignment.roomId;
+        let roomId = playerAssignment.roomId;
         let playerId = playerAssignment.playerId;
         socket.join(roomId.toString());
         socket.emit("CONNECTED_TO_SERVER_RESP", {roomId, playerId});
