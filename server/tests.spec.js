@@ -1,38 +1,34 @@
-import {beforeAll, afterAll, beforeEach, describe, it, expect} from "vitest";
+import {afterAll, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
 
-describe.sequential("multiple pony server", () => {
+describe("multiple pony server", () => {
     let io, clientSocket;
 
-    beforeAll(() => {
+    beforeEach(() => {
         return new Promise((resolve) => {
-            clientSocket = ioc.connect("http://localhost:5000/");
-            resolve();
+            let clientSocket = ioc.connect("http://localhost:5000/");
+            clientSocket.emit("RESET");
+            clientSocket.on("RESETED_ROOMS", () => {
+                resolve();
+                clientSocket.disconnect();
+            });
         });
     });
 
     afterAll(() => {
         io.close();
-        clientSocket.disconnect();
-    });
-
-    beforeEach(() => {
-        return new Promise((resolve) => {
-            clientSocket.emit("RESET");
-            clientSocket.on("RESETED_ROOMS", () => {
-                resolve();
-            });
-        });
     });
 
     it("should allow player to connect", () => {
         return new Promise((resolve) => {
+            let clientSocket = ioc.connect("http://localhost:5000/");
             let p1Name = 'PLAYER1';
             clientSocket.emit("JOIN_SERVER_CMD", p1Name);
 
             clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId}) => {
                 expect(playerId).toEqual(0);
                 expect(roomId).toEqual(0);
+                clientSocket.disconnect();
                 resolve();
             });
         });
@@ -48,20 +44,21 @@ describe.sequential("multiple pony server", () => {
 
     const connectPlayers = (noPlayers, expectedTeamNamesResponse) => {
         return new Promise((resolve) => {
-            let count = 0;
+            let clientSockets = [];
             for (let i = 0; i < noPlayers; i++) {
-                clientSocket.emit("JOIN_SERVER_CMD", i.toString());
-                console.log(i);
-            }
+                clientSockets.push(ioc.connect("http://localhost:5000/"));
+                clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
-            clientSocket.on("UPDATE_TEAM_NAMES", (teams) => {
-                count += 1;
+                clientSockets[i].on("UPDATE_TEAM_NAMES", (teams) => {
 
-                if (count === noPlayers) {
-                    expect(teams).toEqual(expectedTeamNamesResponse);
+                    if (i === expectedTeamNamesResponse) {
+                        expect(teams).toEqual(expectedTeamNamesResponse);
+                    }
+
+                    clientSockets[i].disconnect();
                     resolve();
-                }
-            });
+                });
+            }
         });
     }
 });
