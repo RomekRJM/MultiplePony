@@ -44,14 +44,18 @@ describe("multiple pony server", () => {
     });
 
     it("should update player on team changes with 1 player", () => {
-        return connectPlayers(1, {team1Players: ['0'], team2Players: []});
+        return connectPlayers(1, [], {team1Players: ['0'], team2Players: []});
     });
 
-    it("should update player on team changes with 4 player(s)", () => {
-        return connectPlayers(4, {team1Players: ['0', '2'], team2Players: ['1', '3']});
+    it("should update player on team changes with 5 players", () => {
+        return connectPlayers(4, [], {team1Players: ['0', '2', '4'], team2Players: ['1', '3']});
     });
 
-    const connectPlayers = (noPlayers, expectedTeamNamesResponse) => {
+    it("should update player on team changes with 5 players, when player 3 leaves", () => {
+        return connectPlayers(4, [2], {team1Players: ['0', '4'], team2Players: ['1', '3']});
+    });
+
+    const connectPlayers = (noPlayers, playersToLeave, expectedTeamNamesResponse) => {
         return new Promise((resolve) => {
             let clientSockets = [];
             for (let i = 0; i < noPlayers; i++) {
@@ -64,6 +68,10 @@ describe("multiple pony server", () => {
                 clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
                 clientSockets[i].on("UPDATE_TEAM_NAMES", (teams) => {
+
+                    if (playersToLeave.includes(i)) {
+                        clientSockets[i].disconnect();
+                    }
 
                     if (i === expectedTeamNamesResponse) {
                         expect(teams).toEqual(expectedTeamNamesResponse);
