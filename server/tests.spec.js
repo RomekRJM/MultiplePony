@@ -34,9 +34,10 @@ describe("multiple pony server", () => {
             let p1Name = 'PLAYER1';
             clientSocket.emit("JOIN_SERVER_CMD", p1Name);
 
-            clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId}) => {
+            clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, admin}) => {
                 expect(playerId).toEqual(0);
                 expect(roomId).toEqual(0);
+                expect(admin).toEqual(true);
                 clientSocket.disconnect();
                 resolve();
             });

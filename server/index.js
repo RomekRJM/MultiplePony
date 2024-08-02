@@ -33,12 +33,11 @@ const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
 
 class Player {
-    constructor(name, id, roomId, team, isAdmin) {
+    constructor(name, id, roomId, team) {
         this.name = name;
         this.id = id;
         this.roomId = roomId;
         this.team = team;
-        this.isAdmin = isAdmin;
         this.score = 0;
     }
 }
@@ -48,16 +47,19 @@ const roomData = [
         team1Players: [],
         team2Players: [],
         gameInProgress: false,
+        adminPlayerName: null,
     },
     {
         team1Players: [],
         team2Players: [],
         gameInProgress: false,
+        adminPlayerName: null,
     },
     {
         team1Players: [],
         team2Players: [],
         gameInProgress: false,
+        adminPlayerName: null,
     },
 ];
 
@@ -93,18 +95,31 @@ const createPlayerAndAssignToARoom = (playerName) => {
 
     let roomToJoin = roomData[roomIdToJoin];
     let playerId = roomToJoin.team1Players.length + roomToJoin.team2Players.length;
-    let isAdmin = playerId === 0;
     let player;
 
     if (roomToJoin.team1Players.length > roomToJoin.team2Players.length) {
-        player = new Player(playerName, playerId, roomIdToJoin, 1, isAdmin);
+        player = new Player(playerName, playerId, roomIdToJoin, 1);
         roomToJoin.team2Players.push(player);
     } else {
-        player = new Player(playerName, playerId, roomIdToJoin, 2, isAdmin);
+        player = new Player(playerName, playerId, roomIdToJoin, 2);
         roomToJoin.team1Players.push(player);
     }
 
+    tryElectingAdmin(roomToJoin);
+
     return player;
+}
+
+const tryElectingAdmin = (room) => {
+    if (room.adminPlayerName) {
+        return;
+    }
+
+    if (room.team1Players.length > 0) {
+        room.adminPlayerName = room.team1Players[0].name;
+    } else if (room.team2Players.length > 0) {
+        room.adminPlayerName = room.team2Players[0].name;
+    }
 }
 
 // replace default logic
@@ -123,6 +138,11 @@ io.on("connection", (socket) => {
         console.log("Disconnecting player ", playerName);
 
         for (const room of socket.rooms) {
+            if (roomData[player.roomId].adminPlayerName === playerName) {
+                roomData[player.roomId].adminPlayerName = null;
+                tryElectingAdmin(roomData[player.roomId]);
+            }
+
             if (room !== socket.id) {
                 updateTeamNames(socket, player.roomId, roomData);
             }
@@ -146,7 +166,7 @@ io.on("connection", (socket) => {
     socket.on("JOIN_SERVER_CMD", () => {
         let player = createPlayerAndAssignToARoom(playerName);
         socket.join(player.roomId.toString());
-        socket.emit("CONNECTED_TO_SERVER_RESP", {roomId: player.roomId, playerId: player.id});
+        socket.emit("CONNECTED_TO_SERVER_RESP", {roomId: player.roomId, playerId: player.id, admin: player.name === roomData[player.roomId].adminPlayerName});
         setTimeout(() => {
             updateTeamNames(socket, player.roomId, roomData);
         }, 1000)
