@@ -1,23 +1,8 @@
-CONNECTED_TO_ROOM_RESP = 1
-UPDATE_TEAM_NAMES = 2
-START_ROUND_COUNTDOWN_CMD = 3
-UPDATE_ROUND_PROGRESS = 4
-
-const SERVER_REQUESTS = {
-    CONNECTED_TO_ROOM_RESP: notImplemented,
-    UPDATE_TEAM_NAMES: notImplemented,
-    START_ROUND_COUNTDOWN_CMD: notImplemented,
-    UPDATE_ROUND_PROGRESS: notImplemented,
+function updateTeamNames(socket, roomId, roomData) {
+    socket.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
+        team1Players: roomData[roomId].team1Players.map((p) => {p.name, p.isAdmin}),
+        team2Players: roomData[roomId].team2Players.map((p) => {p.name, p.isAdmin}),
+    });
 }
 
-function notImplemented() {
-
-}
-
-function updateClient() {
-
-}
-
-function broadcast_to_room(socket, roomId, data, payload) {
-    socket.to(roomId).volatile.emit("update_from_server", updatedData);
-}
+module.exports = {updateTeamNames};

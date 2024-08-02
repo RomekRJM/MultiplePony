@@ -1,5 +1,5 @@
 const {createPicoSocketServer} = require("pico-socket");
-const {dispatch_request} = require("./request_dispatcher");
+const {updateTeamNames} = require("./client_updater");
 
 const {app, server, io} = createPicoSocketServer({
     assetFilesPath: ".",
@@ -32,6 +32,17 @@ const logData = (data) => {
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
 
+class Player {
+    constructor(name, id, roomId, team, isAdmin) {
+        this.name = name;
+        this.id = id;
+        this.roomId = roomId;
+        this.team = team;
+        this.isAdmin = isAdmin;
+        this.score = 0;
+    }
+}
+
 const roomData = [
     {
         team1Players: [],
@@ -50,7 +61,24 @@ const roomData = [
     },
 ];
 
-const assignToRoomAndTeam = (playerName) => {
+const findPlayerInRooms = (playerName) => {
+    let player = null;
+
+    for (const room of roomData) {
+        player = [
+            room.team1Players.find((player) => player.name === playerName),
+            room.team2Players.find((player) => player.name === playerName),
+        ].find((player) => player);
+
+        if (player) {
+            return player;
+        }
+    }
+
+    return null;
+}
+
+const createPlayerAndAssignToARoom = (playerName) => {
     let roomIdToJoin = roomData.findIndex((room) => {
         if (room.gameInProgress) {
             return false;
@@ -65,21 +93,18 @@ const assignToRoomAndTeam = (playerName) => {
 
     let roomToJoin = roomData[roomIdToJoin];
     let playerId = roomToJoin.team1Players.length + roomToJoin.team2Players.length;
-    let teamToJoin;
+    let isAdmin = playerId === 0;
+    let player;
 
     if (roomToJoin.team1Players.length > roomToJoin.team2Players.length) {
-        teamToJoin = 2;
-        roomToJoin.team2Players.push(playerName);
+        player = new Player(playerName, playerId, roomIdToJoin, 1, isAdmin);
+        roomToJoin.team2Players.push(player);
     } else {
-        teamToJoin = 1;
-        roomToJoin.team1Players.push(playerName);
+        player = new Player(playerName, playerId, roomIdToJoin, 2, isAdmin);
+        roomToJoin.team1Players.push(player);
     }
 
-    return {
-        roomId: roomIdToJoin,
-        team: teamToJoin,
-        playerId: playerId,
-    };
+    return player;
 }
 
 // replace default logic
@@ -89,33 +114,21 @@ io.on("connection", (socket) => {
     let playerName = socket.handshake.auth.token;
 
     socket.on("disconnecting", (_reason) => {
-        let roomId = 0;
-        let teamId = 0;
+        let player = findPlayerInRooms(playerName);
 
-        for (const room of roomData) {
-            if (room.team1Players.includes(playerName)) {
-                room.team1Players.splice(room.team1Players.indexOf(playerName), 1);
-                teamId = 1;
-                break;
-            } else if (room.team2Players.includes(playerName)) {
-                room.team2Players.splice(room.team2Players.indexOf(playerName), 1);
-                teamId = 2;
-                break;
-            }
-
-            ++roomId;
+        if (!player) {
+            return;
         }
+
+        console.log("Disconnecting player ", playerName);
 
         for (const room of socket.rooms) {
             if (room !== socket.id) {
-                socket.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
-                    team1Players: roomData[roomId].team1Players,
-                    team2Players: roomData[roomId].team2Players,
-                });
+                updateTeamNames(socket, player.roomId, roomData);
             }
         }
 
-        console.log("Player ", playerName, " disconnected from room ", roomId, " and team ", teamId);
+        console.log("Player ", playerName, " disconnected from room ", player.roomId, " and team ", player.team);
     });
 
     socket.on("RESET", () => {
@@ -131,20 +144,14 @@ io.on("connection", (socket) => {
     })
     // attach a room id to the socket connection
     socket.on("JOIN_SERVER_CMD", () => {
-        let playerAssignment = assignToRoomAndTeam(playerName);
-        let roomId = playerAssignment.roomId;
-        let playerId = playerAssignment.playerId;
-        socket.join(roomId.toString());
-        socket.emit("CONNECTED_TO_SERVER_RESP", {roomId, playerId});
+        let player = createPlayerAndAssignToARoom(playerName);
+        socket.join(player.roomId.toString());
+        socket.emit("CONNECTED_TO_SERVER_RESP", {roomId: player.roomId, playerId: player.id});
         setTimeout(() => {
-            console.log("Updated team names");
-            io.to(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
-                team1Players: roomData[roomId].team1Players,
-                team2Players: roomData[roomId].team2Players,
-            });
+            updateTeamNames(socket, player.roomId, roomData);
         }, 1000)
 
         // if DEBUG=true, log when clients join
-        console.log(playerName, " joined server, redirected to room: ", playerAssignment.roomId, ", team: ", playerAssignment.team);
+        console.log(playerName, " joined server, redirected to room: ", player.roomId, ", team: ", player.team);
     });
 });
