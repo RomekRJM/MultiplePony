@@ -40,25 +40,35 @@ class Player {
         this.team = team;
         this.score = 0;
     }
+
+    get resetScore() {
+        this.score = 0;
+    }
 }
+
+const RoomStatus = Object.freeze({
+    ACCEPTING_PLAYERS:   Symbol("ACCEPTING_PLAYERS"),
+    COUNTING_DOWN_TO_GAME_START:  Symbol("COUNTING_DOWN_TO_GAME_START"),
+    IN_GAME: Symbol("IN_GAME")
+});
 
 const roomData = [
     {
         team1Players: [],
         team2Players: [],
-        gameInProgress: false,
+        status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
     },
     {
         team1Players: [],
         team2Players: [],
-        gameInProgress: false,
+        status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
     },
     {
         team1Players: [],
         team2Players: [],
-        gameInProgress: false,
+        status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
     },
 ];
@@ -80,9 +90,20 @@ const findPlayerInRooms = (playerName) => {
     return null;
 }
 
+const getPlayer = (playerId, roomId, team) => {
+
+    if (team === 1) {
+        return roomData[roomId].team1Players[playerId];
+    } else if (team === 2) {
+        return roomData[roomId].team2Players[playerId];
+    }
+
+    return null;
+}
+
 const createPlayerAndAssignToARoom = (playerName) => {
     let roomIdToJoin = roomData.findIndex((room) => {
-        if (room.gameInProgress) {
+        if (room.status !== RoomStatus.ACCEPTING_PLAYERS) {
             return false;
         }
 
@@ -116,9 +137,9 @@ const tryElectingAdmin = (room) => {
     }
 
     if (room.team1Players.length > 0) {
-        room.adminPlayerName = room.team1Players[0].name;
+        room.adminPlayerName = room.team1Players.find((player) => player).name;
     } else if (room.team2Players.length > 0) {
-        room.adminPlayerName = room.team2Players[0].name;
+        room.adminPlayerName = room.team2Players.find((player) => player).name;
     }
 }
 
@@ -156,7 +177,7 @@ io.on("connection", (socket) => {
         roomData.forEach((room) => {
             room.team1Players = [];
             room.team2Players = [];
-            room.gameInProgress = false;
+            room.status = RoomStatus.ACCEPTING_PLAYERS;
         });
         console.log("RESET received, rooms now empty");
 
@@ -166,12 +187,28 @@ io.on("connection", (socket) => {
     socket.on("JOIN_SERVER_CMD", () => {
         let player = createPlayerAndAssignToARoom(playerName);
         socket.join(player.roomId.toString());
-        socket.emit("CONNECTED_TO_SERVER_RESP", {roomId: player.roomId, playerId: player.id, admin: player.name === roomData[player.roomId].adminPlayerName});
+        socket.emit("CONNECTED_TO_SERVER_RESP", {
+            roomId: player.roomId,
+            playerId: player.id,
+            admin: player.name === roomData[player.roomId].adminPlayerName
+        });
         setTimeout(() => {
             updateTeamNames(socket, player.roomId, roomData);
-        }, 1000)
+        }, 1000);
 
         // if DEBUG=true, log when clients join
         console.log(playerName, " joined server, redirected to room: ", player.roomId, ", team: ", player.team);
+    });
+
+    socket.on("START_ROUND_CMD", ({playerId, roomId, team}) => {
+        console.log("START_ROUND_CMD received", playerId, roomId, team);
+        let player = getPlayer(playerId, roomId, team);
+        roomData[player.roomId].status = RoomStatus.COUNTING_DOWN_TO_GAME_START;
+
+        socket.to(player.roomId.toString()).emit("START_ROUND_COUNTDOWN_CMD", {
+            roundId: 0,
+        });
+
+        console.log(playerName, " started round in room: ", player.roomId);
     });
 });
