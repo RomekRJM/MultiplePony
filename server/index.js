@@ -19,16 +19,6 @@ const {app, server, io} = createPicoSocketServer({
     },
 });
 
-const logData = (data) => {
-    const emptyArray = new Array(data.length);
-    data.forEach((element, index) => {
-        if (element !== null) {
-            emptyArray[index] = element;
-        }
-    });
-    return emptyArray;
-};
-
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
 
