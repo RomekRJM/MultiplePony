@@ -1,9 +1,12 @@
 import {afterEach, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
+import {getCountdownDuration} from "./constants";
 
 describe("multiple pony server", () => {
     const noPlayers = 4;
     let clientSockets = [];
+    let adminPlayerId = 0;
+    let currentRoomId = 0;
 
     beforeEach(() => {
         return new Promise((resolve) => {
@@ -26,7 +29,13 @@ describe("multiple pony server", () => {
                     }));
                     clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
-                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", (_) => {
+                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, admin}) => {
+
+                        if (admin) {
+                            adminPlayerId = playerId;
+                            currentRoomId = roomId;
+                        }
+
                         ++connectedClients;
 
                         if (connectedClients === noPlayers) {
@@ -49,18 +58,18 @@ describe("multiple pony server", () => {
         return new Promise((resolve) => {
             let updatedClients = 0;
 
-            clientSockets[0].emit("START_ROUND_CMD", {
-                playerId: 0, roomId: 0, team: 1
+            clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
+                playerId: adminPlayerId, roomId: currentRoomId, team: 1
             });
 
             setTimeout(() => {
                 clientSockets[0].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: 0, roomId: 0, team: 1, score: 600
+                    playerId: 0, roomId: currentRoomId, team: 1, score: 600
                 });
                 clientSockets[1].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: 1, roomId: 0, team: 2, score: 10000
+                    playerId: 1, roomId: currentRoomId, team: 2, score: 10000
                 });
-            }, 3017);
+            }, getCountdownDuration() + 17);
 
             setTimeout(() => {
                 clientSockets.forEach(s => {
@@ -85,7 +94,7 @@ describe("multiple pony server", () => {
                         }
                     });
                 });
-            }, 3020);
+            }, getCountdownDuration() + 20);
         });
     });
 });

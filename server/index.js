@@ -1,5 +1,6 @@
 const {createPicoSocketServer} = require("pico-socket");
 const {updateTeamNames} = require("./client_updater");
+const {getCountdownDuration} = require("./constants");
 
 const {app, server, io} = createPicoSocketServer({
     assetFilesPath: ".",
@@ -21,7 +22,7 @@ const {app, server, io} = createPicoSocketServer({
 
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
-const countdownDuration = 3000;
+const countdownDuration = getCountdownDuration();
 const pointsToWin = 10000;
 const clockCycle = 16;
 
@@ -286,11 +287,13 @@ setInterval(
             });
             let winningTeam = checkWinningTeam(room);
 
-            room.socket.volatile.to(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
-                playerScores: playerScores,
-                winningTeam: winningTeam,
-                clock: room.clock
-            });
+            if (room.socket) {
+                room.socket.volatile.to(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
+                    playerScores: playerScores,
+                    winningTeam: winningTeam,
+                    clock: room.clock
+                });
+            }
 
             if (winningTeam !== 0) {
                 room.status = RoomStatus.GAME_FINISHED;

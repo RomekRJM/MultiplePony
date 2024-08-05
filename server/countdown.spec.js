@@ -4,6 +4,8 @@ import {io as ioc} from "socket.io-client";
 describe("multiple pony server", () => {
     const noPlayers = 10;
     let clientSockets = [];
+    let adminPlayerId = 0;
+    let currentRoomId = 0;
 
     beforeEach(() => {
         return new Promise((resolve) => {
@@ -26,7 +28,13 @@ describe("multiple pony server", () => {
                     }));
                     clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
-                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", (_) => {
+                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, admin}) => {
+
+                        if (admin) {
+                            adminPlayerId = playerId;
+                            currentRoomId = roomId;
+                        }
+
                         ++connectedClients;
 
                         if (connectedClients === noPlayers) {
@@ -49,8 +57,8 @@ describe("multiple pony server", () => {
         return new Promise((resolve) => {
             let countdownsReceived = 0;
 
-            clientSockets[0].emit("START_ROUND_CMD", {
-                playerId: 0, roomId: 0, team: 1
+            clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
+                playerId: adminPlayerId, roomId: currentRoomId, team: 1
             });
 
             clientSockets.forEach(s => {
@@ -72,9 +80,11 @@ describe("multiple pony server", () => {
         return new Promise((resolve) => {
             let countdownsReceived = 0;
             let playersChecked = 0;
+            let allPlayerIds = [...Array(noPlayers).keys()];
+            let nonAdminPlayerId = allPlayerIds.find(id => id !== adminPlayerId);
 
-            clientSockets[9].emit("START_ROUND_CMD", {
-                playerId: 9, roomId: 0, team: 2
+            clientSockets[nonAdminPlayerId].emit("START_ROUND_CMD", {
+                playerId: nonAdminPlayerId, roomId: currentRoomId, team: 2
             });
 
             clientSockets.forEach(s => {
@@ -96,14 +106,15 @@ describe("multiple pony server", () => {
     it("should allow countdown only once", () => {
         return new Promise((resolve) => {
             let countdownsReceived = 0;
+            console.log("countdownsReceived ", countdownsReceived);
 
-            clientSockets[0].emit("START_ROUND_CMD", {
-                playerId: 0, roomId: 0, team: 1
+            clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
+                playerId: adminPlayerId, roomId: currentRoomId, team: 1
             });
 
             // 2nd START_ROUND_CMD should be refused, as room state has changed to COUNTING_DOWN_TO_GAME_START
-            clientSockets[0].emit("START_ROUND_CMD", {
-                playerId: 0, roomId: 0, team: 1
+            clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
+                playerId: adminPlayerId, roomId: currentRoomId, team: 1
             });
 
             clientSockets.forEach(s => {
