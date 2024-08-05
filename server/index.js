@@ -21,6 +21,9 @@ const {app, server, io} = createPicoSocketServer({
 
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
+const countdownDuration = 3000;
+const pointsToWin = 10000;
+const clockCycle = 16;
 
 class Player {
     constructor(name, id, roomId, team) {
@@ -37,9 +40,10 @@ class Player {
 }
 
 const RoomStatus = Object.freeze({
-    ACCEPTING_PLAYERS:   Symbol("ACCEPTING_PLAYERS"),
-    COUNTING_DOWN_TO_GAME_START:  Symbol("COUNTING_DOWN_TO_GAME_START"),
-    IN_GAME: Symbol("IN_GAME")
+    ACCEPTING_PLAYERS: Symbol("ACCEPTING_PLAYERS"),
+    COUNTING_DOWN_TO_GAME_START: Symbol("COUNTING_DOWN_TO_GAME_START"),
+    IN_GAME: Symbol("IN_GAME"),
+    GAME_FINISHED: Symbol("GAME_FINISHED"),
 });
 
 const roomData = [
@@ -48,20 +52,41 @@ const roomData = [
         team2Players: [],
         status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
+        clock: 0,
+        socket: null,
     },
     {
         team1Players: [],
         team2Players: [],
         status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
+        clock: 0,
+        socket: null,
     },
     {
         team1Players: [],
         team2Players: [],
         status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
+        clock: 0,
+        socket: null,
     },
 ];
+
+const checkWinningTeam = (room) => {
+    let team1Score = room.team1Players.reduce((acc, player) => acc + player.score, 0);
+    let team2Score = room.team2Players.reduce((acc, player) => acc + player.score, 0);
+
+    if (team1Score >= pointsToWin) {
+        return 1;
+    }
+
+    if (team2Score >= pointsToWin) {
+        return 2;
+    }
+
+    return 0;
+}
 
 const findPlayerInRooms = (playerName) => {
     let player = null;
@@ -168,6 +193,12 @@ io.on("connection", (socket) => {
             room.team1Players = [];
             room.team2Players = [];
             room.status = RoomStatus.ACCEPTING_PLAYERS;
+            room.clock = 0;
+
+            if (room.socket) {
+                room.socket.disconnect();
+                room.socket = null;
+            }
         });
         console.log("RESET received, rooms now empty");
 
@@ -176,6 +207,11 @@ io.on("connection", (socket) => {
     // attach a room id to the socket connection
     socket.on("JOIN_SERVER_CMD", () => {
         let player = createPlayerAndAssignToARoom(playerName);
+
+        if (!roomData[player.roomId].socket) {
+            roomData[player.roomId].socket = socket;
+        }
+
         socket.join(player.roomId.toString());
         socket.emit("CONNECTED_TO_SERVER_RESP", {
             roomId: player.roomId,
@@ -212,5 +248,59 @@ io.on("connection", (socket) => {
         });
 
         console.log(playerId, " started round in room: ", roomId);
+
+        setTimeout(() => {
+            room.status = RoomStatus.IN_GAME;
+            console.log("Game started in room ", roomId);
+        }, countdownDuration)
     });
+
+    socket.on("UPDATE_PLAYER_SCORE_CMD", ({playerId, roomId, team, score}) => {
+        let player = getPlayer(playerId, roomId, team);
+
+        if (!player) {
+            console.log("Player not found ", playerId, roomId, team);
+            return;
+        }
+
+        player.score = score;
+
+        console.log("Player ", playerId, " score updated to ", player.score);
+    });
+
 });
+
+setInterval(
+    () => {
+        roomData.forEach((room, roomId) => {
+
+            if (room.status !== RoomStatus.IN_GAME) {
+                return;
+            }
+
+            let playerScores = roomData[roomId].team1Players.concat(roomData[roomId].team2Players).map((p) => {
+                return {
+                    playerName: p.name,
+                    score: p.score,
+                };
+            });
+            let winningTeam = checkWinningTeam(room);
+
+            room.socket.volatile.to(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
+                playerScores: playerScores,
+                winningTeam: winningTeam,
+                clock: room.clock
+            });
+
+            if (winningTeam !== 0) {
+                room.status = RoomStatus.GAME_FINISHED;
+                console.log("Game finished in room ", roomId, " with winning team ", winningTeam);
+
+                // handle emptying the room and closing the socket
+            }
+
+            ++room.clock;
+        });
+    },
+    clockCycle
+);
