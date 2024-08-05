@@ -83,9 +83,9 @@ const findPlayerInRooms = (playerName) => {
 const getPlayer = (playerId, roomId, team) => {
 
     if (team === 1) {
-        return roomData[roomId].team1Players[playerId];
+        return roomData[roomId].team1Players.find((player) => player.id === playerId);
     } else if (team === 2) {
-        return roomData[roomId].team2Players[playerId];
+        return roomData[roomId].team2Players.find((player) => player.id === playerId);
     }
 
     return null;
@@ -193,12 +193,24 @@ io.on("connection", (socket) => {
     socket.on("START_ROUND_CMD", ({playerId, roomId, team}) => {
         console.log("START_ROUND_CMD received", playerId, roomId, team);
         let player = getPlayer(playerId, roomId, team);
-        roomData[player.roomId].status = RoomStatus.COUNTING_DOWN_TO_GAME_START;
+        let room = roomData[roomId];
 
-        socket.to(player.roomId.toString()).emit("START_ROUND_COUNTDOWN_CMD", {
+        if (player.name !== room.adminPlayerName) {
+            console.log("Refusing countdown. Player ", playerName, " is not an admin in room ", roomId);
+            return;
+        }
+
+        if (room.status !== RoomStatus.ACCEPTING_PLAYERS) {
+            console.log("Refusing countdown. Room ", roomId, " is not in ACCEPTING_PLAYERS status");
+            return;
+        }
+
+        room.status = RoomStatus.COUNTING_DOWN_TO_GAME_START;
+
+        socket.to(roomId.toString()).emit("START_ROUND_COUNTDOWN_CMD", {
             roundId: 0,
         });
 
-        console.log(playerName, " started round in room: ", player.roomId);
+        console.log(playerId, " started round in room: ", roomId);
     });
 });

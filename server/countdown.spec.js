@@ -67,4 +67,58 @@ describe("multiple pony server", () => {
             });
         });
     });
+
+    it("should not notify players if round countdown was started by non admin user", () => {
+        return new Promise((resolve) => {
+            let countdownsReceived = 0;
+            let playersChecked = 0;
+
+            clientSockets[9].emit("START_ROUND_CMD", {
+                playerId: 9, roomId: 0, team: 2
+            });
+
+            clientSockets.forEach(s => {
+                s.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
+                    ++countdownsReceived;
+                });
+
+                setTimeout(() => {
+                    ++playersChecked;
+                    if (playersChecked === noPlayers) {
+                        expect(countdownsReceived, 'Expected no users to be notified about round start').toEqual(0);
+                        resolve();
+                    }
+                }, 250);
+            });
+        });
+    });
+
+    it("should allow countdown only once", () => {
+        return new Promise((resolve) => {
+            let countdownsReceived = 0;
+
+            clientSockets[0].emit("START_ROUND_CMD", {
+                playerId: 0, roomId: 0, team: 1
+            });
+
+            // 2nd START_ROUND_CMD should be refused, as room state has changed to COUNTING_DOWN_TO_GAME_START
+            clientSockets[0].emit("START_ROUND_CMD", {
+                playerId: 0, roomId: 0, team: 1
+            });
+
+            clientSockets.forEach(s => {
+                s.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
+                    expect(roundId).toEqual(0);
+
+                    ++countdownsReceived;
+                    console.log("Received round ", roundId, " on countdownsReceived ", countdownsReceived);
+                });
+            });
+
+            setTimeout(() => {
+                expect(countdownsReceived, 'Each user should only be notified once').toEqual(noPlayers - 1);
+                resolve();
+            }, 250);
+        });
+    });
 });
