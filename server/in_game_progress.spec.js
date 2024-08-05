@@ -2,11 +2,11 @@ import {afterEach, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
 import {getCountdownDuration} from "./constants";
 
-describe("multiple pony server", () => {
+describe.sequential("multiple pony server", () => {
     const noPlayers = 4;
     let clientSockets = [];
     let adminPlayerId = 0;
-    let currentRoomId = 0;
+    let playerInfo = [];
 
     beforeEach(() => {
         return new Promise((resolve) => {
@@ -29,12 +29,13 @@ describe("multiple pony server", () => {
                     }));
                     clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
-                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, admin}) => {
+                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
 
                         if (admin) {
                             adminPlayerId = playerId;
-                            currentRoomId = roomId;
                         }
+
+                        playerInfo[i] = ({playerId, roomId, team, admin});
 
                         ++connectedClients;
 
@@ -59,15 +60,15 @@ describe("multiple pony server", () => {
             let updatedClients = 0;
 
             clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
-                playerId: adminPlayerId, roomId: currentRoomId, team: 1
+                playerId: adminPlayerId, roomId: playerInfo[adminPlayerId].roomId, team: playerInfo[adminPlayerId].team
             });
 
             setTimeout(() => {
                 clientSockets[0].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: 0, roomId: currentRoomId, team: 1, score: 600
+                    playerId: 0, roomId: playerInfo[0].roomId, team: playerInfo[0].team, score: 600
                 });
                 clientSockets[1].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: 1, roomId: currentRoomId, team: 2, score: 10000
+                    playerId: 1, roomId: playerInfo[1].roomId, team: playerInfo[1].team, score: 10000
                 });
             }, getCountdownDuration() + 17);
 

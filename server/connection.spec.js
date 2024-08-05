@@ -1,7 +1,7 @@
 import {afterAll, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
 
-describe("multiple pony server", () => {
+describe.sequential("multiple pony server", () => {
     let io;
 
     beforeEach(() => {
@@ -34,9 +34,10 @@ describe("multiple pony server", () => {
             let p1Name = 'PLAYER1';
             clientSocket.emit("JOIN_SERVER_CMD", p1Name);
 
-            clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, admin}) => {
+            clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
                 expect(playerId).toEqual(0);
                 expect(roomId).toEqual(0);
+                expect(team).toBeGreaterThan(0);
                 expect(admin).toEqual(true);
                 clientSocket.disconnect();
                 resolve();

@@ -135,10 +135,10 @@ const createPlayerAndAssignToARoom = (playerName) => {
     let player;
 
     if (roomToJoin.team1Players.length > roomToJoin.team2Players.length) {
-        player = new Player(playerName, playerId, roomIdToJoin, 1);
+        player = new Player(playerName, playerId, roomIdToJoin, 2);
         roomToJoin.team2Players.push(player);
     } else {
-        player = new Player(playerName, playerId, roomIdToJoin, 2);
+        player = new Player(playerName, playerId, roomIdToJoin, 1);
         roomToJoin.team1Players.push(player);
     }
 
@@ -217,6 +217,7 @@ io.on("connection", (socket) => {
         socket.emit("CONNECTED_TO_SERVER_RESP", {
             roomId: player.roomId,
             playerId: player.id,
+            team: player.team,
             admin: player.name === roomData[player.roomId].adminPlayerName
         });
         setTimeout(() => {
@@ -224,11 +225,11 @@ io.on("connection", (socket) => {
         }, 1000);
 
         // if DEBUG=true, log when clients join
-        console.log(playerName, " joined server, redirected to room: ", player.roomId, ", team: ", player.team);
+        console.log(playerName, " joined server, redirected to room: ", player.roomId, ", team: ", player.team, " playerId: ", player.id);
     });
 
     socket.on("START_ROUND_CMD", ({playerId, roomId, team}) => {
-        console.log("START_ROUND_CMD received", playerId, roomId, team);
+        console.log("START_ROUND_CMD received playerId: ", playerId, " roomId: ", roomId, " team: ", team);
         let player = getPlayer(playerId, roomId, team);
         let room = roomData[roomId];
 
@@ -296,7 +297,7 @@ setInterval(
             }
 
             if (winningTeam !== 0) {
-                room.status = RoomStatus.GAME_FINISHED;
+                room.status = RoomStatus.ACCEPTING_PLAYERS;
                 console.log("Game finished in room ", roomId, " with winning team ", winningTeam);
 
                 // handle emptying the room and closing the socket
