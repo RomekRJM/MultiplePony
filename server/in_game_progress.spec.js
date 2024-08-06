@@ -29,7 +29,12 @@ describe.sequential("multiple pony server", () => {
                     }));
                     clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
-                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
+                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({
+                                                                         roomId,
+                                                                         playerId,
+                                                                         team,
+                                                                         admin
+                                                                     }) => {
 
                         if (admin) {
                             adminPlayerId = playerId;
@@ -60,30 +65,40 @@ describe.sequential("multiple pony server", () => {
             let updatedClients = 0;
 
             clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
-                playerId: adminPlayerId, roomId: playerInfo[adminPlayerId].roomId, team: playerInfo[adminPlayerId].team
+                playerId: adminPlayerId,
+                roomId: playerInfo[adminPlayerId].roomId,
+                team: playerInfo[adminPlayerId].team
             });
 
             setTimeout(() => {
                 clientSockets[0].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: 0, roomId: playerInfo[0].roomId, team: playerInfo[0].team, score: 600
+                    playerId: playerInfo[0].playerId,
+                    roomId: playerInfo[0].roomId,
+                    team: playerInfo[0].team,
+                    score: 600
                 });
                 clientSockets[1].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: 1, roomId: playerInfo[1].roomId, team: playerInfo[1].team, score: 10000
+                    playerId: playerInfo[1].playerId,
+                    roomId: playerInfo[1].roomId,
+                    team: playerInfo[1].team,
+                    score: 10000
                 });
             }, getCountdownDuration() + 17);
 
             setTimeout(() => {
                 clientSockets.forEach(s => {
                     s.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock}) => {
-                        console.log("UPDATE_ROUND_PROGRESS_CMD ", playerScores, winningTeam, clock);
+                        [
+                            { playerName: 'PLAYER0', score: 600 },
+                            { playerName: 'PLAYER2', score: 0 },
+                            { playerName: 'PLAYER1', score: 10000 },
+                            { playerName: 'PLAYER3', score: 0 }
+                        ].forEach(e => {
+                            expect(playerScores.map(s => JSON.stringify(s))).toContain(JSON.stringify(e));
+                        })
+                        expect(playerScores.length).equals(4);
 
-                        expect(playerScores).toEqual([
-                            {playerName: 'PLAYER0', score: 600},
-                            {playerName: 'PLAYER2', score: 0},
-                            {playerName: 'PLAYER1', score: 10000},
-                            {playerName: 'PLAYER3', score: 0}
-                        ]);
-                        expect(winningTeam).toEqual(2);
+                        expect(winningTeam).toEqual(playerInfo[1].team);
                         expect(clock).toBeGreaterThan(0);
 
                         s.disconnect();
