@@ -181,7 +181,7 @@ io.on("connection", (socket) => {
             }
 
             if (room !== socket.id) {
-                updateTeamNames(socket, player.roomId, roomData);
+                updateTeamNames(io, player.roomId, roomData);
             }
         }
 
@@ -221,11 +221,11 @@ io.on("connection", (socket) => {
             admin: player.name === roomData[player.roomId].adminPlayerName
         });
         setTimeout(() => {
-            updateTeamNames(socket, player.roomId, roomData);
+            updateTeamNames(io, player.roomId, roomData);
         }, 1000);
 
         // if DEBUG=true, log when clients join
-        console.log(playerName, " joined server, redirected to room: ", player.roomId, ", team: ", player.team, " playerId: ", player.id);
+        console.log(playerName, " joined server, redirected to room: ", player.roomId, ", team: ", player.team, " playerId: ", player.id, " admin in that room: ", roomData[player.roomId].adminPlayerName);
     });
 
     socket.on("START_ROUND_CMD", ({playerId, roomId, team}) => {
@@ -245,7 +245,7 @@ io.on("connection", (socket) => {
 
         room.status = RoomStatus.COUNTING_DOWN_TO_GAME_START;
 
-        socket.to(roomId.toString()).emit("START_ROUND_COUNTDOWN_CMD", {
+        io.in(roomId.toString()).emit("START_ROUND_COUNTDOWN_CMD", {
             roundId: 0,
         });
 
@@ -289,18 +289,26 @@ setInterval(
             let winningTeam = checkWinningTeam(room);
 
             if (room.socket) {
-                room.socket.volatile.to(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
-                    playerScores: playerScores,
-                    winningTeam: winningTeam,
-                    clock: room.clock
-                });
-            }
 
-            if (winningTeam !== 0) {
-                room.status = RoomStatus.ACCEPTING_PLAYERS;
-                console.log("Game finished in room ", roomId, " with winning team ", winningTeam);
+                if (winningTeam === 0) {
+                    io.volatile.in(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
+                        playerScores: playerScores,
+                        winningTeam: winningTeam,
+                        clock: room.clock
+                    });
+                } else {
+                    room.status = RoomStatus.ACCEPTING_PLAYERS;
+                    console.log("Game finished in room ", roomId, " with winning team ", winningTeam);
 
-                // handle emptying the room and closing the socket
+                    io.in(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
+                        playerScores: playerScores,
+                        winningTeam: winningTeam,
+                        clock: room.clock
+                    });
+
+                    // handle emptying the room and closing the socket
+                    room.adminPlayerName = null;
+                }
             }
 
             ++room.clock;

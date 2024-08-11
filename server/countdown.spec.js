@@ -129,7 +129,7 @@ describe.sequential("multiple pony server", () => {
             });
 
             setTimeout(() => {
-                expect(countdownsReceived, 'Each user should only be notified once').toEqual(noPlayers - 1);
+                expect(countdownsReceived, 'Each user should only be notified once').toEqual(noPlayers);
                 resolve();
             }, 250);
         });

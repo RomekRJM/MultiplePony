@@ -5,7 +5,7 @@ import {getCountdownDuration} from "./constants";
 describe.sequential("multiple pony server", () => {
     const noPlayers = 4;
     let clientSockets = [];
-    let adminPlayerId = 0;
+    let adminPlayerIndex = 0;
     let playerInfo = [];
 
     beforeEach(() => {
@@ -37,7 +37,7 @@ describe.sequential("multiple pony server", () => {
                                                                      }) => {
 
                         if (admin) {
-                            adminPlayerId = playerId;
+                            adminPlayerIndex = i;
                         }
 
                         playerInfo[i] = ({playerId, roomId, team, admin});
@@ -64,10 +64,10 @@ describe.sequential("multiple pony server", () => {
         return new Promise((resolve) => {
             let updatedClients = 0;
 
-            clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
-                playerId: adminPlayerId,
-                roomId: playerInfo[adminPlayerId].roomId,
-                team: playerInfo[adminPlayerId].team
+            clientSockets[adminPlayerIndex].emit("START_ROUND_CMD", {
+                playerId: playerInfo[adminPlayerIndex].playerId,
+                roomId: playerInfo[adminPlayerIndex].roomId,
+                team: playerInfo[adminPlayerIndex].team
             });
 
             setTimeout(() => {
@@ -86,7 +86,7 @@ describe.sequential("multiple pony server", () => {
             }, getCountdownDuration() + 17);
 
             setTimeout(() => {
-                clientSockets.forEach(s => {
+                clientSockets.forEach((s, i) => {
                     s.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock}) => {
                         [
                             { playerName: 'PLAYER0', score: 600 },
@@ -98,6 +98,8 @@ describe.sequential("multiple pony server", () => {
                         })
                         expect(playerScores.length).equals(4);
 
+                        console.log(JSON.stringify(playerInfo[i]));
+
                         expect(winningTeam).toEqual(playerInfo[1].team);
                         expect(clock).toBeGreaterThan(0);
 
@@ -105,7 +107,7 @@ describe.sequential("multiple pony server", () => {
 
                         ++updatedClients;
 
-                        if (updatedClients === noPlayers - 1) {
+                        if (updatedClients === noPlayers) {
                             resolve();
                         }
                     });
