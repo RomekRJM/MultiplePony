@@ -1,5 +1,4 @@
 const {createPicoSocketServer} = require("pico-socket");
-const {updateTeamNames} = require("./client_updater");
 const {getCountdownDuration} = require("./constants");
 
 const {app, server, io} = createPicoSocketServer({
@@ -157,6 +156,13 @@ const tryElectingAdmin = (room) => {
     } else if (room.team2Players.length > 0) {
         room.adminPlayerName = room.team2Players.find((player) => player).name;
     }
+}
+
+function updateTeamNames(io, roomId, roomData) {
+    io.in(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
+        team1Players: roomData[roomId].team1Players.map((p) => {p.name, p.isAdmin}),
+        team2Players: roomData[roomId].team2Players.map((p) => {p.name, p.isAdmin}),
+    });
 }
 
 // replace default logic

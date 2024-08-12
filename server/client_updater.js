@@ -1,8 +1,7 @@
-function updateTeamNames(io, roomId, roomData) {
-    io.in(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
-        team1Players: roomData[roomId].team1Players.map((p) => {p.name, p.isAdmin}),
-        team2Players: roomData[roomId].team2Players.map((p) => {p.name, p.isAdmin}),
-    });
+const readFromGPIO = () => {
+
 }
 
-module.exports = {updateTeamNames};
+const writeGPIO = () => {
+
+}
