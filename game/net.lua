@@ -1,34 +1,49 @@
-room_id_addr = 0x5f80                -- index 0
-player_id_addr = 0x5f81              -- index 1
-player_score_delta_addr = 0x5f82     -- index 2
-player_score_timestamp_addr = 0x5f83 -- index 3
+command_index = 0                -- index 0
+-- player_id_addr = 0x5f81              -- index 1
+-- player_score_delta_addr = 0x5f82     -- index 2
+-- player_score_timestamp_addr = 0x5f83 -- index 3
+-- command_addr = 0x5fff                -- index 127 0x5fff
+
+BROWSER_GPIO_START_ADDR = 0x5f80
+BROWSER_GPIO_END_ADDR = 0x5fff
 
 JOIN_SERVER_CMD = 255
+GPIO_LENGTH = 128
 
-function establishConnection(playerName)
-  -- wipe initial pins
-  for pin = player_score_delta_addr, player_score_timestamp_addr do
+function clearPins()
+  for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
     poke(pin)
   end
+end
 
-  local payload = {
-    0, -- room id
-    JOIN_SERVER_CMD,
-  }
+function createEmptyPayload()
+  local payload = {}
+  for i = 1, GPIO_LENGTH do
+    payload[i] = 0
+  end
 
-  local counter = 3
+  return payload
+end
+
+function establishConnection(playerName)
+  local playerName = "BAR"
+  local payload = createEmptyPayload()
+
+  payload[command_index] = JOIN_SERVER_CMD;
+
+  local counter = 2
   for letter in all(playerName) do
     payload[counter] = ord(playerName, counter)
     counter += 1
   end
 
-  payload[counter] = 0
-
-  memcpy(room_id_addr, payload, #payload)
+  sendBuffer(payload)
 end
 
-function sendScore(scoreDelta, timestamp)
-  poke(player_id_addr, 0) -- hard code to player 0
-  poke(player_score_delta_addr, scoreDelta)
-  poke(player_score_timestamp_addr, 11)
+function sendBuffer(payload)
+  clearPins()
+
+  for i = 1, GPIO_LENGTH do
+    poke(BROWSER_GPIO_START_ADDR + i, payload[i])
+  end
 end

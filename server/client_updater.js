@@ -1,7 +1,0 @@
-const readFromGPIO = () => {
-
-}
-
-const writeGPIO = () => {
-
-}
