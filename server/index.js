@@ -170,6 +170,7 @@ io.removeAllListeners("connection");
 
 io.on("connection", (socket) => {
     let playerName = socket.handshake.auth.token;
+    console.log("Player ", playerName, " connected");
 
     socket.on("disconnecting", (_reason) => {
         let player = findPlayerInRooms(playerName);

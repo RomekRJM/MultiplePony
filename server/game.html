@@ -587,6 +587,31 @@
 		if (p8_is_running) return;
 		p8_is_running = true;
 
+		const clientSocket = io.connect("http://localhost:5000/",
+				{
+					auth: {
+						token: "4567"
+					}
+				})
+		const commandIndex = 0;
+		const joinServerCommand = 255;
+
+		const connectToRoomInterval = setInterval(() => {
+			const command = window.pico8_gpio[commandIndex];
+
+			// if (command === joinServerCommand) {
+				const playerName = window.pico8_gpio.slice(1, 3).map((i) => String.fromCharCode(i)).join("");
+				clearInterval(connectToRoomInterval);
+				clientSocket.emit("JOIN_SERVER_CMD", playerName);
+
+				clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
+					console.log("Connected to server", {roomId, playerId, team, admin});
+					clearInterval(connectToRoomInterval);
+				});
+				// window.requestAnimationFrame(onFrameUpdate);
+			// }
+		}, 250);
+
 		// touch: hide everything except p8_frame_0
 		if (p8_touch_detected)
 		{
