@@ -25,16 +25,14 @@ function createEmptyPayload()
   return payload
 end
 
-function establishConnection(playerName)
+function establishConnection()
   local playerName = "BAR"
   local payload = createEmptyPayload()
 
   payload[command_index] = JOIN_SERVER_CMD;
 
-  local counter = 2
-  for letter in all(playerName) do
-    payload[counter] = ord(playerName, counter)
-    counter += 1
+  for i = 1, #playerName do
+    payload[i + 2] = ord(playerName, counter)
   end
 
   sendBuffer(payload)
