@@ -1,20 +1,9 @@
-/**
- * createPicoSocketClient - function to interact with the
- * GPIO pins of Pico-8 and send them to the server via socket-io
- *
- * Note, this logic does not need to be called directly - it is automatically
- * embedded by createPicoSocketServer - however you can import and call this
- * code in your own implementation!
- */
-import {io as ioc} from "socket.io-client";
-
-const createPicoSocketClient = ({
-                                    roomIdIndex,
-                                    playerIdIndex,
-                                    playerDataIndicies,
-                                    debug,
-                                }) => {
-    const clientSocket = ioc.connect("http://localhost:5000/",
+const createPicoSocketClient = () => {
+    /**
+     * <script src="/socket.io/socket.io.js"></script> line injects the socket.io client library into the html file.
+     * This is where io is defined.
+     */
+    const clientSocket = io.connect("http://localhost:5000/",
         {
             auth: {
                 token: "4567"
@@ -39,4 +28,4 @@ const createPicoSocketClient = ({
     }, 250);
 };
 
-module.exports = createPicoSocketClient;
+export default createPicoSocketClient;

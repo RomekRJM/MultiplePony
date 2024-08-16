@@ -1,23 +1,6 @@
-const {createPicoSocketServer} = require("pico-socket");
-const {getCountdownDuration} = require("./constants");
-
-const {app, server, io} = createPicoSocketServer({
-    assetFilesPath: ".",
-    htmlGameFilePath: "./server/game.html",
-
-    clientConfig: {
-        roomIdIndex: 0, // ROOM_ID
-
-        // index to determine the player id
-        playerIdIndex: 1, // PLAYER_ID
-
-        // each player has: score_delta, timestamp
-        playerDataIndicies: [
-            [2, 3], // PLAYER_0
-            [3, 4], // PLAYER_1
-        ],
-    },
-});
+import getCountdownDuration from "./constants.js";
+import createPicoSocketServer from "./server.js";
+import { Server } from "socket.io";
 
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
@@ -165,8 +148,10 @@ function updateTeamNames(io, roomId, roomData) {
     });
 }
 
-// replace default logic
-io.removeAllListeners("connection");
+const htmlGameFilePath = "game.html";
+const assetFilesPath = "";
+
+const { app, server, io } = createPicoSocketServer({assetFilesPath, htmlGameFilePath});
 
 io.on("connection", (socket) => {
     let playerName = socket.handshake.auth.token;
