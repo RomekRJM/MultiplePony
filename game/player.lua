@@ -28,7 +28,6 @@ pointGroups = {
 arrowMaxPoints = 8
 
 function restartPlayer()
-    establishConnection()
     player.points = 0
 end
 

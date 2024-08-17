@@ -41,7 +41,5 @@ end
 function sendBuffer(payload)
   clearPins()
 
-  for i = 1, GPIO_LENGTH do
-    poke(BROWSER_GPIO_START_ADDR + i, payload[i])
-  end
+  memcpy(BROWSER_GPIO_START_ADDR, payload, #payload)
 end

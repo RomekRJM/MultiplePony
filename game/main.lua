@@ -18,5 +18,6 @@ function _update60()
     updateUnicorns()
     updateArrows()
     updatePlayer()
+    establishConnection()
     frame = frame + 1
 end
