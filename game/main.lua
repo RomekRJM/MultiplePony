@@ -5,6 +5,7 @@ function _init()
     restartUnicorns()
     restartArrows()
     restartPlayer()
+    clearGPIOPins()
 end
 
 function _draw()

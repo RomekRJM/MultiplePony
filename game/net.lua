@@ -10,7 +10,7 @@ BROWSER_GPIO_END_ADDR = 0x5fff
 JOIN_SERVER_CMD = 255
 GPIO_LENGTH = 128
 
-function clearPins()
+function clearGPIOPins()
   for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
     poke(pin)
   end
@@ -39,7 +39,7 @@ function establishConnection()
 end
 
 function sendBuffer(payload)
-  clearPins()
-
-  memcpy(BROWSER_GPIO_START_ADDR, payload, #payload)
+  for i = 1, #payload do
+    poke(BROWSER_GPIO_START_ADDR - 1 + i, payload[i])
+  end
 end
