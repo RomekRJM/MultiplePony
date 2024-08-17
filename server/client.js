@@ -1,8 +1,9 @@
+/**
+ * <script src="/socket.io/socket.io.js"></script> line injects the socket.io client library into the html file.
+ * This is where io is defined.
+ */
+
 const createPicoSocketClient = () => {
-    /**
-     * <script src="/socket.io/socket.io.js"></script> line injects the socket.io client library into the html file.
-     * This is where io is defined.
-     */
     const clientSocket = io.connect("http://localhost:5000/",
         {
             auth: {

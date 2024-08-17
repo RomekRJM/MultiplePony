@@ -35,7 +35,6 @@ const createPicoSocketServer = ({
     app.use(express.static(path.join(process.cwd(), assetFilesPath)));
     app.use((__req, res) => {
         // by default serve the modified html game file
-        console.log("clientSideCode", clientSideCode);
         return res.send(modifiedTemplate);
     });
 

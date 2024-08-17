@@ -1,6 +1,5 @@
 import getCountdownDuration from "./constants.js";
 import createPicoSocketServer from "./server.js";
-import { Server } from "socket.io";
 
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
@@ -149,7 +148,7 @@ function updateTeamNames(io, roomId, roomData) {
 }
 
 const htmlGameFilePath = "game.html";
-const assetFilesPath = "";
+const assetFilesPath = ".";
 
 const { app, server, io } = createPicoSocketServer({assetFilesPath, htmlGameFilePath});
 
