@@ -1,4 +1,4 @@
-command_index = 1                -- index 0
+COMMAND_INDEX = 1
 -- player_id_addr = 0x5f81              -- index 1
 -- player_score_delta_addr = 0x5f82     -- index 2
 -- player_score_timestamp_addr = 0x5f83 -- index 3
@@ -7,7 +7,8 @@ command_index = 1                -- index 0
 BROWSER_GPIO_START_ADDR = 0x5f80
 BROWSER_GPIO_END_ADDR = 0x5fff
 
-JOIN_SERVER_CMD = 255
+JOIN_SERVER_CMD = 1
+CONNECTED_TO_SERVER_RESP = 255
 GPIO_LENGTH = 128
 
 function clearGPIOPins()
@@ -30,7 +31,7 @@ function establishConnection()
   local playerName = "BAR"
   local payload = createEmptyPayload()
 
-  payload[command_index] = JOIN_SERVER_CMD;
+  payload[COMMAND_INDEX] = JOIN_SERVER_CMD;
 
   for i = 1, #playerName do
     payload[i + 1] = ord(playerName, i)
@@ -43,6 +44,30 @@ function sendBuffer(payload)
   for i = 1, #payload do
     poke(BROWSER_GPIO_START_ADDR - 1 + i, payload[i])
   end
+end
+
+function handleConnectedToServer()
+  local room = peek(BROWSER_GPIO_START_ADDR + 1)
+  local playerId = peek(BROWSER_GPIO_START_ADDR + 2)
+  local admin = peek(BROWSER_GPIO_START_ADDR + 3)
+  local team = peek(BROWSER_GPIO_START_ADDR + 4)
+
+  print("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
+end
+
+command_lookup = {
+  [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer
+}
+
+function handleBuffer()
+  local command = peek(BROWSER_GPIO_START_ADDR)
+
+  if command < 128 then
+    return
+  end
+
+  return command_lookup[command]()
+
 end
 
 function dbgbuff()
