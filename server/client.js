@@ -34,6 +34,7 @@ const createPicoSocketClient = () => {
             clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
                 console.log("Connected to server", {roomId, playerId, team, admin});
                 player.roomId = roomId;
+                player.id = playerId;
                 player.team = team;
                 player.admin = admin;
 

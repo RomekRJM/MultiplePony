@@ -59,7 +59,7 @@ function handleConnectedToServer()
   local admin = peek(BROWSER_GPIO_START_ADDR + 3)
   local team = peek(BROWSER_GPIO_START_ADDR + 4)
 
-  print("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
+  printh("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
 end
 
 COMMAND_LOOKUP = {
