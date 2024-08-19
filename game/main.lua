@@ -20,5 +20,6 @@ function _update60()
     updateArrows()
     updatePlayer()
     establishConnection()
+    handleUpdateFromServer()
     frame = frame + 1
 end

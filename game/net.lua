@@ -11,6 +11,8 @@ JOIN_SERVER_CMD = 1
 CONNECTED_TO_SERVER_RESP = 255
 GPIO_LENGTH = 128
 
+playerConnectionRequestSend = false
+
 function clearGPIOPins()
   for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
     poke(pin)
@@ -28,6 +30,10 @@ function createEmptyPayload()
 end
 
 function establishConnection()
+  if playerConnectionRequestSend then
+    return
+  end
+
   local playerName = "BAR"
   local payload = createEmptyPayload()
 
@@ -38,6 +44,7 @@ function establishConnection()
   end
 
   sendBuffer(payload)
+  playerConnectionRequestSend = true
 end
 
 function sendBuffer(payload)
@@ -55,18 +62,18 @@ function handleConnectedToServer()
   print("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
 end
 
-command_lookup = {
+COMMAND_LOOKUP = {
   [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer
 }
 
-function handleBuffer()
+function handleUpdateFromServer()
   local command = peek(BROWSER_GPIO_START_ADDR)
 
   if command < 128 then
     return
   end
 
-  return command_lookup[command]()
+  return COMMAND_LOOKUP[command]()
 
 end
 
