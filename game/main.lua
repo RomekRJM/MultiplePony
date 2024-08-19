@@ -21,5 +21,6 @@ function _update60()
     updatePlayer()
     establishConnection()
     handleUpdateFromServer()
+    sendRoundStartCommand()
     frame = frame + 1
 end

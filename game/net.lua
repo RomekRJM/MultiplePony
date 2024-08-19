@@ -8,10 +8,18 @@ BROWSER_GPIO_START_ADDR = 0x5f80
 BROWSER_GPIO_END_ADDR = 0x5fff
 
 JOIN_SERVER_CMD = 1
+START_ROUND_CMD = 2
 CONNECTED_TO_SERVER_RESP = 255
 GPIO_LENGTH = 128
 
-playerConnectionRequestSend = false
+INITIAL_STATE = 0
+SEND_JOIN_SERVER_CMD_STATE = 1
+RECEIVED_CONNECTED_TO_SERVER_RESP_STATE = 2
+SEND_START_ROUND_CMD_STATE = 3
+COUNTING_DOWN_TO_GAME_START_STATE = 4
+GAME_FINISHED_STATE = 5
+
+gameState = INITIAL_STATE
 
 function clearGPIOPins()
   for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
@@ -30,7 +38,7 @@ function createEmptyPayload()
 end
 
 function establishConnection()
-  if playerConnectionRequestSend then
+  if gameState > INITIAL_STATE then
     return
   end
 
@@ -44,7 +52,7 @@ function establishConnection()
   end
 
   sendBuffer(payload)
-  playerConnectionRequestSend = true
+  gameState = SEND_JOIN_SERVER_CMD_STATE
 end
 
 function sendBuffer(payload)
@@ -54,12 +62,18 @@ function sendBuffer(payload)
 end
 
 function handleConnectedToServer()
+  if gameState ~= SEND_JOIN_SERVER_CMD_STATE then
+    return
+  end
+
   local room = peek(BROWSER_GPIO_START_ADDR + 1)
   local playerId = peek(BROWSER_GPIO_START_ADDR + 2)
   local admin = peek(BROWSER_GPIO_START_ADDR + 3)
   local team = peek(BROWSER_GPIO_START_ADDR + 4)
 
   printh("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
+
+  gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
 end
 
 COMMAND_LOOKUP = {
@@ -75,6 +89,19 @@ function handleUpdateFromServer()
 
   return COMMAND_LOOKUP[command]()
 
+end
+
+function sendRoundStartCommand()
+  if gameState ~= RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
+      return
+    end
+
+    local payload = createEmptyPayload()
+
+    payload[COMMAND_INDEX] = START_ROUND_CMD;
+
+    sendBuffer(payload)
+    gameState = SEND_JOIN_SERVER_CMD_STATE
 end
 
 function dbgbuff()

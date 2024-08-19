@@ -23,11 +23,55 @@ const createPicoSocketClient = () => {
     const joinServerCommand = 1;
     const connectToServerResponse = 255;
 
+    const bytes2Word = (bytes) => {
+        return (bytes[0] << 8) + bytes[1];
+    }
+
+    const word2Bytes = (word) => {
+        return [word >> 8, word & 0xFF];
+    }
+
+    const handleStartRoundCommand = () => {
+        clientSocket.emit("START_ROUND_CMD", {
+            playerId: player.id,
+            roomId: player.roomId,
+            team: player.team
+        });
+
+        clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
+            console.log("Received round start command", roundId);
+        });
+    }
+
+    const handleUpdatePlayerScoreCommand = () => {
+        clientSocket.emit("UPDATE_PLAYER_SCORE_CMD", {
+            playerId: player.id,
+            roomId: player.roomId,
+            team: player.team,
+            score: bytes2Word(window.pico8_gpio.slice(4, 6))
+        });
+    }
+
+    const clientCommands = {
+        2: handleStartRoundCommand,
+        3: handleUpdatePlayerScoreCommand,
+    };
+
+    const onFrameUpdate = () => {
+        const command = window.pico8_gpio[commandIndex];
+
+        if (command >= 128) {
+            return;
+        }
+
+        return clientCommands[command]();
+    }
+
     const connectToRoomInterval = setInterval(() => {
         const command = window.pico8_gpio[commandIndex];
 
         if (command === joinServerCommand) {
-            player.name = window.pico8_gpio.slice(1,12).reduce((a, c) => a + String.fromCharCode(c), "");
+            player.name = window.pico8_gpio.slice(1, 12).reduce((a, c) => a + String.fromCharCode(c), "");
             clearInterval(connectToRoomInterval);
             clientSocket.emit("JOIN_SERVER_CMD", player.name);
 
@@ -43,8 +87,11 @@ const createPicoSocketClient = () => {
                 window.pico8_gpio[2] = player.id;
                 window.pico8_gpio[3] = player.admin ? 1 : 0;
                 window.pico8_gpio[4] = player.team;
+
+                clearInterval(connectToRoomInterval);
+
+                window.requestAnimationFrame(onFrameUpdate);
             });
-            // window.requestAnimationFrame(onFrameUpdate);
         }
     }, 250);
 };
