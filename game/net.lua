@@ -33,7 +33,7 @@ function establishConnection()
   payload[command_index] = JOIN_SERVER_CMD;
 
   for i = 1, #playerName do
-    payload[i + 2] = ord(playerName, i)
+    payload[i + 1] = ord(playerName, i)
   end
 
   sendBuffer(payload)
