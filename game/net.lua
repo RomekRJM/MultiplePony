@@ -38,7 +38,7 @@ function createEmptyPayload()
 end
 
 function establishConnection()
-  if gameState <= SEND_JOIN_SERVER_CMD_STATE then
+  if gameState > SEND_JOIN_SERVER_CMD_STATE then
     return
   end
 
@@ -101,7 +101,7 @@ function sendRoundStartCommand()
   payload[COMMAND_INDEX] = START_ROUND_CMD;
 
   sendBuffer(payload)
-  gameState = SEND_JOIN_SERVER_CMD_STATE
+  gameState = SEND_START_ROUND_CMD_STATE
 end
 
 function dbgbuff()
