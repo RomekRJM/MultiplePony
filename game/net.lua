@@ -38,7 +38,7 @@ function createEmptyPayload()
 end
 
 function establishConnection()
-  if gameState > INITIAL_STATE then
+  if gameState <= SEND_JOIN_SERVER_CMD_STATE then
     return
   end
 
