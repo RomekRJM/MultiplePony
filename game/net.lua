@@ -92,16 +92,16 @@ function handleUpdateFromServer()
 end
 
 function sendRoundStartCommand()
-  if gameState ~= RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
-      return
-    end
+  if gameState < RECEIVED_CONNECTED_TO_SERVER_RESP_STATE and gameState > SEND_START_ROUND_CMD_STATE then
+    return
+  end
 
-    local payload = createEmptyPayload()
+  local payload = createEmptyPayload()
 
-    payload[COMMAND_INDEX] = START_ROUND_CMD;
+  payload[COMMAND_INDEX] = START_ROUND_CMD;
 
-    sendBuffer(payload)
-    gameState = SEND_JOIN_SERVER_CMD_STATE
+  sendBuffer(payload)
+  gameState = SEND_JOIN_SERVER_CMD_STATE
 end
 
 function dbgbuff()
