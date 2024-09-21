@@ -71,7 +71,7 @@ function handleConnectedToServer()
   local admin = peek(BROWSER_GPIO_START_ADDR + 3)
   local team = peek(BROWSER_GPIO_START_ADDR + 4)
 
-  printh("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
+  print("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
 
   gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
 end
