@@ -2,7 +2,7 @@
 
 /home/rjm/workspace/pico-8/pico8 -run game/multiplePony.p8 &
 
-sleep 5.5
+sleep 4.5
 
 PICO_FOLDER=~/.lexaloffle/pico-8/carts
 PICO_WINDOW="MULTIPLEPONY.P8 (PICO-8)"

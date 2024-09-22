@@ -22,6 +22,7 @@ const createPicoSocketClient = () => {
     const roomIdIndex = 1;
     const joinServerCommand = 1;
     const connectToServerResponse = 255;
+    const startRoundCountdownServerResponse = 253;
 
     const bytes2Word = (bytes) => {
         return (bytes[0] << 8) + bytes[1];
@@ -40,6 +41,10 @@ const createPicoSocketClient = () => {
 
         clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
             console.log("Received round start command", roundId);
+
+            window.pico8_gpio[commandIndex] = startRoundCountdownServerResponse;
+            window.pico8_gpio[roomIdIndex] = player.roomId;
+            window.pico8_gpio[3] = roundId;
         });
     }
 

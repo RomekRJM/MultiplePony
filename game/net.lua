@@ -10,6 +10,7 @@ BROWSER_GPIO_END_ADDR = 0x5fff
 JOIN_SERVER_CMD = 1
 START_ROUND_CMD = 2
 CONNECTED_TO_SERVER_RESP = 255
+START_ROUND_CMD_SERVER_RESP = 253
 GPIO_LENGTH = 128
 
 INITIAL_STATE = 0
@@ -71,13 +72,23 @@ function handleConnectedToServer()
   local admin = peek(BROWSER_GPIO_START_ADDR + 3)
   local team = peek(BROWSER_GPIO_START_ADDR + 4)
 
-  print("Connected, room: " .. tostring(room) .. ", player id: " .. tostring(playerId) .. ", admin: " .. tostring(admin) .. ", team: " .. tostring(team))
-
   gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
 end
 
+function handleRoundStart()
+  if gameState ~= SEND_START_ROUND_CMD_STATE then
+    return
+  end
+
+  local room = peek(BROWSER_GPIO_START_ADDR + 1)
+  local roundId = peek(BROWSER_GPIO_START_ADDR + 2)
+
+  gameState = COUNTING_DOWN_TO_GAME_START_STATE
+end
+
 COMMAND_LOOKUP = {
-  [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer
+  [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer,
+  [START_ROUND_CMD_SERVER_RESP] = handleRoundStart
 }
 
 function handleUpdateFromServer()
@@ -92,7 +103,7 @@ function handleUpdateFromServer()
 end
 
 function sendRoundStartCommand()
-  if gameState < RECEIVED_CONNECTED_TO_SERVER_RESP_STATE and gameState > SEND_START_ROUND_CMD_STATE then
+  if gameState ~= RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
     return
   end
 

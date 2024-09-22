@@ -6,6 +6,7 @@ function _init()
     restartArrows()
     restartPlayer()
     clearGPIOPins()
+    establishConnection()
 end
 
 function _draw()
@@ -13,13 +14,13 @@ function _draw()
     drawUnicornsWithRainbow()
     drawArrows()
     drawPlayerPoints()
+    print('game state ' .. tonum(gameState), 0, 8)
 end
 
 function _update60()
     updateUnicorns()
     updateArrows()
     updatePlayer()
-    establishConnection()
     handleUpdateFromServer()
     sendRoundStartCommand()
     frame = frame + 1
