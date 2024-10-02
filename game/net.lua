@@ -18,111 +18,132 @@ SEND_JOIN_SERVER_CMD_STATE = 1
 RECEIVED_CONNECTED_TO_SERVER_RESP_STATE = 2
 SEND_START_ROUND_CMD_STATE = 3
 COUNTING_DOWN_TO_GAME_START_STATE = 4
-GAME_FINISHED_STATE = 5
+GAME_IN_PROGRESS_STATE = 5
+GAME_FINISHED_STATE = 6
 
 gameState = INITIAL_STATE
+roundStartTime = 0
+lastCountdownTime = 0
+secondsCountdown = 3
 
 function clearGPIOPins()
-  for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
-    poke(pin)
-  end
+    for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
+        poke(pin)
+    end
 end
 
 function createEmptyPayload()
-  local payload = {}
-  for i = 1, GPIO_LENGTH do
+    local payload = {}
+    for i = 1, GPIO_LENGTH do
 
-    payload[i] = 0
-  end
+        payload[i] = 0
+    end
 
-  return payload
+    return payload
 end
 
 function establishConnection()
-  if gameState > SEND_JOIN_SERVER_CMD_STATE then
-    return
-  end
+    if gameState > SEND_JOIN_SERVER_CMD_STATE then
+        return
+    end
 
-  local playerName = "BAR"
-  local payload = createEmptyPayload()
+    local playerName = "BAR"
+    local payload = createEmptyPayload()
 
-  payload[COMMAND_INDEX] = JOIN_SERVER_CMD;
+    payload[COMMAND_INDEX] = JOIN_SERVER_CMD;
 
-  for i = 1, #playerName do
-    payload[i + 1] = ord(playerName, i)
-  end
+    for i = 1, #playerName do
+        payload[i + 1] = ord(playerName, i)
+    end
 
-  sendBuffer(payload)
-  gameState = SEND_JOIN_SERVER_CMD_STATE
+    sendBuffer(payload)
+    gameState = SEND_JOIN_SERVER_CMD_STATE
 end
 
 function sendBuffer(payload)
-  for i = 1, #payload do
-    poke(BROWSER_GPIO_START_ADDR - 1 + i, payload[i])
-  end
+    for i = 1, #payload do
+        poke(BROWSER_GPIO_START_ADDR - 1 + i, payload[i])
+    end
 end
 
 function handleConnectedToServer()
-  if gameState ~= SEND_JOIN_SERVER_CMD_STATE then
-    return
-  end
+    if gameState ~= SEND_JOIN_SERVER_CMD_STATE then
+        return
+    end
 
-  local room = peek(BROWSER_GPIO_START_ADDR + 1)
-  local playerId = peek(BROWSER_GPIO_START_ADDR + 2)
-  local admin = peek(BROWSER_GPIO_START_ADDR + 3)
-  local team = peek(BROWSER_GPIO_START_ADDR + 4)
+    local room = peek(BROWSER_GPIO_START_ADDR + 1)
+    local playerId = peek(BROWSER_GPIO_START_ADDR + 2)
+    local admin = peek(BROWSER_GPIO_START_ADDR + 3)
+    local team = peek(BROWSER_GPIO_START_ADDR + 4)
 
-  gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
+    gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
 end
 
 function handleRoundStart()
-  if gameState ~= SEND_START_ROUND_CMD_STATE then
-    return
-  end
+    if gameState < SEND_START_ROUND_CMD_STATE or gameState > COUNTING_DOWN_TO_GAME_START_STATE then
+        return
+    end
 
-  local room = peek(BROWSER_GPIO_START_ADDR + 1)
-  local roundId = peek(BROWSER_GPIO_START_ADDR + 2)
+    local room = peek(BROWSER_GPIO_START_ADDR + 1)
+    local roundId = peek(BROWSER_GPIO_START_ADDR + 2)
+    gameState = COUNTING_DOWN_TO_GAME_START_STATE
 
-  gameState = COUNTING_DOWN_TO_GAME_START_STATE
+    if roundStartTime == 0 then
+        roundStartTime = time()
+        secondsCountdown = 3
+        lastCountdownTime = time()
+    end
+
+    if time() - lastCountdownTime >= 1 then
+        secondsCountdown = secondsCountdown - 1
+        lastCountdownTime = time()
+    else
+        return
+    end
+
+    if secondsCountdown <= 0 then
+        gameState = GAME_IN_PROGRESS_STATE
+    end
+
 end
 
 COMMAND_LOOKUP = {
-  [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer,
-  [START_ROUND_CMD_SERVER_RESP] = handleRoundStart
+    [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer,
+    [START_ROUND_CMD_SERVER_RESP] = handleRoundStart
 }
 
 function handleUpdateFromServer()
-  local command = peek(BROWSER_GPIO_START_ADDR)
+    local command = peek(BROWSER_GPIO_START_ADDR)
 
-  if command < 128 then
-    return
-  end
+    if command < 128 then
+        return
+    end
 
-  return COMMAND_LOOKUP[command]()
+    return COMMAND_LOOKUP[command]()
 
 end
 
 function sendRoundStartCommand()
-  if gameState ~= RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
-    return
-  end
+    if gameState ~= RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
+        return
+    end
 
-  local payload = createEmptyPayload()
+    local payload = createEmptyPayload()
 
-  payload[COMMAND_INDEX] = START_ROUND_CMD;
+    payload[COMMAND_INDEX] = START_ROUND_CMD;
 
-  sendBuffer(payload)
-  gameState = SEND_START_ROUND_CMD_STATE
+    sendBuffer(payload)
+    gameState = SEND_START_ROUND_CMD_STATE
 end
 
 function dbgbuff()
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 0)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 1)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 2)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 3)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 4)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 5)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 6)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 127)))
-  print(tostring(peek(BROWSER_GPIO_START_ADDR + 128)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 0)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 1)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 2)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 3)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 4)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 5)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 6)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 127)))
+    print(tostring(peek(BROWSER_GPIO_START_ADDR + 128)))
 end
