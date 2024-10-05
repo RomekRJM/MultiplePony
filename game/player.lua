@@ -1,6 +1,17 @@
 player = {
-    points = 0
+    id = 0,
+    name = '',
+    team = 0,
+    isAdmin = false,
+    points = 0,
 }
+
+function player:new(o)
+    o = o or {}
+    setmetatable(o, self)
+    self.__index = self
+    return o
+end
 
 pointGroups = {
     {
@@ -28,11 +39,11 @@ pointGroups = {
 arrowMaxPoints = 8
 
 function restartPlayer()
-    player.points = 0
+    myself = player:new { id = 0, name = 'foobar', team = 0, isAdmin = false, points = 0, }
 end
 
 function drawPlayerPoints()
-    print(player.points, 63, 0)
+    print(myself.points, 63, 0)
 end
 
 function dbgpoints()
@@ -72,7 +83,7 @@ function updatePlayer()
             if absDiff <= pointGroup.maxAbsX then
                 --printh(tostring(q) .. ': ' .. tostring(pointGroup.points))
                 sendScore(pointGroup.points, frame)
-                player.points += pointGroup.points
+                myself.points += pointGroup.points
                 break
             end
         end

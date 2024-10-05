@@ -8,6 +8,7 @@ __lua__
 #include countdown.lua
 #include arrows.lua
 #include player.lua
+#include lobby.lua
 #include unicorns.lua
 #include main.lua
 

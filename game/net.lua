@@ -84,8 +84,6 @@ function handleRoundStart()
         return
     end
 
-    print('countdown ' .. secondsCountdown, 0, 16)
-
     local room = peek(BROWSER_GPIO_START_ADDR + 1)
     local roundId = peek(BROWSER_GPIO_START_ADDR + 2)
     gameState = COUNTING_DOWN_TO_GAME_START_STATE
@@ -130,12 +128,12 @@ function sendRoundStartCommand()
         return
     end
 
-    local payload = createEmptyPayload()
-
-    payload[COMMAND_INDEX] = START_ROUND_CMD;
-
-    sendBuffer(payload)
-    gameState = SEND_START_ROUND_CMD_STATE
+    --local payload = createEmptyPayload()
+    --
+    --payload[COMMAND_INDEX] = START_ROUND_CMD;
+    --
+    --sendBuffer(payload)
+    --gameState = SEND_START_ROUND_CMD_STATE
 end
 
 function dbgbuff()
