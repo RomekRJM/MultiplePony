@@ -24,7 +24,7 @@ GAME_FINISHED_STATE = 6
 gameState = INITIAL_STATE
 roundStartTime = 0
 lastCountdownTime = 0
-secondsCountdown = 3
+secondsCountdown = 4
 
 function clearGPIOPins()
     for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
@@ -84,13 +84,15 @@ function handleRoundStart()
         return
     end
 
+    print('countdown ' .. secondsCountdown, 0, 16)
+
     local room = peek(BROWSER_GPIO_START_ADDR + 1)
     local roundId = peek(BROWSER_GPIO_START_ADDR + 2)
     gameState = COUNTING_DOWN_TO_GAME_START_STATE
 
     if roundStartTime == 0 then
         roundStartTime = time()
-        secondsCountdown = 3
+        secondsCountdown = 4
         lastCountdownTime = time()
     end
 
