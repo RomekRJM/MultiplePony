@@ -128,6 +128,30 @@ const createPlayerAndAssignToARoom = (playerName) => {
     return player;
 }
 
+const changeTeam = (player, newTeam) => {
+    let room = roomData[player.roomId];
+
+    if (player.team === newTeam) {
+        return;
+    }
+
+    if (newTeam === 1) {
+        if (room.team1Players.length >= maxPlayersInTeam) {
+            return;
+        }
+
+        player.team = 1;
+        room.team1Players.push(player);
+    } else {
+        if (room.team2Players.length >= maxPlayersInTeam) {
+            return;
+        }
+
+        player.team = 2;
+        room.team2Players.push(player);
+    }
+}
+
 const tryElectingAdmin = (room) => {
     if (room.adminPlayerName) {
         return;
@@ -259,6 +283,21 @@ io.on("connection", (socket) => {
         player.score = score;
 
         console.log("Player ", playerId, " score updated to ", player.score);
+    });
+
+    socket.on("SWAP_TEAM_CMD", ({playerId, roomId, newTeam}) => {
+        let player = getPlayer(playerId, roomId, team);
+
+        if (!player) {
+            console.log("Player not found ", playerId, roomId, team);
+            return;
+        }
+
+        changeTeam(player, newTeam);
+
+        console.log("Player ", playerId, " team changed to ", player.team);
+
+        updateTeamNames(io, player.roomId, roomData);
     });
 
 });
