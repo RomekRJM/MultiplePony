@@ -165,16 +165,22 @@ const tryElectingAdmin = (room) => {
 }
 
 function updateTeamNames(io, roomId, roomData) {
+    console.log(JSON.stringify(roomData[roomId].team1Players));
+    console.log(JSON.stringify(roomData[roomId].team2Players));
     io.in(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
-        team1Players: roomData[roomId].team1Players.map((p) => {p.name, p.isAdmin}),
-        team2Players: roomData[roomId].team2Players.map((p) => {p.name, p.isAdmin}),
+        team1Players: roomData[roomId].team1Players.map((p) => {
+            p.name, p.isAdmin
+        }),
+        team2Players: roomData[roomId].team2Players.map((p) => {
+            p.name, p.isAdmin
+        }),
     });
 }
 
 const htmlGameFilePath = "game.html";
 const assetFilesPath = ".";
 
-const { app, server, io } = createPicoSocketServer({assetFilesPath, htmlGameFilePath});
+const {app, server, io} = createPicoSocketServer({assetFilesPath, htmlGameFilePath});
 
 io.on("connection", (socket) => {
     let playerName = socket.handshake.auth.token;
@@ -285,7 +291,7 @@ io.on("connection", (socket) => {
         console.log("Player ", playerId, " score updated to ", player.score);
     });
 
-    socket.on("SWAP_TEAM_CMD", ({playerId, roomId, newTeam}) => {
+    socket.on("SWAP_TEAM_CMD", ({playerId, roomId, team, newTeam}) => {
         let player = getPlayer(playerId, roomId, team);
 
         if (!player) {
@@ -295,7 +301,7 @@ io.on("connection", (socket) => {
 
         changeTeam(player, newTeam);
 
-        console.log("Player ", playerId, " team changed to ", player.team);
+        console.log("Player ", playerId, " team changed from ", team, " to ", player.team);
 
         updateTeamNames(io, player.roomId, roomData);
     });

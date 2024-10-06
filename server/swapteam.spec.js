@@ -35,7 +35,12 @@ describe.sequential("multiple pony server", () => {
                     }));
                     clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
-                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
+                    clientSockets[i].on("CONNECTED_TO_SERVER_RESP", ({
+                                                                         roomId,
+                                                                         playerId,
+                                                                         team,
+                                                                         admin
+                                                                     }) => {
 
                         if (team === 1) {
                             team1.push(
@@ -81,15 +86,16 @@ describe.sequential("multiple pony server", () => {
             let firstPlayerOnTeam1 = team1[0];
             let secondPlayerOnTeam1 = team1[1];
 
-            let removedIndex = expectedTeamResponses.team1.indexOf(firstPlayerOnTeam1.playerId);
-            expectedTeamResponses.team1.slice(removedIndex, 1);
-            expectedTeamResponses.team2.push(firstPlayerOnTeam1.playerId);
+            let removedIndex = expectedTeamResponses.team1Players.indexOf(firstPlayerOnTeam1.playerId);
+            expectedTeamResponses.team1Players.slice(removedIndex, 1);
+            expectedTeamResponses.team2Players.push(firstPlayerOnTeam1.playerId);
 
             clientSockets[firstPlayerOnTeam1.clientIndex].emit("SWAP_TEAM_CMD",
                 {
                     playerId: firstPlayerOnTeam1.playerId,
                     roomId: firstPlayerOnTeam1.roomId,
-                    newTeam: 2
+                    team: 1,
+                    newTeam: 2,
                 }
             );
 
@@ -97,24 +103,27 @@ describe.sequential("multiple pony server", () => {
                 {
                     playerId: secondPlayerOnTeam1.playerId,
                     roomId: secondPlayerOnTeam1.roomId,
-                    newTeam: 2
+                    team: 1,
+                    newTeam: 2,
                 }
             );
 
             let responses = 0;
 
-            clientSockets[i].on("UPDATE_TEAM_NAMES", (teams) => {
+            clientSockets.forEach((s) => {
+                s.on("UPDATE_TEAM_NAMES", (teams) => {
 
-                ++responses;
+                    ++responses;
 
-                if (responses <= noPlayers) {
-                    return;
-                }
+                    if (responses <= noPlayers) {
+                        return;
+                    }
 
-                expect(teams).toEqual(expectedTeamResponses);
+                    expect(teams).toEqual(expectedTeamResponses);
 
-                clientSockets[i].disconnect();
-                resolve();
+                    s.disconnect();
+                    resolve();
+                });
             });
         });
     });
