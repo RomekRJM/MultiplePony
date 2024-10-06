@@ -30,13 +30,13 @@ function setPlayers(roomId, adminId, players)
 end
 
 function updateLobby()
-    setPlayers(0, 1, {
+    setPlayers(0, 5, {
         player:new { id = 0, name = 'kozak1234567', team = 1, isAdmin = false, points = 0 },
-        player:new { id = 1, name = 'printf', team = 1, isAdmin = true, points = 0 },
+        player:new { id = 1, name = 'printf', team = 1, isAdmin = false, points = 0 },
         player:new { id = 2, name = 'shin', team = 1, isAdmin = false, points = 0 },
         player:new { id = 3, name = 'dark', team = 2, isAdmin = false, points = 0 },
         player:new { id = 4, name = 'elazer', team = 2, isAdmin = false, points = 0 },
-        player:new { id = 4, name = 'ggkellhazzur', team = 2, isAdmin = false, points = 0 },
+        player:new { id = 5, name = 'ggkellhazzur', team = 2, isAdmin = true, points = 0 },
     })
 end
 
@@ -44,15 +44,17 @@ function drawLobby()
     local yStep = 16
     local y = 40
 
+    print('red team          blue team', 12, 24)
+
     for p in all(room.team1) do
-        print(p.name, 0, y, p.isAdmin == true and 9 or 12)
+        print(p.isAdmin == true and '♥' .. p.name or p.name, 0, y, p.id == myself.id and 11 or 12)
         y = y + yStep
     end
 
     y = 40
 
     for p in all(room.team2) do
-        print(p.name, 81, y, p.isAdmin == true and 9 or 8)
+        print(p.isAdmin == true and '♥' .. p.name or p.name, 72, y, p.id == myself.id and 11 or 8)
         y = y + yStep
     end
 
