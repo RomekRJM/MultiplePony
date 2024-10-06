@@ -39,7 +39,7 @@ pointGroups = {
 arrowMaxPoints = 8
 
 function restartPlayer()
-    myself = player:new { id = 0, name = 'foobar', team = 0, isAdmin = false, points = 0, }
+    myself = player:new { id = 0, name = 'foobaroooooz', team = 1, isAdmin = false, points = 0, }
 end
 
 function drawPlayerPoints()

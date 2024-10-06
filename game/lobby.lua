@@ -10,6 +10,8 @@ room = {
     },
 }
 
+MAX_TEAM_SIZE = 5
+
 function setPlayers(roomId, adminId, players)
     room.roomId = roomId
     room.adminId = adminId
@@ -30,28 +32,46 @@ function setPlayers(roomId, adminId, players)
 end
 
 function updateLobby()
+    if btn(⬅️) and #room.team1 < MAX_TEAM_SIZE then
+        myself.team = 1
+    end
+
+    if btn(➡️) and #room.team2 < MAX_TEAM_SIZE then
+        myself.team = 2
+    end
+
     setPlayers(0, 5, {
-        player:new { id = 0, name = 'kozak1234567', team = 1, isAdmin = false, points = 0 },
+        myself,
         player:new { id = 1, name = 'printf', team = 1, isAdmin = false, points = 0 },
         player:new { id = 2, name = 'shin', team = 1, isAdmin = false, points = 0 },
-        player:new { id = 3, name = 'dark', team = 2, isAdmin = false, points = 0 },
+        player:new { id = 3, name = 'dark', team = 1, isAdmin = false, points = 0 },
         player:new { id = 4, name = 'elazer', team = 2, isAdmin = false, points = 0 },
         player:new { id = 5, name = 'ggkellhazzur', team = 2, isAdmin = true, points = 0 },
+        player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, points = 0 },
+        player:new { id = 7, name = 'has', team = 2, isAdmin = false, points = 0 },
     })
 end
 
 function drawLobby()
     local yStep = 16
-    local y = 40
+    local y = 56
 
-    print('red team          blue team', 12, 24)
+    print('red team       blue team', 12, 24)
+
+    if #room.team1 < MAX_TEAM_SIZE then
+        print('⬅️', 38, 36, 7)
+    end
 
     for p in all(room.team1) do
         print(p.isAdmin == true and '♥' .. p.name or p.name, 0, y, p.id == myself.id and 11 or 12)
         y = y + yStep
     end
 
-    y = 40
+    if #room.team2 < MAX_TEAM_SIZE then
+        print('➡️', 78, 36, 7)
+    end
+
+    y = 56
 
     for p in all(room.team2) do
         print(p.isAdmin == true and '♥' .. p.name or p.name, 72, y, p.id == myself.id and 11 or 8)
