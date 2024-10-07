@@ -4,7 +4,6 @@ import {io as ioc} from "socket.io-client";
 describe.sequential("multiple pony server", () => {
     const noPlayers = 8;
     let clientSockets = [];
-    let currentRoomId = 0;
     let team1 = [];
     let team2 = [];
     let expectedResponse = {};
@@ -121,6 +120,54 @@ describe.sequential("multiple pony server", () => {
                     roomId: secondPlayerOnTeam1.roomId,
                     team: 1,
                     newTeam: 2,
+                }
+            );
+
+            let responses = 0;
+
+            clientSockets.forEach((s) => {
+                s.on("UPDATE_TEAM_NAMES", (response) => {
+
+                    ++responses;
+
+                    if (responses <= noPlayers) {
+                        return;
+                    }
+
+                    expect(response).toEqual(expectedResponse);
+
+                    s.disconnect();
+                    resolve();
+                });
+            });
+        });
+    });
+
+    it("should allow players to swap team2 to team1 if team1 is not maxed", () => {
+        return new Promise((resolve) => {
+
+            let firstPlayerOnTeam2 = team2[0];
+            let secondPlayerOnTeam2 = team2[1];
+
+            let swappedPlayer = expectedResponse.team2Players.find((p) => p.id === firstPlayerOnTeam2.playerId);
+            expectedResponse.team2Players = expectedResponse.team2Players.filter((p) => p.id !== firstPlayerOnTeam2.playerId);
+            expectedResponse.team1Players.push(swappedPlayer);
+
+            clientSockets[firstPlayerOnTeam2.clientIndex].emit("SWAP_TEAM_CMD",
+                {
+                    playerId: firstPlayerOnTeam2.playerId,
+                    roomId: firstPlayerOnTeam2.roomId,
+                    team: 2,
+                    newTeam: 1,
+                }
+            );
+
+            clientSockets[secondPlayerOnTeam2.clientIndex].emit("SWAP_TEAM_CMD",
+                {
+                    playerId: secondPlayerOnTeam2.playerId,
+                    roomId: secondPlayerOnTeam2.roomId,
+                    team: 2,
+                    newTeam: 1,
                 }
             );
 
