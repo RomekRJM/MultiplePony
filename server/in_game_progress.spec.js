@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
-import {getCountdownDuration} from "./constants";
+import getCountdownDuration from "./constants";
 
 describe.sequential("multiple pony server", () => {
     const noPlayers = 4;

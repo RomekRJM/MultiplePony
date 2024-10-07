@@ -46,18 +46,18 @@ describe.sequential("multiple pony server", () => {
     });
 
     it("should update player on team changes with 1 player", () => {
-        return connectPlayers(1, [], {team1Players: ['0'], team2Players: []});
+        return connectPlayers(1, [], {team1Players: [0], team2Players: []});
     });
 
     it("should update player on team changes with 5 players", () => {
-        return connectPlayers(4, [], {team1Players: ['0', '2', '4'], team2Players: ['1', '3']});
+        return connectPlayers(4, [], {team1Players: [0, 2, 4], team2Players: [1, 3]});
     });
 
     it("should update player on team changes with 5 players, when player 3 leaves", () => {
-        return connectPlayers(4, [2], {team1Players: ['0', '4'], team2Players: ['1', '3']});
+        return connectPlayers(4, [2], {team1Players: [0, 4], team2Players: [1, 3]});
     });
 
-    const connectPlayers = (noPlayers, playersToLeave, expectedTeamNamesResponse) => {
+    const connectPlayers = (noPlayers, playersToLeave, expectedTeams) => {
         return new Promise((resolve) => {
             let clientSockets = [];
             for (let i = 0; i < noPlayers; i++) {
@@ -69,14 +69,24 @@ describe.sequential("multiple pony server", () => {
                     }));
                 clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
 
-                clientSockets[i].on("UPDATE_TEAM_NAMES", (teams) => {
+                clientSockets[i].on("UPDATE_TEAM_NAMES", (response) => {
 
                     if (playersToLeave.includes(i)) {
                         clientSockets[i].disconnect();
                     }
 
-                    if (i === expectedTeamNamesResponse) {
-                        expect(teams).toEqual(expectedTeamNamesResponse);
+                    if (i === expectedTeams) {
+                        expect(response.team1Players).toEqual(
+                            expectedTeams.team1Players.map((p) => {
+                                return {id: p, name: `PLAYER${p}`};
+                            })
+                        );
+
+                        expect(response.team2Players).toEqual(
+                            expectedTeams.team2Players.map((p) => {
+                                return {id: p, name: `PLAYER${p}`};
+                            })
+                        );
                     }
 
                     clientSockets[i].disconnect();

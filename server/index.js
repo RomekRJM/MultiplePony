@@ -225,6 +225,7 @@ io.on("connection", (socket) => {
             room.team2Players = [];
             room.status = RoomStatus.ACCEPTING_PLAYERS;
             room.clock = 0;
+            room.adminPlayerName = null;
 
             if (room.socket) {
                 room.socket.disconnect();
