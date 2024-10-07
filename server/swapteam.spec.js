@@ -7,7 +7,7 @@ describe.sequential("multiple pony server", () => {
     let currentRoomId = 0;
     let team1 = [];
     let team2 = [];
-    let expectedTeamResponses = {};
+    let expectedResponse = {};
 
     beforeEach(() => {
         return new Promise((resolve) => {
@@ -18,7 +18,8 @@ describe.sequential("multiple pony server", () => {
             });
             resetClientSocket.emit("RESET");
 
-            expectedTeamResponses = {
+            expectedResponse = {
+                adminPlayerName: "",
                 team1Players: [],
                 team2Players: [],
             };
@@ -28,9 +29,10 @@ describe.sequential("multiple pony server", () => {
                 clientSockets = [];
 
                 for (let i = 0; i < noPlayers; i++) {
+                    let playerName = `PLAYER${i}`;
                     clientSockets.push(ioc.connect("http://localhost:5000/", {
                         auth: {
-                            token: `PLAYER${i}`
+                            token: playerName
                         }
                     }));
                     clientSockets[i].emit("JOIN_SERVER_CMD", i.toString());
@@ -42,6 +44,10 @@ describe.sequential("multiple pony server", () => {
                                                                          admin
                                                                      }) => {
 
+                        if (admin) {
+                            expectedResponse.adminPlayerName = playerName;
+                        }
+
                         if (team === 1) {
                             team1.push(
                                 {
@@ -50,7 +56,12 @@ describe.sequential("multiple pony server", () => {
                                     roomId: roomId,
                                 }
                             );
-                            expectedTeamResponses.team1Players.push(playerId);
+                            expectedResponse.team1Players.push(
+                                {
+                                    id: playerId,
+                                    name: playerName,
+                                }
+                            );
                         } else {
                             team2.push(
                                 {
@@ -59,7 +70,12 @@ describe.sequential("multiple pony server", () => {
                                     roomId: roomId,
                                 }
                             );
-                            expectedTeamResponses.team2Players.push(playerId);
+                            expectedResponse.team2Players.push(
+                                {
+                                    id: playerId,
+                                    name: playerName,
+                                }
+                            );
                         }
 
                         ++connectedClients;
@@ -86,9 +102,9 @@ describe.sequential("multiple pony server", () => {
             let firstPlayerOnTeam1 = team1[0];
             let secondPlayerOnTeam1 = team1[1];
 
-            let removedIndex = expectedTeamResponses.team1Players.indexOf(firstPlayerOnTeam1.playerId);
-            expectedTeamResponses.team1Players.slice(removedIndex, 1);
-            expectedTeamResponses.team2Players.push(firstPlayerOnTeam1.playerId);
+            let swappedPlayer = expectedResponse.team1Players.find((p) => p.id === firstPlayerOnTeam1.playerId);
+            expectedResponse.team1Players = expectedResponse.team1Players.filter((p) => p.id !== firstPlayerOnTeam1.playerId);
+            expectedResponse.team2Players.push(swappedPlayer);
 
             clientSockets[firstPlayerOnTeam1.clientIndex].emit("SWAP_TEAM_CMD",
                 {
@@ -111,7 +127,7 @@ describe.sequential("multiple pony server", () => {
             let responses = 0;
 
             clientSockets.forEach((s) => {
-                s.on("UPDATE_TEAM_NAMES", (teams) => {
+                s.on("UPDATE_TEAM_NAMES", (response) => {
 
                     ++responses;
 
@@ -119,7 +135,7 @@ describe.sequential("multiple pony server", () => {
                         return;
                     }
 
-                    expect(teams).toEqual(expectedTeamResponses);
+                    expect(response).toEqual(expectedResponse);
 
                     s.disconnect();
                     resolve();

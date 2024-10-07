@@ -141,6 +141,7 @@ const changeTeam = (player, newTeam) => {
         }
 
         player.team = 1;
+        room.team2Players = room.team2Players.filter((p) => p.id !== player.id);
         room.team1Players.push(player);
     } else {
         if (room.team2Players.length >= maxPlayersInTeam) {
@@ -148,6 +149,7 @@ const changeTeam = (player, newTeam) => {
         }
 
         player.team = 2;
+        room.team1Players = room.team1Players.filter((p) => p.id !== player.id);
         room.team2Players.push(player);
     }
 }
@@ -168,11 +170,18 @@ function updateTeamNames(io, roomId, roomData) {
     console.log(JSON.stringify(roomData[roomId].team1Players));
     console.log(JSON.stringify(roomData[roomId].team2Players));
     io.in(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
+        adminPlayerName: roomData[roomId].adminPlayerName,
         team1Players: roomData[roomId].team1Players.map((p) => {
-            p.name, p.isAdmin
+            return {
+                id: p.id,
+                name: p.name,
+            };
         }),
         team2Players: roomData[roomId].team2Players.map((p) => {
-            p.name, p.isAdmin
+            return {
+                id: p.id,
+                name: p.name,
+            };
         }),
     });
 }
