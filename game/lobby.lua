@@ -42,13 +42,13 @@ function updateLobby()
 
     setPlayers(0, 5, {
         myself,
-        player:new { id = 1, name = 'printf', team = 1, isAdmin = false, points = 0 },
-        player:new { id = 2, name = 'shin', team = 1, isAdmin = false, points = 0 },
-        player:new { id = 3, name = 'dark', team = 1, isAdmin = false, points = 0 },
-        player:new { id = 4, name = 'elazer', team = 2, isAdmin = false, points = 0 },
-        player:new { id = 5, name = 'ggkellhazzur', team = 2, isAdmin = true, points = 0 },
-        player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, points = 0 },
-        player:new { id = 7, name = 'has', team = 2, isAdmin = false, points = 0 },
+        player:new { id = 1, name = 'printf', team = 1, isAdmin = false },
+        player:new { id = 2, name = 'shin', team = 1, isAdmin = false },
+        player:new { id = 3, name = 'dark', team = 1, isAdmin = false },
+        player:new { id = 4, name = 'elazer', team = 2, isAdmin = false },
+        player:new { id = 5, name = 'ggkellhazzur', team = 2, isAdmin = true },
+        player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false },
+        player:new { id = 7, name = 'has', team = 2, isAdmin = false },
     })
 end
 

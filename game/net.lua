@@ -112,6 +112,35 @@ function handleUpdateTeamNames()
     local adminId = peek(BROWSER_GPIO_START_ADDR + 2)
     local team1Length = peek(BROWSER_GPIO_START_ADDR + 3)
     local team2Length = peek(BROWSER_GPIO_START_ADDR + 4)
+    local parsedPlayers = 0
+    local pid = 0
+    local c = 0
+    local pName = ''
+    local players = {}
+
+    for index=5, 115, 1 do
+        pid = peek(BROWSER_GPIO_START_ADDR + index)
+
+        for nameIndex=1, 9 do
+            index = index + 1
+            c = chr(peek(BROWSER_GPIO_START_ADDR + index + nameIndex))
+            if c == nil then
+                break
+            end
+            pName = pName .. c
+        end
+
+        parsedPlayers = parsedPlayers + 1
+        add(players, { id = pid, name = pName, team = parsedPlayers < team1Length and 1 or 2, isAdmin = pid == adminId })
+
+        if parsedPlayers >= team1Length + team2Length then
+            break
+        end
+
+    end
+
+    setPlayers(room, adminId, players)
+
 end
 
 COMMAND_LOOKUP = {
