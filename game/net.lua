@@ -107,9 +107,17 @@ function handleRoundStart()
 
 end
 
+function handleUpdateTeamNames()
+    local room = peek(BROWSER_GPIO_START_ADDR + 1)
+    local adminId = peek(BROWSER_GPIO_START_ADDR + 2)
+    local team1Length = peek(BROWSER_GPIO_START_ADDR + 3)
+    local team2Length = peek(BROWSER_GPIO_START_ADDR + 4)
+end
+
 COMMAND_LOOKUP = {
     [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer,
-    [START_ROUND_CMD_SERVER_RESP] = handleRoundStart
+    [START_ROUND_CMD_SERVER_RESP] = handleRoundStart,
+    [UPDATE_TEAM_NAMES_SERVER_RESP] = handleUpdateTeamNames,
 }
 
 function handleUpdateFromServer()

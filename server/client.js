@@ -91,9 +91,11 @@ const createPicoSocketClient = () => {
 
             window.pico8_gpio[commandIndex] = updateTeamNamesServerResponse;
             window.pico8_gpio[roomIdIndex] = player.roomId;
+            window.pico8_gpio[3] = team1Players.length;
+            window.pico8_gpio[4] = team2Players.length;
 
-            let index = 3;
-            let maxNameLength = 12;
+            let index = 5;
+            let maxNameLength = 9;
 
             for (let player of players) {
 
