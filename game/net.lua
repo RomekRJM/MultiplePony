@@ -118,9 +118,11 @@ function handleUpdateTeamNames()
     local c = 0
     local pName = ''
     local players = {}
+    local index = 5
 
-    for index = 5, 115, 1 do
+    repeat
         pid = peek(BROWSER_GPIO_START_ADDR + index)
+        pName = ''
 
         for _ = 1, 9 do
             index = index + 1
@@ -134,11 +136,9 @@ function handleUpdateTeamNames()
         parsedPlayers = parsedPlayers + 1
         add(players, { id = pid, name = pName, team = parsedPlayers < team1Length and 1 or 2, isAdmin = pid == adminId })
 
-        if parsedPlayers >= team1Length + team2Length then
-            break
-        end
+        index = index + 1
 
-    end
+    until (parsedPlayers >= team1Length + team2Length) or ( index > 115 )
 
     setPlayers(room, adminId, players)
 

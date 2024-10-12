@@ -6,7 +6,7 @@
 const createPicoSocketClient = () => {
     let player = {
         id: -1,
-        token: "4567",
+        token: "CURRENT_PLAYER_NAME",//crypto.randomUUID(),
         name: "",
         team: -1,
         roomId: -1,
@@ -113,11 +113,9 @@ const createPicoSocketClient = () => {
                     ++nameLength;
                 }
 
-                // fill the rest of the name with 0
-                for (let i = nameLength; i < maxNameLength; i++) {
-                    window.pico8_gpio[index] = 0;
-                    ++index;
-                }
+                // 0 means end of name
+                window.pico8_gpio[index] = 0;
+                ++index;
             }
         });
     }
