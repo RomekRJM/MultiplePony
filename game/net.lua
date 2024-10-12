@@ -119,13 +119,13 @@ function handleUpdateTeamNames()
     local pName = ''
     local players = {}
 
-    for index=5, 115, 1 do
+    for index = 5, 115, 1 do
         pid = peek(BROWSER_GPIO_START_ADDR + index)
 
-        for nameIndex=1, 9 do
+        for _ = 1, 9 do
             index = index + 1
-            c = chr(peek(BROWSER_GPIO_START_ADDR + index + nameIndex))
-            if c == nil then
+            c = chr(peek(BROWSER_GPIO_START_ADDR + index))
+            if c == 0 then
                 break
             end
             pName = pName .. c
