@@ -215,6 +215,21 @@ io.on("connection", (socket) => {
             }
         }
 
+        let removedIndex = -1;
+        let teamArray = null;
+
+        if (player.team === 1) {
+            teamArray = roomData[player.roomId].team1Players;
+            removedIndex = roomData[player.roomId].team1Players.indexOf(player);
+        } else {
+            teamArray = roomData[player.roomId].team2Players;
+            removedIndex = roomData[player.roomId].team2Players.indexOf(player);
+        }
+
+        if (removedIndex > -1) {
+            teamArray.splice(removedIndex, 1);
+        }
+
         console.log("Player ", playerName, " disconnected from room ", player.roomId, " and team ", player.team);
     });
 
