@@ -107,8 +107,7 @@ const createPicoSocketClient = () => {
             window.pico8_gpio[5] = team2Readiness(team1Players);
             window.pico8_gpio[6] = team2Readiness(team2Players);
 
-            let index = 5;
-            let maxNameLength = 9;
+            let index = 7;
 
             for (let player of players) {
 
