@@ -4,6 +4,7 @@ player = {
     team = 0,
     isAdmin = false,
     points = 0,
+    ready = false,
 }
 
 function player:new(o)

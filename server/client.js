@@ -66,14 +66,23 @@ const createPicoSocketClient = () => {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
-            newTeam: window.pico8_gpio[3],
+            newTeam: window.pico8_gpio[1],
+        });
+    }
+
+    const handleUpdateReadinessCommand = () => {
+        clientSocket.emit("UPDATE_READINESS_CMD", {
+            playerId: player.id,
+            roomId: player.roomId,
+            newTeam: window.pico8_gpio[1],
         });
     }
 
     const clientCommands = {
         2: handleStartRoundCommand,
-        3: handleUpdatePlayerScoreCommand,
+        3: handleUpdateReadinessCommand,
         4: handleSwapTeamCommand,
+        5: handleUpdatePlayerScoreCommand,
     };
 
     const processPico8Command = () => {

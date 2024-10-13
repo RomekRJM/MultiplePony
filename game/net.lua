@@ -9,6 +9,9 @@ BROWSER_GPIO_END_ADDR = 0x5fff
 
 JOIN_SERVER_CMD = 1
 START_ROUND_CMD = 2
+UPDATE_READINESS_CMD = 3
+SWAP_TEAM_COMMAND = 4
+UPDATE_PLAYER_SCORE_CMD = 5
 CONNECTED_TO_SERVER_RESP = 255
 UPDATE_TEAM_NAMES_SERVER_RESP = 254
 START_ROUND_CMD_SERVER_RESP = 253
@@ -59,6 +62,32 @@ function establishConnection()
 
     sendBuffer(payload)
     gameState = SEND_JOIN_SERVER_CMD_STATE
+end
+
+function updateReadiness(p)
+    if gameState >= COUNTING_DOWN_TO_GAME_START_STATE then
+        return
+    end
+
+    local payload = createEmptyPayload()
+    payload[COMMAND_INDEX] = UPDATE_READINESS_CMD
+    payload[2] = p.ready
+
+    sendBuffer(payload)
+
+end
+
+function swapTeam(p)
+    if gameState >= COUNTING_DOWN_TO_GAME_START_STATE then
+        return
+    end
+
+    local payload = createEmptyPayload()
+    payload[COMMAND_INDEX] = SWAP_TEAM_COMMAND
+    payload[2] = p.team
+
+    sendBuffer(payload)
+
 end
 
 function sendBuffer(payload)
@@ -163,7 +192,6 @@ function handleUpdateFromServer()
     end
 
     return COMMAND_LOOKUP[command]()
-
 end
 
 function sendRoundStartCommand()
