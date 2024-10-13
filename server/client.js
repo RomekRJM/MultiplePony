@@ -33,6 +33,17 @@ const createPicoSocketClient = () => {
         return [word >> 8, word & 0xFF];
     }
 
+    const team2Readiness = (team) => {
+        let readinessByte = 0;
+
+        for (let i = 0; i < team.length; ++i) {
+            let playerReadiness = (team[i].ready ? 1 : 0) << i;
+            readinessByte = readinessByte | playerReadiness;
+        }
+
+        return readinessByte;
+    }
+
     const handleStartRoundCommand = () => {
         clientSocket.emit("START_ROUND_CMD", {
             playerId: player.id,
@@ -93,6 +104,8 @@ const createPicoSocketClient = () => {
             window.pico8_gpio[roomIdIndex] = player.roomId;
             window.pico8_gpio[3] = team1Players.length;
             window.pico8_gpio[4] = team2Players.length;
+            window.pico8_gpio[5] = team2Readiness(team1Players);
+            window.pico8_gpio[6] = team2Readiness(team2Players);
 
             let index = 5;
             let maxNameLength = 9;
