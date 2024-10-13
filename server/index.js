@@ -14,10 +14,12 @@ class Player {
         this.roomId = roomId;
         this.team = team;
         this.score = 0;
+        this.ready = false;
     }
 
-    get resetScore() {
+    resetPlayer() {
         this.score = 0;
+        this.ready = false;
     }
 }
 
@@ -166,6 +168,16 @@ const tryElectingAdmin = (room) => {
     }
 }
 
+const allPlayersInTheRoomReady = (room) => {
+
+    return [...room.team1Players, ...room.team2Players]
+        .map((p) => { return p.ready; })
+        .reduce(
+            (readiness, playerReadiness) => readiness & playerReadiness,
+            true
+    );
+}
+
 function updateTeamNames(io, roomId, roomData) {
     console.log(JSON.stringify(roomData[roomId].team1Players));
     console.log(JSON.stringify(roomData[roomId].team2Players));
@@ -175,12 +187,14 @@ function updateTeamNames(io, roomId, roomData) {
             return {
                 id: p.id,
                 name: p.name,
+                ready: p.ready,
             };
         }),
         team2Players: roomData[roomId].team2Players.map((p) => {
             return {
                 id: p.id,
                 name: p.name,
+                ready: p.ready,
             };
         }),
     });
@@ -286,6 +300,11 @@ io.on("connection", (socket) => {
 
         if (room.status !== RoomStatus.ACCEPTING_PLAYERS) {
             console.log("Refusing countdown. Room ", roomId, " is not in ACCEPTING_PLAYERS status");
+            return;
+        }
+
+        if (!allPlayersInTheRoomReady(room)) {
+            console.log("Refusing countdown. Nota all players in the room ", roomId, " are ready.");
             return;
         }
 
