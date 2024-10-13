@@ -118,6 +118,7 @@ function handleUpdateTeamNames()
     local parsedPlayers = 0
     local pid = 0
     local c = 0
+    local b = 0
     local pName = ''
     local players = {}
     local index = 7
@@ -128,11 +129,13 @@ function handleUpdateTeamNames()
 
         for _ = 1, 9 do
             index = index + 1
-            c = chr(peek(BROWSER_GPIO_START_ADDR + index))
-            if c == 0 then
+            b = peek(BROWSER_GPIO_START_ADDR + index)
+
+            if b == 0 then
                 break
             end
-            pName = pName .. c
+
+            pName = pName .. chr(b)
         end
 
         parsedPlayers = parsedPlayers + 1
