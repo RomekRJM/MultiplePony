@@ -59,6 +59,7 @@ describe.sequential("multiple pony server", () => {
                                 {
                                     id: playerId,
                                     name: playerName,
+                                    ready: false,
                                 }
                             );
                         } else {
@@ -73,6 +74,7 @@ describe.sequential("multiple pony server", () => {
                                 {
                                     id: playerId,
                                     name: playerName,
+                                    ready: false,
                                 }
                             );
                         }
