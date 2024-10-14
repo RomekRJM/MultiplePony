@@ -350,6 +350,22 @@ io.on("connection", (socket) => {
         updateTeamNames(io, player.roomId, roomData);
     });
 
+    socket.on("UPDATE_READINESS_CMD", ({playerId, roomId, team, ready}) => {
+        let player = getPlayer(playerId, roomId, team);
+
+        if (!player) {
+            console.log("Player not found ", playerId, roomId, team);
+            return;
+        }
+
+        let previousReady = player.ready;
+        player.ready = ready;
+
+        console.log("Player ", playerId, " readiness changed from ", previousReady, " to ", player.ready);
+
+        updateTeamNames(io, player.roomId, roomData);
+    });
+
 });
 
 setInterval(

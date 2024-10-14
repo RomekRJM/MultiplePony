@@ -74,7 +74,8 @@ const createPicoSocketClient = () => {
         clientSocket.emit("UPDATE_READINESS_CMD", {
             playerId: player.id,
             roomId: player.roomId,
-            newTeam: window.pico8_gpio[1],
+            team: player.team,
+            ready: window.pico8_gpio[1] === 1,
         });
     }
 
