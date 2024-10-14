@@ -1,6 +1,7 @@
 import {afterEach, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
 import getCountdownDuration from "./constants";
+import {markAllAsReady} from "./test-utils.js";
 
 describe.sequential("multiple pony server", () => {
     const noPlayers = 4;
@@ -62,57 +63,59 @@ describe.sequential("multiple pony server", () => {
 
     it("should notify all players about in game progress", () => {
         return new Promise((resolve) => {
-            let updatedClients = 0;
+            markAllAsReady(resolve, noPlayers, clientSockets, playerInfo).then(() => {
+                let updatedClients = 0;
 
-            clientSockets[adminPlayerIndex].emit("START_ROUND_CMD", {
-                playerId: playerInfo[adminPlayerIndex].playerId,
-                roomId: playerInfo[adminPlayerIndex].roomId,
-                team: playerInfo[adminPlayerIndex].team
-            });
-
-            setTimeout(() => {
-                clientSockets[0].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: playerInfo[0].playerId,
-                    roomId: playerInfo[0].roomId,
-                    team: playerInfo[0].team,
-                    score: 600
+                clientSockets[adminPlayerIndex].emit("START_ROUND_CMD", {
+                    playerId: playerInfo[adminPlayerIndex].playerId,
+                    roomId: playerInfo[adminPlayerIndex].roomId,
+                    team: playerInfo[adminPlayerIndex].team
                 });
-                clientSockets[1].emit("UPDATE_PLAYER_SCORE_CMD", {
-                    playerId: playerInfo[1].playerId,
-                    roomId: playerInfo[1].roomId,
-                    team: playerInfo[1].team,
-                    score: 10000
-                });
-            }, getCountdownDuration() + 17);
 
-            setTimeout(() => {
-                clientSockets.forEach((s, i) => {
-                    s.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock}) => {
-                        [
-                            { playerName: 'PLAYER0', score: 600 },
-                            { playerName: 'PLAYER2', score: 0 },
-                            { playerName: 'PLAYER1', score: 10000 },
-                            { playerName: 'PLAYER3', score: 0 }
-                        ].forEach(e => {
-                            expect(playerScores.map(s => JSON.stringify(s))).toContain(JSON.stringify(e));
-                        })
-                        expect(playerScores.length).equals(4);
-
-                        console.log(JSON.stringify(playerInfo[i]));
-
-                        expect(winningTeam).toEqual(playerInfo[1].team);
-                        expect(clock).toBeGreaterThan(0);
-
-                        s.disconnect();
-
-                        ++updatedClients;
-
-                        if (updatedClients === noPlayers) {
-                            resolve();
-                        }
+                setTimeout(() => {
+                    clientSockets[0].emit("UPDATE_PLAYER_SCORE_CMD", {
+                        playerId: playerInfo[0].playerId,
+                        roomId: playerInfo[0].roomId,
+                        team: playerInfo[0].team,
+                        score: 600
                     });
-                });
-            }, getCountdownDuration() + 20);
+                    clientSockets[1].emit("UPDATE_PLAYER_SCORE_CMD", {
+                        playerId: playerInfo[1].playerId,
+                        roomId: playerInfo[1].roomId,
+                        team: playerInfo[1].team,
+                        score: 10000
+                    });
+                }, getCountdownDuration() + 17);
+
+                setTimeout(() => {
+                    clientSockets.forEach((s, i) => {
+                        s.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock}) => {
+                            [
+                                {playerName: 'PLAYER0', score: 600},
+                                {playerName: 'PLAYER2', score: 0},
+                                {playerName: 'PLAYER1', score: 10000},
+                                {playerName: 'PLAYER3', score: 0}
+                            ].forEach(e => {
+                                expect(playerScores.map(s => JSON.stringify(s))).toContain(JSON.stringify(e));
+                            })
+                            expect(playerScores.length).equals(4);
+
+                            console.log(JSON.stringify(playerInfo[i]));
+
+                            expect(winningTeam).toEqual(playerInfo[1].team);
+                            expect(clock).toBeGreaterThan(0);
+
+                            s.disconnect();
+
+                            ++updatedClients;
+
+                            if (updatedClients === noPlayers) {
+                                resolve();
+                            }
+                        });
+                    });
+                }, getCountdownDuration() + 20);
+            });
         });
     });
 });

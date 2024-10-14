@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, describe, it, expect} from "vitest";
 import {io as ioc} from "socket.io-client";
+import {markAllAsReady} from "./test-utils";
 
 describe.sequential("multiple pony server", () => {
     const noPlayers = 10;
@@ -70,7 +71,7 @@ describe.sequential("multiple pony server", () => {
 
     it("should notify all 10 players about round countdown start", () => {
         return new Promise((resolve) => {
-            markAllAsReady().then(() => {
+            markAllAsReady(resolve, noPlayers, clientSockets, playerInfo).then(() => {
                 let countdownsReceived = 0;
 
                 clientSockets[adminPlayerId].emit("START_ROUND_CMD", {
@@ -95,7 +96,7 @@ describe.sequential("multiple pony server", () => {
 
     it("should not notify players if round countdown was started by non admin user", () => {
         return new Promise((resolve) => {
-            markAllAsReady().then(() => {
+            markAllAsReady(resolve, noPlayers, clientSockets, playerInfo).then(() => {
                 let allPlayerIds = [...Array(noPlayers).keys()];
                 let nonAdminPlayerId = allPlayerIds.find(id => id !== adminPlayerId);
 
@@ -110,7 +111,7 @@ describe.sequential("multiple pony server", () => {
 
     it("should allow countdown only once", () => {
         return new Promise((resolve) => {
-            markAllAsReady().then(() => {
+            markAllAsReady(resolve, noPlayers, clientSockets, playerInfo).then(() => {
                 let countdownsReceived = 0;
                 console.log("countdownsReceived ", countdownsReceived);
 
@@ -156,50 +157,6 @@ describe.sequential("multiple pony server", () => {
                     resolve();
                 }
             }, 250);
-        });
-    }
-
-    function markAllAsReady() {
-        return new Promise((resolve) => {
-            let testsFinished = 0;
-            let numberOfExpectedUpdates = noPlayers * noPlayers;
-            let updatesReceived = 0;
-            let readiness = true;
-
-            clientSockets.forEach((s, i) => {
-                s.emit("UPDATE_READINESS_CMD", {
-                    playerId: playerInfo[i].playerId,
-                    roomId: playerInfo[i].roomId,
-                    team: playerInfo[i].team,
-                    ready: true,
-                });
-
-                s.on("UPDATE_TEAM_NAMES", ({_adminPlayerName, team1Players, team2Players}) => {
-                    ++updatesReceived;
-
-                    if (updatesReceived === numberOfExpectedUpdates) {
-                        readiness = team1Players.reduce((acc, p) => {
-                            acc = p.ready && acc;
-                            return acc;
-                        }, true);
-
-                        readiness = team2Players.reduce((acc, p) => {
-                            acc = p.ready && acc;
-                            return acc;
-                        }, readiness);
-                    }
-                })
-
-                setTimeout(() => {
-                    expect(updatesReceived, 'Each user should only be notified once').toEqual(numberOfExpectedUpdates);
-                    expect(readiness, 'Each user should be ready').toEqual(true);
-
-                    ++testsFinished;
-                    if (testsFinished === noPlayers) {
-                        resolve();
-                    }
-                }, 250);
-            });
         });
     }
 });
