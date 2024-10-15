@@ -1,13 +1,13 @@
 pico-8 cartridge // http://www.pico-8.com
 version 42
 __lua__
+#include player.lua
 #include net.lua
 #include debug.lua
 #include utils.lua
 #include sprites.lua
 #include countdown.lua
 #include arrows.lua
-#include player.lua
 #include lobby.lua
 #include unicorns.lua
 #include main.lua

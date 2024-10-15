@@ -46,8 +46,8 @@ function updateLobby()
     end
 
     if btn(🅾️) and not myself.ready then
-    myself.ready = true
-    updateReadiness(myself)
+        myself.ready = true
+        updateReadiness(myself)
     end
 
     --setPlayers(0, 5, {

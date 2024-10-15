@@ -106,6 +106,8 @@ function handleConnectedToServer()
     local admin = peek(BROWSER_GPIO_START_ADDR + 3)
     local team = peek(BROWSER_GPIO_START_ADDR + 4)
 
+    myself = player:new { id = playerId, team = team, isAdmin = admin > 0, points = 0, ready = false }
+
     gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
 end
 
@@ -168,7 +170,16 @@ function handleUpdateTeamNames()
         end
 
         parsedPlayers = parsedPlayers + 1
-        add(players, { id = pid, name = pName, team = parsedPlayers < team1Length and 1 or 2, isAdmin = pid == adminId })
+        local currentPlayer = {
+            id = pid, name = pName, team = parsedPlayers < team1Length and 1 or 2, isAdmin = pid == adminId
+        }
+        add(players, currentPlayer)
+
+        if currentPlayer.id == myself.id then
+            myself.name = currentPlayer.name
+            myself.team = currentPlayer.team
+            myself.isAdmin = currentPlayer.isAdmin
+        end
 
         index = index + 1
 
