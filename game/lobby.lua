@@ -40,15 +40,27 @@ function updateLobby()
         myself.team = 2
     end
 
+    if btn(❎) and myself.ready then
+        myself.ready = false
+        updateReadiness(myself)
+    end
+
+    if btn(🅾️) and not myself.ready then
+    myself.ready = true
+    updateReadiness(myself)
+    end
+
     --setPlayers(0, 5, {
-    --    myself,
-    --    player:new { id = 1, name = 'printf', team = 1, isAdmin = false },
-    --    player:new { id = 2, name = 'shin', team = 1, isAdmin = false },
-    --    player:new { id = 3, name = 'dark', team = 1, isAdmin = false },
-    --    player:new { id = 4, name = 'elazer', team = 2, isAdmin = false },
-    --    player:new { id = 5, name = 'ggkellhazzur', team = 2, isAdmin = true },
-    --    player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false },
-    --    player:new { id = 7, name = 'has', team = 2, isAdmin = false },
+    --myself,
+    --player:new { id = 1, name = 'printf', team = 1, isAdmin = false, ready = true },
+    --player:new { id = 2, name = 'shin', team = 1, isAdmin = false, ready = false },
+    --player:new { id = 3, name = 'dark', team = 1, isAdmin = false, ready = false },
+    --player:new { id = 4, name = 'elazer', team = 1, isAdmin = false, ready = true },
+    --player:new { id = 5, name = 'reynor', team = 2, isAdmin = true, ready = true },
+    --player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, ready = false },
+    --player:new { id = 7, name = 'has', team = 2, isAdmin = false, ready = true },
+    --player:new { id = 8, name = 'zest', team = 2, isAdmin = false, ready = false },
+    --player:new { id = 9, name = 'polt', team = 2, isAdmin = false, ready = false },
     --})
 
     --local playersFromJS = {254, 0, 0, 1, 1, 0, 0, 0, 103, 111, 108, 100, 53, 0, 1, 97, 122, 117, 114, 101, 51, 0, 0}
@@ -62,30 +74,46 @@ function updateLobby()
 end
 
 function drawLobby()
-    local yStep = 16
-    local y = 56
+    local yStep = 8
+    local y = 40
 
-    print('red team       blue team', 12, 24)
+    print('red team       blue team', 12, 12)
 
     if #room.team1 < MAX_TEAM_SIZE then
-        print('⬅️', 38, 36, 7)
+        print('⬅️', 38, 24, 7)
     end
 
     for p in all(room.team1) do
-        print(p.isAdmin == true and '♥' .. p.name or p.name, 0, y, p.id == myself.id and 11 or 12)
+        print(buildPlayerString(p), 0, y, p.id == myself.id and 11 or 12)
         y = y + yStep
     end
 
     if #room.team2 < MAX_TEAM_SIZE then
-        print('➡️', 78, 36, 7)
+        print('➡️', 78, 24, 7)
     end
 
-    y = 56
+    y = 40
 
     for p in all(room.team2) do
-        print(p.isAdmin == true and '♥' .. p.name or p.name, 72, y, p.id == myself.id and 11 or 8)
+        print(buildPlayerString(p), 72, y, p.id == myself.id and 11 or 8)
         y = y + yStep
     end
 
     color(7)
+
+    print('z - ready      x - not ready', 12, 108)
+end
+
+function buildPlayerString(p)
+    local s = ''
+
+    if p.ready then
+        s = s .. '♥'
+    end
+
+    if p.isAdmin then
+        s = s .. '(a)'
+    end
+
+    return s .. p.name
 end
