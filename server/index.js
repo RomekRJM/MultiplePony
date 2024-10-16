@@ -117,7 +117,7 @@ const createPlayerAndAssignToARoom = (playerName) => {
     let playerId = roomToJoin.team1Players.length + roomToJoin.team2Players.length;
     let player;
 
-    if (roomToJoin.team1Players.length > roomToJoin.team2Players.length) {
+    if (roomToJoin.team1Players.length >= roomToJoin.team2Players.length) {
         player = new Player(playerName, playerId, roomIdToJoin, 2);
         roomToJoin.team2Players.push(player);
     } else {

@@ -169,11 +169,11 @@ function handleUpdateTeamNames()
             pName = pName .. chr(b)
         end
 
-        parsedPlayers = parsedPlayers + 1
         local currentPlayer = {
             id = pid, name = pName, team = parsedPlayers < team1Length and 1 or 2, isAdmin = pid == adminId
         }
         add(players, currentPlayer)
+        parsedPlayers = parsedPlayers + 1
 
         if currentPlayer.id == myself.id then
             myself.name = currentPlayer.name
