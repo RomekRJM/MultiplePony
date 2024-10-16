@@ -77,7 +77,7 @@ function drawLobby()
     local yStep = 8
     local y = 40
 
-    print('red team       blue team', 12, 12)
+    print('blue team       red team', 12, 12)
 
     if #room.team1 < MAX_TEAM_SIZE then
         print('⬅️', 38, 24, 7)
