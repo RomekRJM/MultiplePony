@@ -84,7 +84,8 @@ function drawLobby()
     end
 
     for p in all(room.team1) do
-        print(buildPlayerString(p), 0, y, p.id == myself.id and 11 or 12)
+        local pString = buildPlayerString(p)
+        print(pString, 48 - #pString * 4, y, p.id == myself.id and 11 or 12)
         y = y + yStep
     end
 
@@ -95,7 +96,7 @@ function drawLobby()
     y = 40
 
     for p in all(room.team2) do
-        print(buildPlayerString(p), 72, y, p.id == myself.id and 11 or 8)
+        print(buildPlayerString(p), 76, y, p.id == myself.id and 11 or 8)
         y = y + yStep
     end
 
