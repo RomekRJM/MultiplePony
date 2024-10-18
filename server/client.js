@@ -10,7 +10,8 @@ const createPicoSocketClient = () => {
         name: "",
         team: -1,
         roomId: -1,
-        admin: false
+        admin: false,
+        ready: false,
     };
     const clientSocket = io.connect("http://localhost:5000/",
         {
@@ -71,11 +72,12 @@ const createPicoSocketClient = () => {
     }
 
     const handleUpdateReadinessCommand = () => {
+        player.ready = window.pico8_gpio[1] > 0;
         clientSocket.emit("UPDATE_READINESS_CMD", {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
-            ready: window.pico8_gpio[1] === 1,
+            ready: player.ready,
         });
     }
 
@@ -144,6 +146,12 @@ const createPicoSocketClient = () => {
 
     const onFrameUpdate = () => {
         processPico8Command()
+
+        // queue this function to run again (when the next animation frame is available)
+        // this queuing should help prevent overwhelming the browser with requests
+        setTimeout(() => {
+          window.requestAnimationFrame(onFrameUpdate);
+        }, 0);
     }
 
     const connectToRoomInterval = setInterval(() => {

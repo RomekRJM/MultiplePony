@@ -50,6 +50,7 @@ function updateLobby()
         updateReadiness(myself)
     end
 
+    --myself.name = 'myself'
     --setPlayers(0, 5, {
     --myself,
     --player:new { id = 1, name = 'printf', team = 1, isAdmin = false, ready = true },
@@ -60,7 +61,6 @@ function updateLobby()
     --player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, ready = false },
     --player:new { id = 7, name = 'has', team = 2, isAdmin = false, ready = true },
     --player:new { id = 8, name = 'zest', team = 2, isAdmin = false, ready = false },
-    --player:new { id = 9, name = 'polt', team = 2, isAdmin = false, ready = false },
     --})
 
     --local playersFromJS = {254, 0, 0, 1, 1, 0, 0, 0, 103, 111, 108, 100, 53, 0, 1, 97, 122, 117, 114, 101, 51, 0, 0}

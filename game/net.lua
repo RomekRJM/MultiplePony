@@ -71,7 +71,7 @@ function updateReadiness(p)
 
     local payload = createEmptyPayload()
     payload[COMMAND_INDEX] = UPDATE_READINESS_CMD
-    payload[2] = p.ready
+    payload[2] = p.ready and 1 or 0
 
     sendBuffer(payload)
 
@@ -148,13 +148,14 @@ function handleUpdateTeamNames()
     local team2Readiness = peek(BROWSER_GPIO_START_ADDR + 6)
     local parsedPlayers = 0
     local pid = 0
-    local c = 0
     local b = 0
     local pName = ''
     local players = {}
     local index = 7
 
     repeat
+        local playerTeam = parsedPlayers < team1Length and 1 or 2
+        local readinessSource = playerTeam == 1 and team1Readiness or team2Readiness
         pid = peek(BROWSER_GPIO_START_ADDR + index)
         pName = ''
 
@@ -169,11 +170,13 @@ function handleUpdateTeamNames()
             pName = pName .. chr(b)
         end
 
+        local playerReadyByte = playerTeam == 1 and parsedPlayers or (parsedPlayers - team1Length)
         local currentPlayer = {
-            id = pid, name = pName, team = parsedPlayers < team1Length and 1 or 2, isAdmin = pid == adminId
+            id = pid, name = pName, team = playerTeam, isAdmin = pid == adminId,
+            ready = (readinessSource & (1 << playerReadyByte)) > 0
         }
-        add(players, currentPlayer)
         parsedPlayers = parsedPlayers + 1
+        add(players, currentPlayer)
 
         if currentPlayer.id == myself.id then
             myself.name = currentPlayer.name
