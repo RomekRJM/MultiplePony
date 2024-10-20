@@ -11,6 +11,11 @@ room = {
 }
 
 MAX_TEAM_SIZE = 5
+countdownLauncher = 0
+
+function restartLobby()
+    countdownLauncher = 0
+end
 
 function setPlayers(roomId, adminId, players)
     room.roomId = roomId
@@ -27,6 +32,10 @@ function setPlayers(roomId, adminId, players)
 
         if adminId == p.id then
             p.isAdmin = true
+        end
+
+        if myself.id == p.id then
+            myself = p
         end
     end
 end
@@ -45,23 +54,32 @@ function updateLobby()
         updateReadiness(myself)
     end
 
-    if btn(🅾️) and not myself.ready then
+    if myself.ready == true and myself.isAdmin then
+        if btn(🅾️) then
+            countdownLauncher += 3
+        else
+            countdownLauncher = 0
+        end
+    end
+
+    if btnp(🅾️) and not myself.ready then
         myself.ready = true
         updateReadiness(myself)
     end
 
-    --myself.name = 'myself'
-    --setPlayers(0, 5, {
-    --myself,
-    --player:new { id = 1, name = 'printf', team = 1, isAdmin = false, ready = true },
-    --player:new { id = 2, name = 'shin', team = 1, isAdmin = false, ready = false },
-    --player:new { id = 3, name = 'dark', team = 1, isAdmin = false, ready = false },
-    --player:new { id = 4, name = 'elazer', team = 1, isAdmin = false, ready = true },
-    --player:new { id = 5, name = 'reynor', team = 2, isAdmin = true, ready = true },
-    --player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, ready = false },
-    --player:new { id = 7, name = 'has', team = 2, isAdmin = false, ready = true },
-    --player:new { id = 8, name = 'zest', team = 2, isAdmin = false, ready = false },
-    --})
+    myself.name = 'myself'
+    myself.isAdmin = true
+    setPlayers(0, 5, {
+    myself,
+    player:new { id = 1, name = 'printf', team = 1, isAdmin = false, ready = true },
+    player:new { id = 2, name = 'shin', team = 1, isAdmin = false, ready = false },
+    player:new { id = 3, name = 'dark', team = 1, isAdmin = false, ready = false },
+    player:new { id = 4, name = 'elazer', team = 1, isAdmin = false, ready = true },
+    player:new { id = 5, name = 'reynor', team = 2, isAdmin = false, ready = true },
+    player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, ready = false },
+    player:new { id = 7, name = 'has', team = 2, isAdmin = false, ready = true },
+    player:new { id = 8, name = 'zest', team = 2, isAdmin = false, ready = false },
+    })
 
     --local playersFromJS = {254, 0, 0, 1, 1, 0, 0, 0, 103, 111, 108, 100, 53, 0, 1, 97, 122, 117, 114, 101, 51, 0, 0}
     --
@@ -103,6 +121,16 @@ function drawLobby()
     color(7)
 
     print('z - ready      x - not ready', 12, 108)
+
+    if countdownLauncher > 0 then
+        rectfill(0, 115, 5 + countdownLauncher, 126, 3)
+    end
+
+    color(7)
+
+    if myself.isAdmin and myself.ready then
+        print('hold z - start round', 27, 120)
+    end
 end
 
 function buildPlayerString(p)

@@ -179,9 +179,7 @@ function handleUpdateTeamNames()
         add(players, currentPlayer)
 
         if currentPlayer.id == myself.id then
-            myself.name = currentPlayer.name
-            myself.team = currentPlayer.team
-            myself.isAdmin = currentPlayer.isAdmin
+            myself = currentPlayer
         end
 
         index = index + 1
