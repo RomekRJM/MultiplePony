@@ -30,6 +30,11 @@ roundStartTime = 0
 lastCountdownTime = 0
 secondsCountdown = 4
 
+MODE_SEND = 0
+MODE_RECEIVE = 1
+socketMode = MODE_SEND
+lastSendFrame = 0
+
 function clearGPIOPins()
     for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
         poke(pin)
@@ -91,9 +96,20 @@ function swapTeam(p)
 end
 
 function sendBuffer(payload)
+    if frame - lastSendFrame > 10 then
+        mode = MODE_SEND
+    end
+
+    if mode == MODE_RECEIVE then
+        return
+    end
+
     for i = 1, #payload do
         poke(BROWSER_GPIO_START_ADDR - 1 + i, payload[i])
     end
+
+    mode = MODE_RECEIVE
+    lastSendFrame = frame
 end
 
 function handleConnectedToServer()
@@ -208,6 +224,7 @@ function handleUpdateFromServer()
         return
     end
 
+    socketMode = MODE_SEND
     return COMMAND_LOOKUP[command]()
 end
 

@@ -72,12 +72,11 @@ const createPicoSocketClient = () => {
     }
 
     const handleUpdateReadinessCommand = () => {
-        player.ready = window.pico8_gpio[1] > 0;
         clientSocket.emit("UPDATE_READINESS_CMD", {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
-            ready: player.ready,
+            ready: window.pico8_gpio[1] > 0,
         });
     }
 
@@ -121,17 +120,22 @@ const createPicoSocketClient = () => {
 
             let index = 7;
 
-            for (let player of players) {
+            for (let p of players) {
 
-                if (player.name === adminPlayerName) {
-                    window.pico8_gpio[2] = player.id;
+                if (p.name === adminPlayerName) {
+                    window.pico8_gpio[2] = p.id;
                 }
 
-                window.pico8_gpio[index] = player.id;
+                if (player.id === p.id) {
+                    player.team = team1Players.includes(p) ? 1 : 2;
+                    player.ready = p.ready;
+                }
+
+                window.pico8_gpio[index] = p.id;
                 ++index;
 
                 let nameLength = 0;
-                for (let char of player.name) {
+                for (let char of p.name) {
                     window.pico8_gpio[index] = char.charCodeAt(0);
                     ++index;
                     ++nameLength;

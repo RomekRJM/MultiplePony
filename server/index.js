@@ -326,7 +326,7 @@ io.on("connection", (socket) => {
         let player = getPlayer(playerId, roomId, team);
 
         if (!player) {
-            console.log("Player not found ", playerId, roomId, team);
+            console.log("UPS Player not found ", playerId, roomId, team);
             return;
         }
 
@@ -339,7 +339,7 @@ io.on("connection", (socket) => {
         let player = getPlayer(playerId, roomId, team);
 
         if (!player) {
-            console.log("Player not found ", playerId, roomId, team);
+            console.log("ST Player not found ", playerId, roomId, team);
             return;
         }
 
@@ -354,7 +354,7 @@ io.on("connection", (socket) => {
         let player = getPlayer(playerId, roomId, team);
 
         if (!player) {
-            console.log("Player not found ", playerId, roomId, team);
+            console.log("UR Player not found ", playerId, roomId, team);
             return;
         }
 

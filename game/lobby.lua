@@ -43,10 +43,12 @@ end
 function updateLobby()
     if btn(⬅️) and #room.team1 < MAX_TEAM_SIZE then
         myself.team = 1
+        swapTeam(myself)
     end
 
     if btn(➡️) and #room.team2 < MAX_TEAM_SIZE then
         myself.team = 2
+        swapTeam(myself)
     end
 
     if btn(❎) and myself.ready then
