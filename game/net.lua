@@ -216,12 +216,16 @@ function sendRoundStartCommand()
         return
     end
 
-    --local payload = createEmptyPayload()
-    --
-    --payload[COMMAND_INDEX] = START_ROUND_CMD;
-    --
-    --sendBuffer(payload)
-    --gameState = SEND_START_ROUND_CMD_STATE
+    if countdownLauncher < 255 then
+        return
+    end
+
+    local payload = createEmptyPayload()
+
+    payload[COMMAND_INDEX] = START_ROUND_CMD;
+
+    sendBuffer(payload)
+    gameState = SEND_START_ROUND_CMD_STATE
 end
 
 function dbgbuff()
