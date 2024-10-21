@@ -38,6 +38,7 @@ pointGroups = {
 }
 
 myself = {}
+myselfId = -1
 
 arrowMaxPoints = 8
 

@@ -37,11 +37,11 @@ function _update60()
     handleUpdateFromServer()
     sendRoundStartCommand()
 
-    if gameState == 1 then
-        --poke(BROWSER_GPIO_START_ADDR, START_ROUND_CMD_SERVER_RESP)
-        --gameState = COUNTING_DOWN_TO_GAME_START_STATE
-        gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
-    end
+    --if gameState == 1 then
+    --    --poke(BROWSER_GPIO_START_ADDR, START_ROUND_CMD_SERVER_RESP)
+    --    --gameState = COUNTING_DOWN_TO_GAME_START_STATE
+    --    gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
+    --end
 
     frame = frame + 1
 end
