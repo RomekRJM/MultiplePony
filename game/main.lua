@@ -2,6 +2,7 @@ frame = 0
 
 function _init()
     frame = 0
+    restartNet()
     restartLobby()
     restartUnicorns()
     restartArrows()
@@ -21,7 +22,7 @@ function _draw()
     elseif gameState == GAME_IN_PROGRESS_STATE then
         drawUnicornsWithRainbow()
         drawArrows()
-        drawPlayerPoints()
+        drawPlayerScore()
     end
 end
 
@@ -32,6 +33,8 @@ function _update60()
         updatePlayer()
     elseif gameState == RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
         updateLobby()
+    elseif gameState == COUNTING_DOWN_TO_GAME_START_STATE then
+        frame = 0
     end
 
     handleUpdateFromServer()

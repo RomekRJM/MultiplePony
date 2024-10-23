@@ -58,7 +58,8 @@ const createPicoSocketClient = () => {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
-            score: bytes2Word(window.pico8_gpio.slice(4, 6)),
+            score: bytes2Word(window.pico8_gpio.slice(1, 3)),
+            frame: bytes2Word(window.pico8_gpio.slice(3, 5)),
         });
     }
 

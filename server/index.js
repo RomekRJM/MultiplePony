@@ -15,10 +15,12 @@ class Player {
         this.team = team;
         this.score = 0;
         this.ready = false;
+        this.lastFrameUpdate = 0;
     }
 
     resetPlayer() {
         this.score = 0;
+        this.lastFrameUpdate = 0;
         this.ready = false;
     }
 }
@@ -322,7 +324,7 @@ io.on("connection", (socket) => {
         }, countdownDuration)
     });
 
-    socket.on("UPDATE_PLAYER_SCORE_CMD", ({playerId, roomId, team, score}) => {
+    socket.on("UPDATE_PLAYER_SCORE_CMD", ({playerId, roomId, team, score, frame}) => {
         let player = getPlayer(playerId, roomId, team);
 
         if (!player) {
@@ -330,9 +332,11 @@ io.on("connection", (socket) => {
             return;
         }
 
-        player.score = score;
+        if ( frame > player.lastFrameUpdate ) {
+            player.score = score;
+        }
 
-        console.log("Player ", playerId, " score updated to ", player.score);
+        console.log("Player", playerId, "score updated to", player.score, "at frame", frame);
     });
 
     socket.on("SWAP_TEAM_CMD", ({playerId, roomId, team, newTeam}) => {

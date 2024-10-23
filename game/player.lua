@@ -3,7 +3,7 @@ player = {
     name = '',
     team = 0,
     isAdmin = false,
-    points = 0,
+    score = 0,
     ready = false,
 }
 
@@ -43,14 +43,14 @@ myselfId = -1
 arrowMaxPoints = 8
 
 function restartPlayer()
-    myself = {}
+    myself = { score = 0 }
 end
 
-function drawPlayerPoints()
-    print(myself.points, 63, 0)
+function drawPlayerScore()
+    print(frame, 63, 0)
 end
 
-function dbgpoints()
+function dbgScore()
     print(tprint(buttonPressed))
     for c in all(currentArrow) do
         print(tprint(c))
@@ -86,8 +86,8 @@ function updatePlayer()
         for pointGroup in all(pointGroups) do
             if absDiff <= pointGroup.maxAbsX then
                 --printh(tostring(q) .. ': ' .. tostring(pointGroup.points))
-                sendScore(pointGroup.points, frame)
-                myself.points += pointGroup.points
+                myself.score += pointGroup.points
+                sendScore(myself)
                 break
             end
         end

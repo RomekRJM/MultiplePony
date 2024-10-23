@@ -35,6 +35,11 @@ MODE_RECEIVE = 1
 socketMode = MODE_SEND
 lastSendFrame = 0
 
+function restartNet()
+    socketMode = MODE_SEND
+    lastSendFrame = 0
+end
+
 function clearGPIOPins()
     for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
         poke(pin)
@@ -92,7 +97,21 @@ function swapTeam(p)
     payload[2] = p.team
 
     sendBuffer(payload)
+end
 
+function sendScore(p)
+    if gameState ~= GAME_IN_PROGRESS_STATE then
+        return
+    end
+
+    local payload = createEmptyPayload()
+    payload[COMMAND_INDEX] = UPDATE_PLAYER_SCORE_CMD
+    payload[2] = p.score >> 8
+    payload[3] = p.score & 255
+    payload[4] = frame >> 8
+    payload[5] = frame & 255
+
+    sendBuffer(payload)
 end
 
 function sendBuffer(payload)
@@ -122,7 +141,7 @@ function handleConnectedToServer()
     local admin = peek(BROWSER_GPIO_START_ADDR + 3)
     local team = peek(BROWSER_GPIO_START_ADDR + 4)
 
-    myself = player:new { id = playerId, team = team, isAdmin = admin > 0, points = 0, ready = false }
+    myself = player:new { id = playerId, team = team, isAdmin = admin > 0, score = 0, ready = false }
     myselfId = playerId
 
     gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
@@ -157,6 +176,10 @@ function handleRoundStart()
 end
 
 function handleUpdateTeamNames()
+    if gameState >= COUNTING_DOWN_TO_GAME_START_STATE then
+        return
+    end
+
     local room = peek(BROWSER_GPIO_START_ADDR + 1)
     local adminId = peek(BROWSER_GPIO_START_ADDR + 2)
     local team1Length = peek(BROWSER_GPIO_START_ADDR + 3)
@@ -190,7 +213,7 @@ function handleUpdateTeamNames()
         local playerReadyByte = playerTeam == 1 and parsedPlayers or (parsedPlayers - team1Length)
         local currentPlayer = {
             id = pid, name = pName, team = playerTeam, isAdmin = pid == adminId,
-            ready = (readinessSource & (1 << playerReadyByte)) > 0
+            ready = (readinessSource & (1 << playerReadyByte)) > 0, score = 0,
         }
         parsedPlayers = parsedPlayers + 1
         add(players, currentPlayer)
