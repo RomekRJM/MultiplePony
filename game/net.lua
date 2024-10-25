@@ -148,7 +148,7 @@ function handleConnectedToServer()
 end
 
 function handleRoundStart()
-    if gameState < SEND_START_ROUND_CMD_STATE or gameState > COUNTING_DOWN_TO_GAME_START_STATE then
+    if gameState < RECEIVED_CONNECTED_TO_SERVER_RESP_STATE or gameState > COUNTING_DOWN_TO_GAME_START_STATE then
         return
     end
 
