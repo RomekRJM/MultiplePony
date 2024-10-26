@@ -16,11 +16,38 @@ secondToSprite = {
     },
 }
 
+roundStartTime = 0
+lastCountdownTime = 0
+secondsCountdown = 4
+
+function restartCountdown()
+    roundStartTime = 0
+end
+
 function drawCountdown()
 
     local currentCountdownSprite = secondToSprite[secondsCountdown]
 
     for sp in all(currentCountdownSprite) do
         spr(sp.sprite, sp.x, sp.y, sp.w, sp.h)
+    end
+end
+
+function updateCountdown()
+    if roundStartTime == 0 then
+        roundStartTime = time()
+        secondsCountdown = 4
+        lastCountdownTime = time()
+    end
+
+    if time() - lastCountdownTime >= 1 then
+        secondsCountdown = secondsCountdown - 1
+        lastCountdownTime = time()
+    else
+        return
+    end
+
+    if secondsCountdown <= 0 then
+        gameState = GAME_IN_PROGRESS_STATE
     end
 end

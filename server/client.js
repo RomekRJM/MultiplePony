@@ -19,8 +19,9 @@ const createPicoSocketClient = () => {
                 token: player.token
             }
         });
-    const commandIndex = 0;
-    const roomIdIndex = 1;
+    const serverCommandIndex = 0;
+    const clientCommandIndex = 121;
+    const serverRoomIdIndex = 1;
     const joinServerCommand = 1;
     const connectToServerResponse = 255;
     const updateTeamNamesServerResponse = 254;
@@ -58,8 +59,8 @@ const createPicoSocketClient = () => {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
-            score: bytes2Word(window.pico8_gpio.slice(1, 3)),
-            frame: bytes2Word(window.pico8_gpio.slice(3, 5)),
+            score: bytes2Word(window.pico8_gpio.slice(clientCommandIndex + 1, clientCommandIndex + 3)),
+            frame: bytes2Word(window.pico8_gpio.slice(clientCommandIndex + 3, clientCommandIndex + 5)),
         });
     }
 
@@ -68,7 +69,7 @@ const createPicoSocketClient = () => {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
-            newTeam: window.pico8_gpio[1],
+            newTeam: window.pico8_gpio[clientCommandIndex + 1],
         });
     }
 
@@ -77,11 +78,15 @@ const createPicoSocketClient = () => {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
-            ready: window.pico8_gpio[1] > 0,
+            ready: window.pico8_gpio[clientCommandIndex + 1] > 0,
         });
     }
 
+    const handleNoopCommand = () => {
+    };
+
     const clientCommands = {
+        1: handleNoopCommand,
         2: handleStartRoundCommand,
         3: handleUpdateReadinessCommand,
         4: handleSwapTeamCommand,
@@ -89,13 +94,15 @@ const createPicoSocketClient = () => {
     };
 
     const processPico8Command = () => {
-        const command = window.pico8_gpio[commandIndex];
+        const command = window.pico8_gpio[clientCommandIndex];
+        console.log(command);
 
-        if (command >= 128) {
+        if (command <= joinServerCommand) {
             return;
         }
 
-        return clientCommands[command]();
+        clientCommands[command]();
+        window.pico8_gpio[clientCommandIndex] = 0;
     }
 
     const attachServerListeners = () => {
@@ -103,17 +110,17 @@ const createPicoSocketClient = () => {
         clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
             console.log("Received round start command", roundId);
 
-            window.pico8_gpio[commandIndex] = startRoundCountdownServerResponse;
-            window.pico8_gpio[roomIdIndex] = player.roomId;
-            window.pico8_gpio[3] = roundId;
+            window.pico8_gpio[serverCommandIndex] = startRoundCountdownServerResponse;
+            window.pico8_gpio[serverRoomIdIndex] = player.roomId;
+            window.pico8_gpio[2] = roundId;
         });
 
         clientSocket.on("UPDATE_TEAM_NAMES", ({adminPlayerName, team1Players, team2Players}) => {
             console.log("Received update team names command", {adminPlayerName, team1Players, team2Players});
             let players = [...team1Players, ...team2Players];
 
-            window.pico8_gpio[commandIndex] = updateTeamNamesServerResponse;
-            window.pico8_gpio[roomIdIndex] = player.roomId;
+            window.pico8_gpio[serverCommandIndex] = updateTeamNamesServerResponse;
+            window.pico8_gpio[serverRoomIdIndex] = player.roomId;
             window.pico8_gpio[3] = team1Players.length;
             window.pico8_gpio[4] = team2Players.length;
             window.pico8_gpio[5] = team2Readiness(team1Players);
@@ -150,7 +157,7 @@ const createPicoSocketClient = () => {
     }
 
     const onFrameUpdate = () => {
-        processPico8Command()
+        processPico8Command();
 
         // queue this function to run again (when the next animation frame is available)
         // this queuing should help prevent overwhelming the browser with requests
@@ -160,7 +167,7 @@ const createPicoSocketClient = () => {
     }
 
     const connectToRoomInterval = setInterval(() => {
-        const command = window.pico8_gpio[commandIndex];
+        const command = window.pico8_gpio[clientCommandIndex];
 
         if (command === joinServerCommand) {
             player.name = window.pico8_gpio.slice(1, 12).reduce((a, c) => a + String.fromCharCode(c), "");
@@ -174,8 +181,8 @@ const createPicoSocketClient = () => {
                 player.team = team;
                 player.admin = admin;
 
-                window.pico8_gpio[commandIndex] = connectToServerResponse;
-                window.pico8_gpio[roomIdIndex] = player.roomId;
+                window.pico8_gpio[serverCommandIndex] = connectToServerResponse;
+                window.pico8_gpio[serverRoomIdIndex] = player.roomId;
                 window.pico8_gpio[2] = player.id;
                 window.pico8_gpio[3] = player.admin ? 1 : 0;
                 window.pico8_gpio[4] = player.team;

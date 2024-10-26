@@ -7,6 +7,7 @@ function _init()
     restartUnicorns()
     restartArrows()
     restartPlayer()
+    restartCountdown()
     clearGPIOPins()
     establishConnection()
 end
@@ -35,6 +36,7 @@ function _update60()
         updateLobby()
     elseif gameState == COUNTING_DOWN_TO_GAME_START_STATE then
         frame = 0
+        updateCountdown()
     end
 
     handleUpdateFromServer()

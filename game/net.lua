@@ -1,4 +1,4 @@
-COMMAND_INDEX = 1
+CLIENT_COMMAND_INDEX = 1
 -- player_id_addr = 0x5f81              -- index 1
 -- player_score_delta_addr = 0x5f82     -- index 2
 -- player_score_timestamp_addr = 0x5f83 -- index 3
@@ -6,6 +6,9 @@ COMMAND_INDEX = 1
 
 BROWSER_GPIO_START_ADDR = 0x5f80
 BROWSER_GPIO_END_ADDR = 0x5fff
+GPIO_LENGTH = 128
+CLIENT_FRAME_LENGTH = 7
+BROWSER_GPIO_CLIENT_START_ADDR = BROWSER_GPIO_END_ADDR - CLIENT_FRAME_LENGTH
 
 JOIN_SERVER_CMD = 1
 START_ROUND_CMD = 2
@@ -15,7 +18,6 @@ UPDATE_PLAYER_SCORE_CMD = 5
 CONNECTED_TO_SERVER_RESP = 255
 UPDATE_TEAM_NAMES_SERVER_RESP = 254
 START_ROUND_CMD_SERVER_RESP = 253
-GPIO_LENGTH = 128
 
 INITIAL_STATE = 0
 SEND_JOIN_SERVER_CMD_STATE = 1
@@ -26,30 +28,25 @@ GAME_IN_PROGRESS_STATE = 5
 GAME_FINISHED_STATE = 6
 
 gameState = INITIAL_STATE
-roundStartTime = 0
-lastCountdownTime = 0
-secondsCountdown = 4
-
-MODE_SEND = 0
-MODE_RECEIVE = 1
-socketMode = MODE_SEND
-lastSendFrame = 0
 
 function restartNet()
-    socketMode = MODE_SEND
-    lastSendFrame = 0
 end
 
 function clearGPIOPins()
-    for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_END_ADDR do
+    for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_CLIENT_START_ADDR do
         poke(pin)
     end
 end
 
-function createEmptyPayload()
-    local payload = {}
-    for i = 1, GPIO_LENGTH do
+function clearServerGPIOPins()
+    for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_CLIENT_START_ADDR - 1 do
+        poke(pin, 0)
+    end
+end
 
+function createEmptyClientPayload()
+    local payload = {}
+    for i = 1, CLIENT_FRAME_LENGTH do
         payload[i] = 0
     end
 
@@ -62,9 +59,9 @@ function establishConnection()
     end
 
     local playerName = "BAR"
-    local payload = createEmptyPayload()
+    local payload = createEmptyClientPayload()
 
-    payload[COMMAND_INDEX] = JOIN_SERVER_CMD;
+    payload[CLIENT_COMMAND_INDEX] = JOIN_SERVER_CMD;
 
     for i = 1, #playerName do
         payload[i + 1] = ord(playerName, i)
@@ -79,8 +76,8 @@ function updateReadiness(p)
         return
     end
 
-    local payload = createEmptyPayload()
-    payload[COMMAND_INDEX] = UPDATE_READINESS_CMD
+    local payload = createEmptyClientPayload()
+    payload[CLIENT_COMMAND_INDEX] = UPDATE_READINESS_CMD
     payload[2] = p.ready and 1 or 0
 
     sendBuffer(payload)
@@ -92,8 +89,8 @@ function swapTeam(p)
         return
     end
 
-    local payload = createEmptyPayload()
-    payload[COMMAND_INDEX] = SWAP_TEAM_COMMAND
+    local payload = createEmptyClientPayload()
+    payload[CLIENT_COMMAND_INDEX] = SWAP_TEAM_COMMAND
     payload[2] = p.team
 
     sendBuffer(payload)
@@ -104,8 +101,8 @@ function sendScore(p)
         return
     end
 
-    local payload = createEmptyPayload()
-    payload[COMMAND_INDEX] = UPDATE_PLAYER_SCORE_CMD
+    local payload = createEmptyClientPayload()
+    payload[CLIENT_COMMAND_INDEX] = UPDATE_PLAYER_SCORE_CMD
     payload[2] = p.score >> 8
     payload[3] = p.score & 255
     payload[4] = frame >> 8
@@ -115,20 +112,9 @@ function sendScore(p)
 end
 
 function sendBuffer(payload)
-    if frame - lastSendFrame > 10 then
-        mode = MODE_SEND
-    end
-
-    if mode == MODE_RECEIVE then
-        return
-    end
-
     for i = 1, #payload do
-        poke(BROWSER_GPIO_START_ADDR - 1 + i, payload[i])
+        poke(BROWSER_GPIO_CLIENT_START_ADDR + i, payload[i])
     end
-
-    mode = MODE_RECEIVE
-    lastSendFrame = frame
 end
 
 function handleConnectedToServer()
@@ -155,24 +141,6 @@ function handleRoundStart()
     local room = peek(BROWSER_GPIO_START_ADDR + 1)
     local roundId = peek(BROWSER_GPIO_START_ADDR + 2)
     gameState = COUNTING_DOWN_TO_GAME_START_STATE
-
-    if roundStartTime == 0 then
-        roundStartTime = time()
-        secondsCountdown = 4
-        lastCountdownTime = time()
-    end
-
-    if time() - lastCountdownTime >= 1 then
-        secondsCountdown = secondsCountdown - 1
-        lastCountdownTime = time()
-    else
-        return
-    end
-
-    if secondsCountdown <= 0 then
-        gameState = GAME_IN_PROGRESS_STATE
-    end
-
 end
 
 function handleUpdateTeamNames()
@@ -231,6 +199,7 @@ function handleUpdateTeamNames()
     until (parsedPlayers >= team1Length + team2Length) or ( index > 117 )
 
     setPlayers(room, adminId, players)
+    clearServerGPIOPins()
 
 end
 
@@ -243,12 +212,9 @@ COMMAND_LOOKUP = {
 function handleUpdateFromServer()
     local command = peek(BROWSER_GPIO_START_ADDR)
 
-    if command < 128 then
-        return
+    if command ~= 0 then
+        COMMAND_LOOKUP[command]()
     end
-
-    socketMode = MODE_SEND
-    return COMMAND_LOOKUP[command]()
 end
 
 function sendRoundStartCommand()
@@ -260,9 +226,9 @@ function sendRoundStartCommand()
         return
     end
 
-    local payload = createEmptyPayload()
+    local payload = createEmptyClientPayload()
 
-    payload[COMMAND_INDEX] = START_ROUND_CMD;
+    payload[CLIENT_COMMAND_INDEX] = START_ROUND_CMD;
 
     sendBuffer(payload)
     gameState = SEND_START_ROUND_CMD_STATE
