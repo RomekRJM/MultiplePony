@@ -39,6 +39,7 @@ const roomData = [
         status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
         clock: 0,
+        lastScoreUpdate: 0,
         socket: null,
     },
     {
@@ -47,6 +48,7 @@ const roomData = [
         status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
         clock: 0,
+        lastScoreUpdate: 0,
         socket: null,
     },
     {
@@ -55,6 +57,7 @@ const roomData = [
         status: RoomStatus.ACCEPTING_PLAYERS,
         adminPlayerName: null,
         clock: 0,
+        lastScoreUpdate: 0,
         socket: null,
     },
 ];
@@ -255,6 +258,7 @@ io.on("connection", (socket) => {
             room.team1Players = [];
             room.team2Players = [];
             room.status = RoomStatus.ACCEPTING_PLAYERS;
+            room.lastScoreUpdate = 0;
             room.clock = 0;
             room.adminPlayerName = null;
 
@@ -334,6 +338,7 @@ io.on("connection", (socket) => {
 
         if ( frame > player.lastFrameUpdate ) {
             player.score = score;
+            roomData[roomId].lastScoreUpdate = roomData[roomId].clock;
         }
 
         console.log("Player", playerId, "score updated to", player.score, "at frame", frame);
@@ -394,16 +399,19 @@ setInterval(
                     io.volatile.in(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
                         playerScores: playerScores,
                         winningTeam: winningTeam,
-                        clock: room.clock
+                        clock: room.clock,
+                        lastScoreUpdate: room.lastScoreUpdate,
                     });
                 } else {
                     room.status = RoomStatus.ACCEPTING_PLAYERS;
+                    room.lastScoreUpdate += 1;
                     console.log("Game finished in room ", roomId, " with winning team ", winningTeam);
 
                     io.in(roomId.toString()).emit("UPDATE_ROUND_PROGRESS_CMD", {
                         playerScores: playerScores,
                         winningTeam: winningTeam,
-                        clock: room.clock
+                        clock: room.clock,
+                        lastScoreUpdate: room.lastScoreUpdate,
                     });
 
                     // handle emptying the room and closing the socket

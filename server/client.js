@@ -155,15 +155,21 @@ const createPicoSocketClient = () => {
             }
         });
 
-        clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock}) => {
-            console.log("Received update round progress command", {playerScores, winningTeam, clock});
+        clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock, lastScoreUpdate}) => {
+            console.log("Received update round progress command", {playerScores, winningTeam, clock, lastScoreUpdate});
+            let clockBytes = word2Bytes(clock);
+            let lastScoreUpdateBytes = word2Bytes(lastScoreUpdate);
+
             window.pico8_gpio[serverCommandIndex] = updateRoundProgressServerResponse;
             window.pico8_gpio[serverRoomIdIndex] = player.roomId;
-            window.pico8_gpio[2] = clock;
-            window.pico8_gpio[3] = winningTeam;
-            window.pico8_gpio[4] = playerScores.length;
+            window.pico8_gpio[2] = clockBytes[0];
+            window.pico8_gpio[3] = clockBytes[1];
+            window.pico8_gpio[4] = lastScoreUpdateBytes[0];
+            window.pico8_gpio[5] = lastScoreUpdateBytes[1];
+            window.pico8_gpio[6] = winningTeam;
+            window.pico8_gpio[7] = playerScores.length;
 
-            let index = 5;
+            let index = 8;
 
             for (let ps of playerScores) {
                 let bytes = word2Bytes(ps.score);

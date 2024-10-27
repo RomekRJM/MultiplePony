@@ -209,14 +209,19 @@ function handleUpdateRoundProgress()
         return
     end
 
-    local room = peek(BROWSER_GPIO_START_ADDR + 1)
-    local serverClock = peek(BROWSER_GPIO_START_ADDR + 2)
-    local winningTeam = peek(BROWSER_GPIO_START_ADDR + 3)
-    local playerScoresLength = peek(BROWSER_GPIO_START_ADDR + 4)
+    local _room = peek(BROWSER_GPIO_START_ADDR + 1)
+    local serverClock = (peek(BROWSER_GPIO_START_ADDR + 2) << 8) | peek(BROWSER_GPIO_START_ADDR + 3)
+    local lastScoreUpdate = (peek(BROWSER_GPIO_START_ADDR + 4) << 8) | peek(BROWSER_GPIO_START_ADDR + 5)
+    local winningTeam = peek(BROWSER_GPIO_START_ADDR + 6)
+    local playerScoresLength = peek(BROWSER_GPIO_START_ADDR + 7)
     local pid = 0
     local pScore = 0
     local parsedScores = 0
-    local index = 5
+    local index = 8
+
+    if room.lastScoreUpdate >= lastScoreUpdate then
+        return
+    end
 
     repeat
         pid = peek(BROWSER_GPIO_START_ADDR + index)
@@ -228,6 +233,9 @@ function handleUpdateRoundProgress()
         parsedScores += 1
 
     until (parsedScores > playerScoresLength) or ( index > 117 )
+
+    room.lastScoreUpdate = lastScoreUpdate
+    room.winningTeam = winningTeam
 
     clearServerGPIOPins()
 

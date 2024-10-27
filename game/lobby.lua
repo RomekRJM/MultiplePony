@@ -10,6 +10,8 @@ room = {
     },
     team1Score = 0,
     team2Score = 0,
+    lastScoreUpdate = 0,
+    winningTeam = 0,
 }
 
 MAX_TEAM_SIZE = 5
