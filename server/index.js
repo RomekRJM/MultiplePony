@@ -5,7 +5,7 @@ const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
 const countdownDuration = getCountdownDuration();
 const pointsToWin = 10000;
-const clockCycle = 16;
+const clockCycle = 250;
 
 class Player {
     constructor(name, id, roomId, team) {
@@ -382,7 +382,7 @@ setInterval(
 
             let playerScores = roomData[roomId].team1Players.concat(roomData[roomId].team2Players).map((p) => {
                 return {
-                    playerName: p.name,
+                    playerId: p.id,
                     score: p.score,
                 };
             });

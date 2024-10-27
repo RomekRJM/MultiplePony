@@ -46,8 +46,8 @@ function restartPlayer()
     myself = { score = 0 }
 end
 
-function drawPlayerScore()
-    print(frame, 63, 0)
+function drawTeamScores()
+    print(room.team1Score .. '      ' .. room.team2Score, 48, 0)
 end
 
 function dbgScore()

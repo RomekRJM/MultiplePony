@@ -18,6 +18,7 @@ UPDATE_PLAYER_SCORE_CMD = 5
 CONNECTED_TO_SERVER_RESP = 255
 UPDATE_TEAM_NAMES_SERVER_RESP = 254
 START_ROUND_CMD_SERVER_RESP = 253
+UPDATE_ROUND_PROGRESS_SERVER_RESP = 252
 
 INITIAL_STATE = 0
 SEND_JOIN_SERVER_CMD_STATE = 1
@@ -203,10 +204,40 @@ function handleUpdateTeamNames()
 
 end
 
+function handleUpdateRoundProgress()
+    if gameState ~= GAME_IN_PROGRESS_STATE then
+        return
+    end
+
+    local room = peek(BROWSER_GPIO_START_ADDR + 1)
+    local serverClock = peek(BROWSER_GPIO_START_ADDR + 2)
+    local winningTeam = peek(BROWSER_GPIO_START_ADDR + 3)
+    local playerScoresLength = peek(BROWSER_GPIO_START_ADDR + 4)
+    local pid = 0
+    local pScore = 0
+    local parsedScores = 0
+    local index = 5
+
+    repeat
+        pid = peek(BROWSER_GPIO_START_ADDR + index)
+        pScore = (peek(BROWSER_GPIO_START_ADDR + index + 1) << 8) | peek(BROWSER_GPIO_START_ADDR + index + 2)
+
+        updatePlayerAndTeamScore(pid, pScore)
+
+        index += 3
+        parsedScores += 1
+
+    until (parsedScores > playerScoresLength) or ( index > 117 )
+
+    clearServerGPIOPins()
+
+end
+
 COMMAND_LOOKUP = {
     [CONNECTED_TO_SERVER_RESP] = handleConnectedToServer,
     [START_ROUND_CMD_SERVER_RESP] = handleRoundStart,
     [UPDATE_TEAM_NAMES_SERVER_RESP] = handleUpdateTeamNames,
+    [UPDATE_ROUND_PROGRESS_SERVER_RESP] = handleUpdateRoundProgress,
 }
 
 function handleUpdateFromServer()
@@ -232,16 +263,4 @@ function sendRoundStartCommand()
 
     sendBuffer(payload)
     gameState = SEND_START_ROUND_CMD_STATE
-end
-
-function dbgbuff()
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 0)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 1)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 2)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 3)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 4)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 5)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 6)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 127)))
-    print(tostring(peek(BROWSER_GPIO_START_ADDR + 128)))
 end

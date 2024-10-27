@@ -23,7 +23,7 @@ function _draw()
     elseif gameState == GAME_IN_PROGRESS_STATE then
         drawUnicornsWithRainbow()
         drawArrows()
-        drawPlayerScore()
+        drawTeamScores()
     end
 end
 

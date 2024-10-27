@@ -8,6 +8,8 @@ room = {
     team2 = {
 
     },
+    team1Score = 0,
+    team2Score = 0,
 }
 
 MAX_TEAM_SIZE = 5
@@ -15,6 +17,55 @@ countdownLauncher = 0
 
 function restartLobby()
     countdownLauncher = 0
+end
+
+function updatePlayerAndTeamScore(playerId, score)
+    local playerTeam = nil
+    local playerIndex = 0
+    local index = 0
+
+    for p in all(room.team1) do
+        index += 1
+
+        if p.id == playerId then
+            playerTeam = 1
+            playerIndex = index
+            break
+        end
+    end
+
+    index = 0
+
+    if playerIndex == 0 then
+        for p in all(room.team2) do
+            index += 1
+
+            if p.id == playerId then
+                playerTeam = 2
+                playerIndex = index
+            end
+        end
+    end
+
+    if playerIndex == 0 then
+        return
+    end
+
+    if playerTeam == 1 then
+        room.team1Score += score
+    else
+        room.team2Score += score
+    end
+
+    if playerId == myselfId then
+        return
+    end
+
+    if playerTeam == 1 then
+        room.team1[playerIndex].score += score
+    else
+        room.team2[playerIndex].score += score
+    end
 end
 
 function setPlayers(roomId, adminId, players)

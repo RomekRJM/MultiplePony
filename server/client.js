@@ -26,6 +26,7 @@ const createPicoSocketClient = () => {
     const connectToServerResponse = 255;
     const updateTeamNamesServerResponse = 254;
     const startRoundCountdownServerResponse = 253;
+    const updateRoundProgressServerResponse = 252;
 
     const bytes2Word = (bytes) => {
         return (bytes[0] << 8) + bytes[1];
@@ -106,7 +107,6 @@ const createPicoSocketClient = () => {
     }
 
     const attachServerListeners = () => {
-        // this listener moved from handleStartRoundCommand, check if it is fine
         clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
             console.log("Received round start command", roundId);
 
@@ -151,6 +151,30 @@ const createPicoSocketClient = () => {
 
                 // 0 means end of name
                 window.pico8_gpio[index] = 0;
+                ++index;
+            }
+        });
+
+        clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock}) => {
+            console.log("Received update round progress command", {playerScores, winningTeam, clock});
+            window.pico8_gpio[serverCommandIndex] = updateRoundProgressServerResponse;
+            window.pico8_gpio[serverRoomIdIndex] = player.roomId;
+            window.pico8_gpio[2] = clock;
+            window.pico8_gpio[3] = winningTeam;
+            window.pico8_gpio[4] = playerScores.length;
+
+            let index = 5;
+
+            for (let ps of playerScores) {
+                let bytes = word2Bytes(ps.score);
+
+                window.pico8_gpio[index] = ps.playerId;
+                ++index;
+
+                window.pico8_gpio[index] = bytes[0];
+                ++index;
+
+                window.pico8_gpio[index] = bytes[1];
                 ++index;
             }
         });
