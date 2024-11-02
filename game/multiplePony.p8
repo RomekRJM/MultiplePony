@@ -10,6 +10,7 @@ __lua__
 #include arrows.lua
 #include lobby.lua
 #include unicorns.lua
+#include end.lua
 #include main.lua
 
 __gfx__

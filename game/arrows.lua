@@ -57,9 +57,11 @@ visibleArrowQueue = {}
 visibleArrowQueueLen = {}
 arrowQueue = {}
 arrowQueueIndex = {}
+currentLevelDuration = 0
 
 levelData = "L-32,R-32,T-32,B-32,l-8-8,R-40"
 levelData2 = "X-16,Z-64,x-4-5,z-4-5"
+levelDuration = 128 + 128 + 16 + 40 + 128
 
 symbolMapping = {
     ['L'] = leftArrow,
@@ -223,6 +225,7 @@ function restartArrows()
     visibleArrowQueue[1] = {}
     visibleArrowQueue[2] = {}
     visibleArrowQueueMaxLen = 10
+    currentLevelDuration = 0
 
     generateLevel(false)
 
@@ -297,6 +300,12 @@ function updateArrows()
 
     local currentArrowMinAcceptableX = 0;
     local currentArrowMaxAcceptableX = 0;
+
+    if currentLevelDuration >= levelDuration then
+        gameState = GAME_END_SCREEN_STATE
+    end
+
+    currentLevelDuration += 1
 
     for q = 1, 2 do
         currentArrow[q] = nil

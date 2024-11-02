@@ -24,6 +24,8 @@ function _draw()
         drawUnicornsWithRainbow()
         drawArrows()
         drawTeamScores()
+    elseif gameState == GAME_END_SCREEN_STATE then
+        drawEndScreen()
     end
 end
 
