@@ -27,6 +27,10 @@ const createPicoSocketClient = () => {
     const updateTeamNamesServerResponse = 254;
     const startRoundCountdownServerResponse = 253;
     const updateRoundProgressServerResponse = 252;
+    const audios = [
+        new Audio('audio/chippi.mp3'),
+    ];
+    let currentAudio;
 
     const bytes2Word = (bytes) => {
         return (bytes[0] << 8) + bytes[1];
@@ -83,6 +87,18 @@ const createPicoSocketClient = () => {
         });
     }
 
+    const handlePlaySong = () => {
+
+        if (currentAudio) {
+            currentAudio.pause();
+        }
+
+        let songIndex = window.pico8_gpio[clientCommandIndex + 1];
+        currentAudio = audios[songIndex];
+
+        currentAudio.play();
+    }
+
     const handleNoopCommand = () => {
     };
 
@@ -92,6 +108,7 @@ const createPicoSocketClient = () => {
         3: handleUpdateReadinessCommand,
         4: handleSwapTeamCommand,
         5: handleUpdatePlayerScoreCommand,
+        6: handlePlaySong,
     };
 
     const processPico8Command = () => {
