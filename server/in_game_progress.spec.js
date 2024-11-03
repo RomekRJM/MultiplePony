@@ -89,12 +89,12 @@ describe.sequential("multiple pony server", () => {
 
                 setTimeout(() => {
                     clientSockets.forEach((s, i) => {
-                        s.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock}) => {
+                        s.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock, lastScoreUpdate}) => {
                             [
-                                {playerName: 'PLAYER0', score: 600},
-                                {playerName: 'PLAYER2', score: 0},
-                                {playerName: 'PLAYER1', score: 10000},
-                                {playerName: 'PLAYER3', score: 0}
+                                {playerId: 0, score: 600},
+                                {playerId: 2, score: 0},
+                                {playerId: 1, score: 10000},
+                                {playerId: 3, score: 0}
                             ].forEach(e => {
                                 expect(playerScores.map(s => JSON.stringify(s))).toContain(JSON.stringify(e));
                             })
@@ -104,6 +104,7 @@ describe.sequential("multiple pony server", () => {
 
                             expect(winningTeam).toEqual(playerInfo[1].team);
                             expect(clock).toBeGreaterThan(0);
+                            expect(lastScoreUpdate).toBeGreaterThan(0);
 
                             s.disconnect();
 
