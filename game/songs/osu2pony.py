@@ -17,16 +17,19 @@ FPS = 60
 class Event:
     type: str
     time: int
+    repeats: int
     firstLevelData: bool
     repeated: bool
 
-    def __init__(self, x, time, type):
+    def __init__(self, x, time, time2, type):
         self.type = X_TO_ARROW[x]
         self.time = INITIAL_DELAY + time // FPS
         self.firstLevelData = x <= 224
-        self.repeated = type == 3
+        self.repeated = type == 128
+        self.repeats = 0
 
         if self.repeated:
+            self.repeats = (time2 - time) // (FPS * 4)
             self.type = self.type.lower()
 
 
@@ -45,10 +48,11 @@ def extract_events_from_osu(file):
         if not in_hit_section:
             continue
 
-        x, _y, time, type, _hit_sound, _hit_sample = line.split(',')
+        x, _y, time, type, _hit_sound, hit_sample = line.split(',')
+        time2 = hit_sample.split(':')[0]
 
         events.append(
-            Event(int(x), int(time), int(type))
+            Event(int(x), int(time), int(time2), int(type))
         )
 
         if line.startswith('['):
@@ -69,7 +73,12 @@ def event_to_lua_pony_code(events):
 
     for event in events:
         level_duration = max(level_duration, event.time)
-        symbol = event.type + '-' + str(event.time - last_event_time)
+        symbol = event.type + '-'
+
+        if event.repeated:
+            symbol += str(event.repeats) + '-'
+
+        symbol += str(event.time - last_event_time)
 
         if event.firstLevelData:
             level_data.append(symbol)

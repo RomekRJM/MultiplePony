@@ -1,7 +1,7 @@
 osu file format v14
 
 [General]
-AudioFilename:Dubidubidu (Chipi Chipi Chapa Chapa).mp3
+AudioFilename:Dubidubidu (Chipi Chipi Chapa Chapa) - Christell.ogg
 AudioLeadIn:0
 PreviewTime:-1
 Countdown:0
@@ -24,7 +24,7 @@ TitleUnicode:
 Artist:
 ArtistUnicode:
 Creator:chippi
-Version:Hard
+Version:Medium
 Source:
 Tags:
 BeatmapID:0
@@ -40,7 +40,7 @@ SliderTickRate:1
 
 [Events]
 //Background and Video events
-0,0,"_ce5d19c5-ac49-48e8-b5ff-f423bf1b307c-removebg-preview.png",0,0
+0,0,"u1wx1b0kt0bgrsld32kboyxujdbkk3vd1i7uyjau.xml",0,0
 //Break Periods
 //Storyboard Layer 0 (Background)
 //Storyboard Layer 1 (Fail
@@ -52,17 +52,17 @@ SliderTickRate:1
 0,500.000000,4,1,0,100,1,0
 
 [HitObjects]
-32,192,0,1,0,0:0:0:0:
-96,192,1000,1,0,0:0:0:0:
-160,192,2000,1,0,0:0:0:0:
+32,192,1000,1,0,0:0:0:0:
+224,192,1500,1,0,0:0:0:0:
+32,192,2500,1,0,0:0:0:0:
 224,192,3500,1,0,0:0:0:0:
-288,192,3500,1,0,0:0:0:0:
-288,192,4500,1,0,0:0:0:0:
-352,192,5500,1,0,0:0:0:0:
-224,192,6500,1,0,0:0:0:0:
-288,192,7000,1,0,0:0:0:0:
-352,192,8000,1,0,0:0:0:0:
-32,192,8500,1,0,0:0:0:0:
-96,192,9500,1,0,0:0:0:0:
-160,192,10500,1,0,0:0:0:0:
-224,192,11500,1,0,0:0:0:0:
+32,192,4167,1,0,0:0:0:0:
+96,192,4583,128,0,5250:0:0:0:0:
+32,192,7000,1,0,0:0:0:0:
+160,192,7500,1,0,0:0:0:0:
+96,192,8500,1,0,0:0:0:0:
+160,192,9000,1,0,0:0:0:0:
+96,192,10000,1,0,0:0:0:0:
+288,192,11000,128,0,12000:0:0:0:0:
+352,192,12000,128,0,13000:0:0:0:0:
+96,192,13000,128,0,13500:0:0:0:0:
