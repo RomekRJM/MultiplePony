@@ -15,6 +15,7 @@ START_ROUND_CMD = 2
 UPDATE_READINESS_CMD = 3
 SWAP_TEAM_COMMAND = 4
 UPDATE_PLAYER_SCORE_CMD = 5
+START_SONG_CMD = 6
 CONNECTED_TO_SERVER_RESP = 255
 UPDATE_TEAM_NAMES_SERVER_RESP = 254
 START_ROUND_CMD_SERVER_RESP = 253
@@ -272,4 +273,17 @@ function sendRoundStartCommand()
 
     sendBuffer(payload)
     gameState = SEND_START_ROUND_CMD_STATE
+end
+
+function sendStartSongCommand()
+    if gameState ~= GAME_IN_PROGRESS_STATE then
+        return
+    end
+
+    local payload = createEmptyClientPayload()
+
+    payload[CLIENT_COMMAND_INDEX] = START_SONG_CMD
+    payload[2] = 0
+
+    sendBuffer(payload)
 end

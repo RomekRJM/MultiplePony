@@ -49,5 +49,6 @@ function updateCountdown()
 
     if secondsCountdown <= 0 then
         gameState = GAME_IN_PROGRESS_STATE
+        sendStartSongCommand()
     end
 end
