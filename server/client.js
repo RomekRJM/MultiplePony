@@ -28,7 +28,7 @@ const createPicoSocketClient = () => {
     const startRoundCountdownServerResponse = 253;
     const updateRoundProgressServerResponse = 252;
     const audios = [
-        new Audio('audio/chippi.mp3'),
+        new Audio('audio/chippi.ogg'),
     ];
     let currentAudio;
 
