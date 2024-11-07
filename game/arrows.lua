@@ -59,8 +59,8 @@ arrowQueue = {}
 arrowQueueIndex = {}
 currentLevelDuration = 0
 
-levelData = "L-60,R-30,L-60,R-60,L-40,b-10-25,L-145,T-30,B-60,T-30,B-60,b-7-60"
-levelData2 = "x-15-60,z-15-60"
+levelData = "L-60,R-30,L-60,R-60,L-40,b-25-10,L-145,T-30,B-60,T-30,B-60,b-60-7"
+levelData2 = "x-60-15,z-60-15"
 levelDuration = 908
 
 symbolMapping = {
