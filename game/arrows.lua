@@ -59,9 +59,9 @@ arrowQueue = {}
 arrowQueueIndex = {}
 currentLevelDuration = 0
 
-levelData = "L-32,R-32,T-32,B-32,l-8-8,R-40"
-levelData2 = "X-16,Z-64,x-4-5,z-4-5"
-levelDuration = 128 + 128 + 16 + 40 + 128
+levelData = "L-60,R-30,L-60,R-60,L-40,b-10-25,L-145,T-30,B-60,T-30,B-60,b-7-60"
+levelData2 = "x-15-60,z-15-60"
+levelDuration = 908
 
 symbolMapping = {
     ['L'] = leftArrow,

@@ -11,6 +11,7 @@ X_TO_ARROW = {
 
 INITIAL_DELAY = 128
 FPS = 60
+FRAMES_IN_A_SECOND = 1000 / FPS
 
 
 @dataclass
@@ -23,13 +24,13 @@ class Event:
 
     def __init__(self, x, time, time2, type):
         self.type = X_TO_ARROW[x]
-        self.time = INITIAL_DELAY + time // FPS
+        self.time = round(INITIAL_DELAY + time / FRAMES_IN_A_SECOND)
         self.firstLevelData = x <= 224
         self.repeated = type == 128
         self.repeats = 0
 
         if self.repeated:
-            self.repeats = (time2 - time) // (FPS * 4)
+            self.repeats = round((time2 - time) / (FRAMES_IN_A_SECOND * 4))
             self.type = self.type.lower()
 
 
