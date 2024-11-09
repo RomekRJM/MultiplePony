@@ -1,5 +1,5 @@
 arrow = sprite:new {
-    nextElementPadX = 32,
+    padX = 32,
     associatedAction = 1,
     actioned = false,
     z = 1,
@@ -18,27 +18,27 @@ zArrow = arrow:new { z = maxZ, sprite = 4, associatedAction = 16, }
 xArrow = arrow:new { z = maxZ, sprite = 6, associatedAction = 32, }
 
 leftHalfArrow = arrow:new {
-    sprite = 0, w = 1, z = 1, nextElementPadX = 8, firstElementPadX = 8,
+    sprite = 0, w = 1, z = 1, padX = 8, firstElementPadX = 8,
     parent = leftArrow, parentBeforeRepeatSequence = false
 }
 rightHalfArrow = arrow:new {
-    sprite = 0, flip_x = true, associatedAction = 2, w = 1, nextElementPadX = 8, firstElementPadX = 16,
+    sprite = 0, flip_x = true, associatedAction = 2, w = 1, padX = 8, firstElementPadX = 16,
     parent = rightArrow, parentBeforeRepeatSequence = true
 }
 topHalfArrow = arrow:new {
-    sprite = 3, associatedAction = 4, w = 1, nextElementPadX = 5, firstElementPadX = 13,
+    sprite = 3, associatedAction = 4, w = 1, padX = 5, firstElementPadX = 13,
     parent = topArrow, parentBeforeRepeatSequence = true
 }
 bottomHalfArrow = arrow:new {
-    sprite = 3, flip_y = true, associatedAction = 8, w = 1, nextElementPadX = 5, firstElementPadX = 13,
+    sprite = 3, flip_y = true, associatedAction = 8, w = 1, padX = 5, firstElementPadX = 13,
     parent = bottomArrow, parentBeforeRepeatSequence = true
 }
 zHalfArrow = arrow:new {
-    sprite = 8, associatedAction = 16, w = 1, nextElementPadX = 5, firstElementPadX = 10,
+    sprite = 8, associatedAction = 16, w = 1, padX = 5, firstElementPadX = 10,
     parent = zArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 xHalfArrow = arrow:new {
-    sprite = 8, associatedAction = 32, w = 1, nextElementPadX = 5, firstElementPadX = 10,
+    sprite = 8, associatedAction = 32, w = 1, padX = 5, firstElementPadX = 10,
     parent = xArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 
@@ -59,9 +59,9 @@ arrowQueue = {}
 arrowQueueIndex = {}
 currentLevelDuration = 0
 
-levelData = "L-60,R-30,L-60,R-60,L-40,b-25-10,L-145,T-30,B-60,T-30,B-60,b-60-7"
-levelData2 = "x-60-15,z-60-15"
-levelDuration = 908
+levelData = "L-27,L-26,R-28"
+levelData2 = "X-4,Z-28"
+levelDuration = 13398
 
 symbolMapping = {
     ['L'] = leftArrow,
@@ -105,34 +105,10 @@ function prepareLevelFromParsedData()
                 element += 1
             end
 
-            currentArrow.nextElementPadX = tonum(parts[element])
+            currentArrow.padX = tonum(parts[element])
             add(tmpArrowQueue[q], currentArrow)
         end
     end
-end
-
-function prepareRandomData()
-    generatorCntr[1] = 0
-    generatorCntr[2] = 0
-
-    sequence = {
-        leftArrow, rightArrow, topArrow, bottomArrow, zArrow, xArrow,
-        leftHalfArrow, rightHalfArrow, topHalfArrow, bottomHalfArrow, zHalfArrow, xHalfArrow
-    }
-
-    halfArrowRepeats = { 4, 6, 8, 10 }
-end
-
-function nextRandomArrow(qn)
-    generatorCntr[qn] += 1
-
-    if generatorCntr[qn] <= arrowQueueLen[qn] then
-        local currentArrow = rnd(sequence)
-        currentArrow.r = rnd(halfArrowRepeats)
-        return rnd(sequence)
-    end
-
-    return nil
 end
 
 function nextArrowFromParsedData(qn)
@@ -146,11 +122,7 @@ function nextArrowFromParsedData(qn)
 end
 
 function generateLevel(generateRandom)
-    if generateRandom then
-        prepareRandomData()
-    else
-        prepareLevelFromParsedData()
-    end
+    prepareLevelFromParsedData()
 
     for q = 1, 2 do
         local i = 1
@@ -227,7 +199,7 @@ function restartArrows()
     visibleArrowQueueMaxLen = 10
     currentLevelDuration = 0
 
-    generateLevel(false)
+    generateLevel()
 
     for q = 1, 2 do
         for i, currentArrow in pairs(arrowQueue[q]) do
@@ -316,9 +288,9 @@ function updateArrows()
 
         for _, visibleArrow in pairs(visibleArrowQueue[q]) do
             visibleArrow.x = visibleArrow.x - arrowSpeed
-            visibleArrow.nextElementPadX = visibleArrow.nextElementPadX - arrowSpeed
+            visibleArrow.padX = visibleArrow.padX - arrowSpeed
 
-            if visibleArrow.nextElementPadX == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
+            if visibleArrow.padX == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
                 add(visibleArrowQueue[q], deepCopy(arrowQueue[q][arrowQueueIndex[q]]))
                 arrowQueueIndex[q] += 1
                 visibleArrowQueueLen[q] += 1

@@ -90,6 +90,6 @@ def event_to_lua_pony_code(events):
 
 
 if __name__ == '__main__':
-    input_file = 'chippi.osu'
+    input_file = 'chippi [Hard].osu'
     osu_events = extract_events_from_osu(input_file)
     print(event_to_lua_pony_code(osu_events))
