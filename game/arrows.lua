@@ -59,7 +59,7 @@ arrowQueue = {}
 arrowQueueIndex = {}
 currentLevelDuration = 0
 
-levelData = "L-27,L-26,R-28"
+levelData = "L-63,L-26,R-28"
 levelData2 = "X-4,Z-28"
 levelDuration = 13398
 
@@ -121,13 +121,13 @@ function nextArrowFromParsedData(qn)
     return nil
 end
 
-function generateLevel(generateRandom)
+function generateLevel()
     prepareLevelFromParsedData()
 
     for q = 1, 2 do
         local i = 1
         while true do
-            local currentArrow = generateRandom and nextRandomArrow(q) or nextArrowFromParsedData(q)
+            local currentArrow = nextArrowFromParsedData(q)
 
             if currentArrow == nil then
                 break
