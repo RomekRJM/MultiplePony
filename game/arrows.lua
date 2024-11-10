@@ -302,14 +302,14 @@ function updateArrows()
             return
         end
 
-        for _, arrow in pairs(arrowQueue[q]) do
+        for i, arrow in pairs(arrowQueue[q]) do
             arrow.timestamp = arrow.timestamp - arrowSpeed
 
             if arrow.timestamp == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
                 add(visibleArrowQueue[q], deepCopy(arrowQueue[q][arrowQueueIndex[q]]))
+                deli(arrowQueue[q], i)
                 arrowQueueIndex[q] += 1
                 visibleArrowQueueLen[q] += 1
-                deli(arrowQueue[q], arrowQueueIndex[q])
             end
         end
 
