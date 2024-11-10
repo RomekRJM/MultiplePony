@@ -60,7 +60,7 @@ end
 function updatePlayer()
     local buttonPressed = btn()
 
-    for q = 1, 2 do
+    for q = 1, 3 do
         if nil == currentArrow[q] then
             return
         end

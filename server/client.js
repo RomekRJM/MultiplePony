@@ -173,7 +173,7 @@ const createPicoSocketClient = () => {
         });
 
         clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock, lastScoreUpdate}) => {
-            console.log("Received update round progress command", {playerScores, winningTeam, clock, lastScoreUpdate});
+            console.trace("Received update round progress command", {playerScores, winningTeam, clock, lastScoreUpdate});
             let clockBytes = word2Bytes(clock);
             let lastScoreUpdateBytes = word2Bytes(lastScoreUpdate);
 
