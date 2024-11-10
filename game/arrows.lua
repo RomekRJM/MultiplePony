@@ -54,7 +54,6 @@ halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 
 currentArrow = {}
 visibleArrowQueue = {}
-visibleArrowQueueLen = {}
 arrowQueue = {}
 arrowQueueIndex = {}
 currentLevelDuration = 0
@@ -209,11 +208,6 @@ function restartArrows()
         end
     end
 
-    for q = 1, 2 do
-        add(visibleArrowQueue[q], deepCopy(arrowQueue[q][1]))
-        visibleArrowQueueLen[q] = 1
-    end
-
     --logtmparrows()
 end
 
@@ -274,8 +268,6 @@ function logvisiblearrows()
 
     for q = 1, 2 do
         for i, visibleArrow in pairs(visibleArrowQueue[q]) do
-            printh("arrowQueueIndex: " .. tostring(arrowQueueIndex[q]), logFileName)
-            printh("visibleArrowQueueLen: " .. tostring(visibleArrowQueueLen[q]), logFileName)
             printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(visibleArrow), logFileName)
         end
     end
@@ -298,18 +290,12 @@ function updateArrows()
     for q = 1, 2 do
         currentArrow[q] = nil
 
-        if visibleArrowQueueLen[q] == 0 and arrowQueueIndex[q] == arrowQueueLen[q] then
-            return
-        end
-
         for i, arrow in pairs(arrowQueue[q]) do
             arrow.timestamp = arrow.timestamp - arrowSpeed
 
-            if arrow.timestamp == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
+            if arrow.timestamp == 0 then
                 add(visibleArrowQueue[q], deepCopy(arrowQueue[q][arrowQueueIndex[q]]))
                 deli(arrowQueue[q], i)
-                arrowQueueIndex[q] += 1
-                visibleArrowQueueLen[q] += 1
             end
         end
 
@@ -339,7 +325,6 @@ function updateArrows()
     for q = 1, 2 do
         for deletedArrow in all(scheduledForDeletion[q]) do
             del(visibleArrowQueue[q], deletedArrow)
-            visibleArrowQueueLen[q] -= 1
         end
     end
 end
