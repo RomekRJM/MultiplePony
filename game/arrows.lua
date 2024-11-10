@@ -55,7 +55,6 @@ halfArrowMaxAcceptableX = halfArrowPerfectX + quarterArrowWidth
 currentArrow = {}
 visibleArrowQueue = {}
 arrowQueue = {}
-arrowQueueIndex = {}
 currentLevelDuration = 0
 
 levelData = "L-2884,L-2910,R-2938,R-2963,B-2980,B-3005,T-3028,T-3057,L-3083,L-3128,L-3275,L-3301,R-3329,R-3354,B-3371,B-3397,T-3419,T-3448,L-3474,L-3519,L-5317,L-5344,R-5372,R-5397,B-5414,B-5439,T-5462,T-5490,L-5517,L-5562,L-5709,L-5735,R-5763,R-5788,B-5805,B-5831,T-5853,T-5882,L-5908,L-5953,L-6093,L-6119,R-6147,R-6172,B-6189,B-6215,T-6237,T-6266,L-6292,L-6337,L-6484,L-6510,R-6539,R-6564,B-6581,B-6606,T-6629,T-6657,L-6684,L-6729,L-10860,L-10887,R-10915,R-10940,B-10957,B-10982,T-11005,T-11034,L-11060,L-11105,L-11252,L-11278,R-11306,R-11331,B-11348,B-11374,T-11396,T-11425,L-11451,L-11496,L-11639,L-11666,R-11694,R-11719,B-11735,B-11761,T-11784,T-11812,L-11839,L-11884,L-12030,L-12057,R-12085,R-12110,B-12127,B-12152,T-12175,T-12204,L-12230,L-12275,L-12408,L-12434,R-12462,R-12487,B-12504,B-12530,T-12552,T-12581,L-12607,L-12652,L-12799,L-12826,R-12854,R-12879,B-12896,B-12921,T-12944,T-12972,L-12999,L-13044,B-13398"
@@ -185,8 +184,6 @@ function generateLevel()
 end
 
 function restartArrows()
-    arrowQueueIndex[1] = 1
-    arrowQueueIndex[2] = 1
     arrowUpdateBatchLen = 10
     arrowSpeed = 1
 
@@ -294,7 +291,7 @@ function updateArrows()
             arrow.timestamp = arrow.timestamp - arrowSpeed
 
             if arrow.timestamp == 0 then
-                add(visibleArrowQueue[q], deepCopy(arrowQueue[q][arrowQueueIndex[q]]))
+                add(visibleArrowQueue[q], deepCopy(arrowQueue[q][i]))
                 deli(arrowQueue[q], i)
             end
         end
