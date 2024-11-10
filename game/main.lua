@@ -1,4 +1,7 @@
 frame = 0
+MODE_WEB_BROWSER = 1
+MODE_PICO_CLIENT = 0
+gameMode = MODE_PICO_CLIENT
 
 function _init()
     frame = 0
@@ -44,11 +47,13 @@ function _update60()
     handleUpdateFromServer()
     sendRoundStartCommand()
 
-    --if gameState == 1 then
-    --    --poke(BROWSER_GPIO_START_ADDR, START_ROUND_CMD_SERVER_RESP)
-    --    --gameState = COUNTING_DOWN_TO_GAME_START_STATE
-    --    gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
-    --end
+    if gameMode == MODE_PICO_CLIENT then
+       if gameState == 1 then
+           poke(BROWSER_GPIO_START_ADDR, START_ROUND_CMD_SERVER_RESP)
+           gameState = GAME_IN_PROGRESS_STATE
+        --gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
+       end
+    end
 
     frame = frame + 1
 end
