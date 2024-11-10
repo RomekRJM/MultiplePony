@@ -1,5 +1,5 @@
 arrow = sprite:new {
-    padX = 32,
+    timestamp = 32,
     associatedAction = 1,
     actioned = false,
     z = 1,
@@ -18,27 +18,27 @@ zArrow = arrow:new { z = maxZ, sprite = 4, associatedAction = 16, }
 xArrow = arrow:new { z = maxZ, sprite = 6, associatedAction = 32, }
 
 leftHalfArrow = arrow:new {
-    sprite = 0, w = 1, z = 1, padX = 8, firstElementPadX = 8,
+    sprite = 0, w = 1, z = 1, timestamp = 8, firstElementPadX = 8,
     parent = leftArrow, parentBeforeRepeatSequence = false
 }
 rightHalfArrow = arrow:new {
-    sprite = 0, flip_x = true, associatedAction = 2, w = 1, padX = 8, firstElementPadX = 16,
+    sprite = 0, flip_x = true, associatedAction = 2, w = 1, timestamp = 8, firstElementPadX = 16,
     parent = rightArrow, parentBeforeRepeatSequence = true
 }
 topHalfArrow = arrow:new {
-    sprite = 3, associatedAction = 4, w = 1, padX = 5, firstElementPadX = 13,
+    sprite = 3, associatedAction = 4, w = 1, timestamp = 5, firstElementPadX = 13,
     parent = topArrow, parentBeforeRepeatSequence = true
 }
 bottomHalfArrow = arrow:new {
-    sprite = 3, flip_y = true, associatedAction = 8, w = 1, padX = 5, firstElementPadX = 13,
+    sprite = 3, flip_y = true, associatedAction = 8, w = 1, timestamp = 5, firstElementPadX = 13,
     parent = bottomArrow, parentBeforeRepeatSequence = true
 }
 zHalfArrow = arrow:new {
-    sprite = 8, associatedAction = 16, w = 1, padX = 5, firstElementPadX = 10,
+    sprite = 8, associatedAction = 16, w = 1, timestamp = 5, firstElementPadX = 10,
     parent = zArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 xHalfArrow = arrow:new {
-    sprite = 8, associatedAction = 32, w = 1, padX = 5, firstElementPadX = 10,
+    sprite = 8, associatedAction = 32, w = 1, timestamp = 5, firstElementPadX = 10,
     parent = xArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 
@@ -59,7 +59,7 @@ arrowQueue = {}
 arrowQueueIndex = {}
 currentLevelDuration = 0
 
-levelData = "L-63,L-26,R-28"
+levelData = "L-120,L-26,R-28"
 levelData2 = "X-4,Z-28"
 levelDuration = 13398
 
@@ -105,7 +105,7 @@ function prepareLevelFromParsedData()
                 element += 1
             end
 
-            currentArrow.padX = tonum(parts[element])
+            currentArrow.timestamp = tonum(parts[element])
             add(tmpArrowQueue[q], currentArrow)
         end
     end
@@ -213,6 +213,8 @@ function restartArrows()
         add(visibleArrowQueue[q], deepCopy(arrowQueue[q][1]))
         visibleArrowQueueLen[q] = 1
     end
+
+    --logvisiblearrows()
 end
 
 rightArrowHitBoundary = 80
@@ -255,12 +257,26 @@ function drawArrows()
     print(stat(1), 0, 0)
 end
 
-function logarrows()
+function logtmparrows()
+    local logFileName = 'pony.log'
+    printh("tmpArrowQueue: ", logFileName)
+
     for q = 1, 2 do
-        for _, visibleArrow in pairs(visibleArrowQueue[q]) do
-            printh("arrowQueueIndex: " .. tostring(arrowQueueIndex[q]))
-            printh("visibleArrowQueueLen: " .. tostring(visibleArrowQueueLen[q]))
-            printh(tostring(i) .. ": " .. tostring(visibleArrow.x))
+        for i, arrow in pairs(tmpArrowQueue[q]) do
+            printh(tostring(i) .. ": " .. tprint(arrow, 2), logFileName)
+        end
+    end
+end
+
+function logvisiblearrows()
+    local logFileName = 'pony.log'
+    printh("visibleArrowQueue: ", logFileName)
+
+    for q = 1, 2 do
+        for i, visibleArrow in pairs(visibleArrowQueue[q]) do
+            printh("arrowQueueIndex: " .. tostring(arrowQueueIndex[q]), logFileName)
+            printh("visibleArrowQueueLen: " .. tostring(visibleArrowQueueLen[q]), logFileName)
+            printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(visibleArrow), logFileName)
         end
     end
 end
@@ -288,9 +304,9 @@ function updateArrows()
 
         for _, visibleArrow in pairs(visibleArrowQueue[q]) do
             visibleArrow.x = visibleArrow.x - arrowSpeed
-            visibleArrow.padX = visibleArrow.padX - arrowSpeed
+            visibleArrow.timestamp = visibleArrow.timestamp - arrowSpeed
 
-            if visibleArrow.padX == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
+            if visibleArrow.timestamp == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
                 add(visibleArrowQueue[q], deepCopy(arrowQueue[q][arrowQueueIndex[q]]))
                 arrowQueueIndex[q] += 1
                 visibleArrowQueueLen[q] += 1
