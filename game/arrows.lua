@@ -59,8 +59,8 @@ arrowQueue = {}
 arrowQueueIndex = {}
 currentLevelDuration = 0
 
-levelData = "L-120,L-26,R-28"
-levelData2 = "X-4,Z-28"
+levelData = "L-2884,L-2910,R-2938,R-2963,B-2980,B-3005,T-3028,T-3057,L-3083,L-3128,L-3275,L-3301,R-3329,R-3354,B-3371,B-3397,T-3419,T-3448,L-3474,L-3519,L-5317,L-5344,R-5372,R-5397,B-5414,B-5439,T-5462,T-5490,L-5517,L-5562,L-5709,L-5735,R-5763,R-5788,B-5805,B-5831,T-5853,T-5882,L-5908,L-5953,L-6093,L-6119,R-6147,R-6172,B-6189,B-6215,T-6237,T-6266,L-6292,L-6337,L-6484,L-6510,R-6539,R-6564,B-6581,B-6606,T-6629,T-6657,L-6684,L-6729,L-10860,L-10887,R-10915,R-10940,B-10957,B-10982,T-11005,T-11034,L-11060,L-11105,L-11252,L-11278,R-11306,R-11331,B-11348,B-11374,T-11396,T-11425,L-11451,L-11496,L-11639,L-11666,R-11694,R-11719,B-11735,B-11761,T-11784,T-11812,L-11839,L-11884,L-12030,L-12057,R-12085,R-12110,B-12127,B-12152,T-12175,T-12204,L-12230,L-12275,L-12408,L-12434,R-12462,R-12487,B-12504,B-12530,T-12552,T-12581,L-12607,L-12652,L-12799,L-12826,R-12854,R-12879,B-12896,B-12921,T-12944,T-12972,L-12999,L-13044,B-13398"
+levelData2 = "X-3099,X-3158,Z-3180,Z-3206,Z-3228,Z-3256,X-3491,X-3549,z-3564-50,X-5533,X-5592,Z-5614,Z-5640,Z-5662,Z-5689,X-5924,X-5983,Z-5997,X-6309,X-6367,Z-6390,Z-6416,Z-6437,Z-6465,X-6700,X-6759,z-6773-48,X-11076,X-11135,Z-11157,Z-11183,Z-11205,Z-11232,X-11467,X-11526,Z-11547,X-11855,X-11914,Z-11936,Z-11962,Z-11984,Z-12011,X-12246,X-12305,z-12323-23,X-12624,X-12682,Z-12705,Z-12731,Z-12752,Z-12780,X-13015,X-13074,z-13106-65"
 levelDuration = 13398
 
 symbolMapping = {
@@ -214,7 +214,7 @@ function restartArrows()
         visibleArrowQueueLen[q] = 1
     end
 
-    --logvisiblearrows()
+    --logtmparrows()
 end
 
 rightArrowHitBoundary = 80
@@ -302,15 +302,19 @@ function updateArrows()
             return
         end
 
-        for _, visibleArrow in pairs(visibleArrowQueue[q]) do
-            visibleArrow.x = visibleArrow.x - arrowSpeed
-            visibleArrow.timestamp = visibleArrow.timestamp - arrowSpeed
+        for _, arrow in pairs(arrowQueue[q]) do
+            arrow.timestamp = arrow.timestamp - arrowSpeed
 
-            if visibleArrow.timestamp == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
+            if arrow.timestamp == 0 and arrowQueueIndex[q] < arrowQueueLen[q] then
                 add(visibleArrowQueue[q], deepCopy(arrowQueue[q][arrowQueueIndex[q]]))
                 arrowQueueIndex[q] += 1
                 visibleArrowQueueLen[q] += 1
+                deli(arrowQueue[q], arrowQueueIndex[q])
             end
+        end
+
+        for _, visibleArrow in pairs(visibleArrowQueue[q]) do
+            visibleArrow.x = visibleArrow.x - arrowSpeed
 
             if visibleArrow.w == 1 then
                 currentArrowMinAcceptableX = halfArrowMinAcceptableX

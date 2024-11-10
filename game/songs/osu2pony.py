@@ -63,18 +63,13 @@ def extract_events_from_osu(file):
 
 
 def event_to_lua_pony_code(events):
-    # levelData = "L-32,R-32,T-32,B-32,l-8-8,R-40"
-    # levelData2 = "X-16,Z-64,x-4-5,z-4-5"
-    # levelDuration = 128 + 128 + 16 + 40 + 128
     level_data = []
     level_data2 = []
     level_duration = 0
-    last_event_time = INITIAL_DELAY
-    symbol = ""
 
     for event in events:
         level_duration = max(level_duration, event.time)
-        symbol = event.type + '-' + str(event.time - last_event_time)
+        symbol = event.type + '-' + str(event.time)
 
         if event.repeated:
             symbol += '-' + str(event.repeats)
@@ -83,8 +78,6 @@ def event_to_lua_pony_code(events):
             level_data.append(symbol)
         else:
             level_data2.append(symbol)
-
-        last_event_time = event.time
 
     return f"\nlevelData = \"{','.join(level_data)}\"\nlevelData2 = \"{','.join(level_data2)}\"\nlevelDuration = {level_duration}"
 
