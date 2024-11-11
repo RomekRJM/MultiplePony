@@ -2,15 +2,13 @@ from dataclasses import dataclass
 
 X_TO_ARROW = {
     32: 'L',
-    96: 'B',
-    160: 'T',
-    224: 'R',
-    288: 'X',
-    352: 'Z',
+    96: 'X',
+    160: 'R',
 }
 
 INITIAL_DELAY = 128
 FPS = 60
+MAX_ACCEPTABLE_X = 160
 
 
 @dataclass
@@ -18,13 +16,13 @@ class Event:
     type: str
     time: int
     repeats: int
-    firstLevelData: bool
+    levelData: int
     repeated: bool
 
     def __init__(self, x, time, time2, type):
         self.type = X_TO_ARROW[x]
         self.time = round(INITIAL_DELAY + time / FPS)
-        self.firstLevelData = x <= 224
+        self.levelData = (x - 32) // 64
         self.repeated = type == 128
         self.repeats = 0
 
@@ -51,9 +49,10 @@ def extract_events_from_osu(file):
         x, _y, time, type, _hit_sound, hit_sample = line.split(',')
         time2 = hit_sample.split(':')[0]
 
-        events.append(
-            Event(int(x), int(time), int(time2), int(type))
-        )
+        if int(x) <= MAX_ACCEPTABLE_X:
+            events.append(
+                Event(int(x), int(time), int(time2), int(type))
+            )
 
         if line.startswith('['):
             in_hit_section = False
@@ -64,6 +63,7 @@ def extract_events_from_osu(file):
 def event_to_lua_pony_code(events):
     level_data = []
     level_data2 = []
+    level_data3 = []
     level_duration = 0
 
     for event in events:
@@ -73,12 +73,15 @@ def event_to_lua_pony_code(events):
         # if event.repeated:
         #     symbol += '-' + str(event.repeats)
 
-        if event.firstLevelData:
+        if event.levelData == 0:
             level_data.append(symbol)
-        else:
+        elif event.levelData == 1:
             level_data2.append(symbol)
+        else:
+            level_data3.append(symbol)
 
-    return f"\nlevelData = \"{','.join(level_data)}\"\nlevelData2 = \"{','.join(level_data2)}\"\nlevelDuration = {level_duration}"
+    return (f"\nlevelData = \"{','.join(level_data)}\"\nlevelData2 = \"{','.join(level_data2)}\""
+            f"\nlevelData3 = \"{','.join(level_data3)}\"\nlevelDuration = {level_duration}")
 
 
 if __name__ == '__main__':

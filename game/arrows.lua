@@ -58,10 +58,10 @@ visibleArrowQueue = {}
 arrowQueue = {}
 currentLevelDuration = 0
 
-levelData = "L-184,L-210,R-293"
-levelData2 = "T-299"
-levelData3 = "L-484,L-210"
-levelDuration = 13398
+levelData = "L-170,L-200,L-228,L-245,L-262,L-893,L-901,L-949,L-961,L-1002,L-1009,L-1058,L-1070,L-1570,L-1577,L-1625,L-1637,L-1678,L-1685,L-1734,L-1746,L-1785,L-1792,L-1840,L-1853,L-1894,L-1901,L-1949,L-1962,L-3109,L-3117,L-3165,L-3177,L-3218,L-3225,L-3273,L-3286,L-3326,L-3333,L-3381,L-3393,L-3434,L-3442,L-3490,L-3502,L-3539,L-3546,L-3594,L-3607,L-3648,L-3655,L-3703,L-3716"
+levelData2 = "X-185,X-211,X-237,X-920,X-927,X-1029,X-1036,X-1596,X-1603,X-1705,X-1712,X-1812,X-1819,X-1920,X-1927,X-3136,X-3143,X-3245,X-3252,X-3352,X-3359,X-3461,X-3468,X-3566,X-3573,X-3675,X-3682,X-3814"
+levelData3 = "R-203,R-253,R-269,R-934,R-942,R-1042,R-1050,R-1610,R-1618,R-1718,R-1726,R-1825,R-1833,R-1934,R-1942,R-3149,R-3157,R-3258,R-3266,R-3366,R-3374,R-3474,R-3482,R-3579,R-3587,R-3688,R-3696"
+levelDuration = 3814
 
 symbolMapping = {
     ['L'] = leftArrow,
@@ -201,14 +201,14 @@ function restartArrows()
     generateLevel()
 
     for q = 1, 2 do
-        for i, currentArrow in pairs(arrowQueue[q]) do
+        for i, currentArrow in ipairs(arrowQueue[q]) do
             if i <= arrowUpdateBatchLen then
                 currentArrow.x = 128
             end
         end
     end
 
-    --logtmparrows()
+    logtmparrows()
 end
 
 rightArrowHitBoundary = 80
@@ -228,7 +228,7 @@ function drawArrows()
 
     for q = 1, 3 do
         for z = 1, maxZ do
-            for _, visible_arrow in pairs(visibleArrowQueue[q]) do
+            for visible_arrow in all(visibleArrowQueue[q]) do
 
                 if z ~= visible_arrow.z then
                     goto continueInnerArrowLoop
@@ -251,6 +251,7 @@ function drawArrows()
     end
 
     print(stat(1), 0, 0)
+    print(frame, 100, 0)
 end
 
 function logtmparrows()
@@ -258,8 +259,10 @@ function logtmparrows()
     printh("tmpArrowQueue: ", logFileName)
 
     for q = 1, 3 do
-        for i, arrow in pairs(tmpArrowQueue[q]) do
-            printh(tostring(i) .. ": " .. tprint(arrow, 2), logFileName)
+        for i, arrow in ipairs(tmpArrowQueue[q]) do
+            --if q == 1 and i == 1 then
+                printh(tostring(i) .. ": " .. tprint(arrow, 2), logFileName)
+            --end
         end
     end
 end
@@ -269,16 +272,24 @@ function logvisiblearrows()
     printh("visibleArrowQueue: ", logFileName)
 
     for q = 1, 3 do
-        for i, visibleArrow in pairs(visibleArrowQueue[q]) do
-            printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(visibleArrow), logFileName)
+        for i, visibleArrow in ipairs(visibleArrowQueue[q]) do
+            --if q == 1 and i == 1 then
+                printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(visibleArrow), logFileName)
+            --end
         end
     end
 end
 
 function updateArrows()
-    local scheduledForDeletion = {}
-    scheduledForDeletion[1] = {}
-    scheduledForDeletion[2] = {}
+    local visibleScheduledForDeletion = {}
+    visibleScheduledForDeletion[1] = {}
+    visibleScheduledForDeletion[2] = {}
+    visibleScheduledForDeletion[3] = {}
+
+    local inQueueScheduledForDeletion = {}
+    inQueueScheduledForDeletion[1] = {}
+    inQueueScheduledForDeletion[2] = {}
+    inQueueScheduledForDeletion[3] = {}
 
     local currentArrowMinAcceptableX = 0;
     local currentArrowMaxAcceptableX = 0;
@@ -292,16 +303,21 @@ function updateArrows()
     for q = 1, 3 do
         currentArrow[q] = nil
 
-        for i, arrow in pairs(arrowQueue[q]) do
-            arrow.timestamp = arrow.timestamp - arrowSpeed
+        for arrow in all(arrowQueue[q]) do
+            arrow.timestamp = arrow.timestamp - 1
 
-            if arrow.timestamp == 0 then
-                add(visibleArrowQueue[q], deepCopy(arrowQueue[q][i]))
-                deli(arrowQueue[q], i)
+            if arrow.timestamp <= 0 then
+                add(visibleArrowQueue[q], deepCopy(arrow))
+                add(inQueueScheduledForDeletion[q], arrow)
             end
         end
 
-        for _, visibleArrow in pairs(visibleArrowQueue[q]) do
+        for deletedArrow in all(inQueueScheduledForDeletion[q]) do
+            del(arrowQueue[q], deletedArrow)
+        end
+        inQueueScheduledForDeletion[q] = {}
+
+        for visibleArrow in all(visibleArrowQueue[q]) do
             visibleArrow.x = visibleArrow.x - arrowSpeed
 
             if visibleArrow.w == 1 then
@@ -319,14 +335,16 @@ function updateArrows()
             end
 
             if visibleArrow.x < visibleArrow.w * -8 then
-                add(scheduledForDeletion[q], visibleArrow)
+                add(visibleScheduledForDeletion[q], visibleArrow)
             end
         end
     end
 
     for q = 1, 3 do
-        for deletedArrow in all(scheduledForDeletion[q]) do
+        for deletedArrow in all(visibleScheduledForDeletion[q]) do
             del(visibleArrowQueue[q], deletedArrow)
         end
     end
+
+    logvisiblearrows()
 end
