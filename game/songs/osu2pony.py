@@ -11,7 +11,6 @@ X_TO_ARROW = {
 
 INITIAL_DELAY = 128
 FPS = 60
-FRAMES_IN_A_SECOND = 1000 / FPS
 
 
 @dataclass
@@ -24,13 +23,13 @@ class Event:
 
     def __init__(self, x, time, time2, type):
         self.type = X_TO_ARROW[x]
-        self.time = round(INITIAL_DELAY + time / FRAMES_IN_A_SECOND)
+        self.time = round(INITIAL_DELAY + time / FPS)
         self.firstLevelData = x <= 224
         self.repeated = type == 128
         self.repeats = 0
 
         if self.repeated:
-            self.repeats = round((time2 - time) / (FRAMES_IN_A_SECOND * 4))
+            self.repeats = round((time2 - time) / (FPS * 4))
             self.type = self.type.lower()
 
 
@@ -71,8 +70,8 @@ def event_to_lua_pony_code(events):
         level_duration = max(level_duration, event.time)
         symbol = event.type + '-' + str(event.time)
 
-        if event.repeated:
-            symbol += '-' + str(event.repeats)
+        # if event.repeated:
+        #     symbol += '-' + str(event.repeats)
 
         if event.firstLevelData:
             level_data.append(symbol)
