@@ -6,9 +6,10 @@ X_TO_ARROW = {
     160: 'R',
 }
 
-INITIAL_DELAY = 128
+INITIAL_DELAY = 64
 FPS = 60
 MAX_ACCEPTABLE_X = 160
+MIN_TIME = INITIAL_DELAY * FPS
 
 
 @dataclass
@@ -21,7 +22,7 @@ class Event:
 
     def __init__(self, x, time, time2, type):
         self.type = X_TO_ARROW[x]
-        self.time = round(INITIAL_DELAY + time / FPS)
+        self.time = round(time / FPS - INITIAL_DELAY)
         self.levelData = (x - 32) // 64
         self.repeated = type == 128
         self.repeats = 0
@@ -49,7 +50,7 @@ def extract_events_from_osu(file):
         x, _y, time, type, _hit_sound, hit_sample = line.split(',')
         time2 = hit_sample.split(':')[0]
 
-        if int(x) <= MAX_ACCEPTABLE_X:
+        if int(x) <= MAX_ACCEPTABLE_X and int(time) > MIN_TIME:
             events.append(
                 Event(int(x), int(time), int(time2), int(type))
             )
