@@ -22,7 +22,7 @@ class Event:
 
     def __init__(self, x, time, time2, type):
         self.type = X_TO_ARROW[x]
-        self.time = round(time / FPS - INITIAL_DELAY)
+        self.time = INITIAL_DELAY + round(time / FPS)
         self.levelData = (x - 32) // 64
         self.repeated = type == 128
         self.repeats = 0
@@ -38,6 +38,8 @@ def extract_events_from_osu(file):
 
     in_hit_section = False
     events = []
+    contains_unsupported_arrows = False
+    contains_unsupported_time = False
 
     for line in osu_lines:
         if line.startswith('[HitObjects]'):
@@ -50,13 +52,23 @@ def extract_events_from_osu(file):
         x, _y, time, type, _hit_sound, hit_sample = line.split(',')
         time2 = hit_sample.split(':')[0]
 
-        if int(x) <= MAX_ACCEPTABLE_X and int(time) > MIN_TIME:
+        if int(x) > MAX_ACCEPTABLE_X:
+            contains_unsupported_arrows = True
+        elif int(time) < MIN_TIME:
+            contains_unsupported_time = True
+        else:
             events.append(
                 Event(int(x), int(time), int(time2), int(type))
             )
 
         if line.startswith('['):
             in_hit_section = False
+
+    if contains_unsupported_arrows:
+        print("\nSome arrows are not supported and were skipped. Use only LEFT, TOP, BOTTOM in ArrowVortex.")
+
+    if contains_unsupported_time:
+        print(f"\nMinimum time is {MIN_TIME} ms. Some arrows are scheduled before that and were skipped.")
 
     return events
 

@@ -113,7 +113,7 @@ const createPicoSocketClient = () => {
 
     const processPico8Command = () => {
         const command = window.pico8_gpio[clientCommandIndex];
-        console.log(command);
+//        console.log(command);
 
         if (command <= joinServerCommand) {
             return;
@@ -125,7 +125,7 @@ const createPicoSocketClient = () => {
 
     const attachServerListeners = () => {
         clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
-            console.log("Received round start command", roundId);
+//            console.log("Received round start command", roundId);
 
             window.pico8_gpio[serverCommandIndex] = startRoundCountdownServerResponse;
             window.pico8_gpio[serverRoomIdIndex] = player.roomId;
@@ -133,7 +133,7 @@ const createPicoSocketClient = () => {
         });
 
         clientSocket.on("UPDATE_TEAM_NAMES", ({adminPlayerName, team1Players, team2Players}) => {
-            console.log("Received update team names command", {adminPlayerName, team1Players, team2Players});
+//            console.log("Received update team names command", {adminPlayerName, team1Players, team2Players});
             let players = [...team1Players, ...team2Players];
 
             window.pico8_gpio[serverCommandIndex] = updateTeamNamesServerResponse;
@@ -173,7 +173,7 @@ const createPicoSocketClient = () => {
         });
 
         clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock, lastScoreUpdate}) => {
-            console.trace("Received update round progress command", {playerScores, winningTeam, clock, lastScoreUpdate});
+//            console.trace("Received update round progress command", {playerScores, winningTeam, clock, lastScoreUpdate});
             let clockBytes = word2Bytes(clock);
             let lastScoreUpdateBytes = word2Bytes(lastScoreUpdate);
 
@@ -222,7 +222,7 @@ const createPicoSocketClient = () => {
             clientSocket.emit("JOIN_SERVER_CMD", player.name);
 
             clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
-                console.log("Connected to server", {roomId, playerId, team, admin});
+//                console.log("Connected to server", {roomId, playerId, team, admin});
                 player.roomId = roomId;
                 player.id = playerId;
                 player.team = team;

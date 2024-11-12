@@ -17,7 +17,7 @@ end
 
 function _draw()
     cls()
-    print('game state ' .. tonum(gameState), 0, 8)
+    --print('game state ' .. tonum(gameState), 0, 8)
 
     if gameState == COUNTING_DOWN_TO_GAME_START_STATE then
         drawCountdown()
@@ -40,8 +40,8 @@ function _update60()
     elseif gameState == RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
         updateLobby()
     elseif gameState == COUNTING_DOWN_TO_GAME_START_STATE then
-        frame = 0
         updateCountdown()
+        frame = -1
     end
 
     handleUpdateFromServer()
