@@ -62,22 +62,18 @@ function updatePlayer()
 
     for q = 1, 3 do
         if nil == currentArrow[q] then
-            return
+            goto continueInnerPlayerLoop
         end
 
         if currentArrow[q].actioned then
             goto continueInnerPlayerLoop
         end
 
-        if buttonPressed > 0 then
+        local buttonAndArrow = buttonPressed & currentArrow[q].associatedAction
+
+        if buttonAndArrow > 0 then
             currentArrow[q].actioned = true
-        end
-
-        --printh(tostring(currentArrow[q].associatedAction))
-        --printh(tostring(currentArrow[q].actioned))
-        --printh(tostring(buttonPressed) .. ' & ' .. tostring(currentArrow[q].associatedAction) .. ' = ' .. tostring(buttonPressed & currentArrow[q].associatedAction))
-
-        if (buttonPressed & currentArrow[q].associatedAction) == 0 then
+        elseif buttonAndArrow == 0 then
             goto continueInnerPlayerLoop
         end
 
@@ -87,7 +83,13 @@ function updatePlayer()
             if absDiff <= pointGroup.maxAbsX then
                 --printh(tostring(q) .. ': ' .. tostring(pointGroup.points))
                 myself.score += pointGroup.points
-                sendScore(myself)
+
+                if gameMode == MODE_WEB_BROWSER then
+                    sendScore(myself)
+                else
+                    room.team1Score = myself.score
+                end
+
                 break
             end
         end
