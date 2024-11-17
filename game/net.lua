@@ -225,6 +225,9 @@ function handleUpdateRoundProgress()
         return
     end
 
+    room.team1Score = 0
+    room.team2Score = 0
+
     repeat
         pid = peek(BROWSER_GPIO_START_ADDR + index)
         pScore = (peek(BROWSER_GPIO_START_ADDR + index + 1) << 8) | peek(BROWSER_GPIO_START_ADDR + index + 2)
