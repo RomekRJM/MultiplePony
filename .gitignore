@@ -10,6 +10,7 @@ notes.txt
 
 # JS
 node_modules/
+allowed_origins.cfg
 
 # MacOS
 .DS_Store

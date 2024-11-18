@@ -22,14 +22,34 @@ const getOrCreateName = (req) => {
 	return color + number;
 };
 
+const getCORSOrigins = (serverPort) => {
+    let corsOrigins = [];
+
+    try {
+      corsOrigins = fs.readFileSync('./allowed_origins.cfg', { encoding: 'utf8', flag: 'r' }).toString().split("\n")
+        .map( line => { return line.replaceAll('PORT', serverPort); });
+    } catch (err) {
+      corsOrigins.push(`http://localhost:{serverPort}`);
+    }
+
+    return corsOrigins;
+};
+
 const createPicoSocketServer = ({
                                     assetFilesPath,
                                     htmlGameFilePath,
                                 }) => {
+    // host on port 5000
+    const PORT = process.env.PORT || 5000;
+
     // required "create the webserver" logic
     const app = express();
     const server = http.createServer(app);
-    const io = new Server(server);
+    const io = new Server(server, {
+      cors: {
+        origin: getCORSOrigins(PORT),
+      }
+    });
 
     // read in the html file now, so we can append some script tags for the client side JS
     const htmlFileData = fs.readFileSync(htmlGameFilePath);
@@ -43,7 +63,7 @@ const createPicoSocketServer = ({
         createPicoSocketClient();
       </script>
     </head>
-  `;
+    `;
 
     // add the client side code
     const modifiedTemplate = htmlFileTemplate.replace("</head>", clientSideCode);
@@ -55,8 +75,6 @@ const createPicoSocketServer = ({
         return res.send(modifiedTemplate.replace('CURRENT_PLAYER_NAME', getOrCreateName(req)));
     });
 
-    // host on port 5000
-    const PORT = process.env.PORT || 5000;
     server.listen(PORT, () =>
         console.log(`Server Running http://localhost:${PORT}`)
     );
