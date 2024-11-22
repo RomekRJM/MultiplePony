@@ -239,20 +239,13 @@ io.on("connection", (socket) => {
         }
 
         for (const room of roomData) {
-            let playerFound = false;
-
             if (roomData[player.roomId].adminPlayerName === playerName) {
                 roomData[player.roomId].adminPlayerName = null;
                 tryElectingAdmin(roomData[player.roomId]);
-                playerFound = true;
             }
 
             if (room !== socket.id) {
                 updateTeamNames(io, player.roomId, roomData);
-            }
-
-            if (playerFound) {
-                break;
             }
         }
 
