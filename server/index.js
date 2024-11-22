@@ -223,17 +223,6 @@ io.on("connection", (socket) => {
 
         console.log("Disconnecting player ", playerName);
 
-        for (const room of socket.rooms) {
-            if (roomData[player.roomId].adminPlayerName === playerName) {
-                roomData[player.roomId].adminPlayerName = null;
-                tryElectingAdmin(roomData[player.roomId]);
-            }
-
-            if (room !== socket.id) {
-                updateTeamNames(io, player.roomId, roomData);
-            }
-        }
-
         let removedIndex = -1;
         let teamArray = null;
 
@@ -247,6 +236,24 @@ io.on("connection", (socket) => {
 
         if (removedIndex > -1) {
             teamArray.splice(removedIndex, 1);
+        }
+
+        for (const room of roomData) {
+            let playerFound = false;
+
+            if (roomData[player.roomId].adminPlayerName === playerName) {
+                roomData[player.roomId].adminPlayerName = null;
+                tryElectingAdmin(roomData[player.roomId]);
+                playerFound = true;
+            }
+
+            if (room !== socket.id) {
+                updateTeamNames(io, player.roomId, roomData);
+            }
+
+            if (playerFound) {
+                break;
+            }
         }
 
         console.log("Player ", playerName, " disconnected from room ", player.roomId, " and team ", player.team);
