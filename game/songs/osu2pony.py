@@ -81,10 +81,12 @@ def event_to_lua_pony_code(events):
 
     for event in events:
         level_duration = max(level_duration, event.time)
-        symbol = event.type + '-' + str(event.time)
+        symbol = event.type
 
-        # if event.repeated:
-        #     symbol += '-' + str(event.repeats)
+        if event.repeated:
+            symbol += '-' + str(event.repeats)
+
+        symbol += '-' + str(event.time)
 
         if event.levelData == 0:
             level_data.append(symbol)
