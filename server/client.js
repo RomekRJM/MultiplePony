@@ -13,7 +13,7 @@ const createPicoSocketClient = () => {
         admin: false,
         ready: false,
     };
-    const clientSocket = io.connect("http://localhost:5000/",
+    const clientSocket = io.connect(SERVER_URL || "http://localhost:5000/",
         {
             auth: {
                 token: player.token

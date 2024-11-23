@@ -6,6 +6,17 @@ import fs from "fs";
 import createPicoSocketClient from "./client.js";
 import crypto from "crypto";
 
+const getServerUrl = (req) => {
+    if (process.env.SERVER_URL) {
+        return `'${process.env.SERVER_URL}'`;
+    }
+
+    let defaultServerUrl = "'http://localhost:5000'";
+    console.log(`SERVER_URL was not defined, so using ${defaultServerUrl}, note it will not work over the internet`);
+
+	return defaultServerUrl;
+};
+
 const getOrCreateName = (req) => {
     if (req.query.name) {
         return req.query.name;
@@ -72,7 +83,10 @@ const createPicoSocketServer = ({
     app.use(express.static(path.join(process.cwd(), assetFilesPath)));
     app.use((req, res) => {
         // by default serve the modified html game file
-        return res.send(modifiedTemplate.replace('CURRENT_PLAYER_NAME', getOrCreateName(req)));
+        return res.send(modifiedTemplate
+            .replace('CURRENT_PLAYER_NAME', getOrCreateName(req))
+            .replace('SERVER_URL', getServerUrl())
+        );
     });
 
     server.listen(PORT, () =>
