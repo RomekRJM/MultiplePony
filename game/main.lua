@@ -51,7 +51,6 @@ function _update60()
        if gameState == 1 then
            poke(BROWSER_GPIO_START_ADDR, START_ROUND_CMD_SERVER_RESP)
            gameState = GAME_IN_PROGRESS_STATE
-        --gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
        end
     end
 

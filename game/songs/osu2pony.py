@@ -6,10 +6,11 @@ X_TO_ARROW = {
     160: 'R',
 }
 
-INITIAL_DELAY = 64
+INITIAL_SHIFT_X = 64 + 8
 FPS = 60
 MAX_ACCEPTABLE_X = 160
-MIN_TIME = INITIAL_DELAY * FPS
+FREQUENCY = 1000 / FPS
+INITIAL_DELAY = INITIAL_SHIFT_X * FREQUENCY
 
 
 @dataclass
@@ -22,7 +23,7 @@ class Event:
 
     def __init__(self, x, time, time2, type):
         self.type = X_TO_ARROW[x]
-        self.time = INITIAL_DELAY + round(time / FPS)
+        self.time = round((time - INITIAL_DELAY )/ FREQUENCY)
         self.levelData = (x - 32) // 64
         self.repeated = type == 128
         self.repeats = 0
@@ -54,7 +55,7 @@ def extract_events_from_osu(file):
 
         if int(x) > MAX_ACCEPTABLE_X:
             contains_unsupported_arrows = True
-        elif int(time) < MIN_TIME:
+        elif int(time) < INITIAL_DELAY:
             contains_unsupported_time = True
         else:
             events.append(
@@ -68,7 +69,7 @@ def extract_events_from_osu(file):
         print("\nSome arrows are not supported and were skipped. Use only LEFT, TOP, BOTTOM in ArrowVortex.")
 
     if contains_unsupported_time:
-        print(f"\nMinimum time is {MIN_TIME} ms. Some arrows are scheduled before that and were skipped.")
+        print(f"\nMinimum time is {INITIAL_DELAY} ms. Some arrows are scheduled before that and were skipped.")
 
     return events
 

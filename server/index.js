@@ -185,7 +185,6 @@ const allPlayersInTheRoomReady = (room) => {
 
 function updateTeamNames(io, roomId, roomData) {
     console.log(JSON.stringify(roomData[roomId].team1Players));
-    console.log(JSON.stringify(roomData[roomId].team2Players));
     io.in(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
         adminPlayerName: roomData[roomId].adminPlayerName,
         team1Players: roomData[roomId].team1Players.map((p) => {
