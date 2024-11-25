@@ -18,22 +18,27 @@ pointGroups = {
     {
         maxAbsX = 0,
         points = 8,
+        arrowColorChange = 11,
     },
     {
         maxAbsX = 1,
         points = 6,
+        arrowColorChange = 12,
     },
     {
         maxAbsX = 3,
         points = 5,
+        arrowColorChange = 10,
     },
     {
         maxAbsX = 5,
         points = 4,
+        arrowColorChange = 9,
     },
     {
         maxAbsX = 16,
         points = 3,
+        arrowColorChange = 13,
     },
 }
 
@@ -82,6 +87,8 @@ function updatePlayer()
         for pointGroup in all(pointGroups) do
             if absDiff <= pointGroup.maxAbsX then
                 --printh(tostring(q) .. ': ' .. tostring(pointGroup.points))
+                currentArrow[q].newColor = pointGroup.arrowColorChange
+                currentArrow[q].hasBeenHit = true
                 myself.score += pointGroup.points
 
                 if gameMode == MODE_WEB_BROWSER then
