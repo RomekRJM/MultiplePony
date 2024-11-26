@@ -242,6 +242,18 @@ function handleUpdateRoundProgress()
     room.lastScoreUpdate = lastScoreUpdate
     room.winningTeam = winningTeam
 
+    local team1ScoreDiff = (room.team1Score - room.team1PreviousScore)
+    local team2ScoreDiff = (room.team2Score - room.team2PreviousScore)
+
+    if team1ScoreDiff > team2ScoreDiff then
+        rcShift -= 3
+    elseif team2ScoreDiff > team1ScoreDiff then
+        rcShift += 3
+    end
+
+    room.team1PreviousScore = room.team1Score
+    room.team2PreviousScore = room.team2Score
+
     clearServerGPIOPins()
 
 end

@@ -32,6 +32,7 @@ rightRainbowX = 102
 function restartUnicorns()
     rainbow = {}
     rainbowLength = 0
+    rcShift = 0
 
     for x = leftRainbowX, rightRainbowX, 1 do
         add(rainbow, deepCopy(rainbowPart:new({ x = x })))
@@ -124,21 +125,10 @@ function lograinbow()
 end
 
 function updateUnicorns()
-    rainbowCollisionX = leftRainbowX + (rightRainbowX - leftRainbowX) / 2
-
-    --if btn(⬅️) then
-    --    rcShift -= 1
-    --end
-    --
-    --if btn(➡️) then
-    --    rcShift += 1
-    --end
-    --
-    --rainbowCollisionX += rcShift
-
     local angle = 0
     local shiftY = 0
     local x = 0
+    rainbowCollisionX = (leftRainbowX + (rightRainbowX - leftRainbowX) / 2) + rcShift
 
     for i, rainbowSprite in ipairs(rainbow) do
 

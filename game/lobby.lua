@@ -10,6 +10,8 @@ room = {
     },
     team1Score = 0,
     team2Score = 0,
+    team1PreviousScore = 0,
+    team2PreviousScore = 0,
     lastScoreUpdate = 0,
     winningTeam = 0,
 }
