@@ -1,7 +1,9 @@
 leaderBoard = {}
+leaderBoardDone = false
 
 function restartEnd()
     leaderBoard = {}
+    leaderBoardDone = false
 end
 
 function sortLeaderBoard()
@@ -15,6 +17,10 @@ function sortLeaderBoard()
 end
 
 function updateEnd()
+    if leaderBoardDone then
+        return
+    end
+
     for p in all(room.team1) do
         add(leaderBoard, p)
     end
@@ -23,13 +29,12 @@ function updateEnd()
         add(leaderBoard, p)
     end
 
-    printh(#room.team1 .. ": " .. tprint(room.team1, 2), 'end.txt')
-    printh(#room.team2 .. ": " .. tprint(room.team2, 2), 'end.txt')
-
-    --sortLeaderBoard()
+    sortLeaderBoard()
+    leaderBoardDone = true
 end
 
 function drawEndScreen()
+    pal()
 
     if room.team1Score == room.team2Score then
         print('draw', 58, 8)
@@ -40,7 +45,6 @@ function drawEndScreen()
     end
 
     for i, p in ipairs(leaderBoard) do
-        print(tostring(i) .. '. ' .. p.name .. ' ' .. p.score, 38, 16 + i * 8)
+        print(tostring(i) .. '. ' .. p.name .. ' ' .. p.score, 38, 16 + i * 8, p.id == myself.id and 11 or 6)
     end
-
 end
