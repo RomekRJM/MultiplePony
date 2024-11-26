@@ -118,16 +118,11 @@ rcShift = 0
 arrowSinoid = {}
 rainbowLength = 0
 
-function lograinbow()
-    for i, rainbowSprite in ipairs(rainbow) do
-        printh(tostring(i) .. ": " .. tostring(rainbowSprite.visible))
-    end
-end
-
 function updateUnicorns()
     local angle = 0
     local shiftY = 0
     local x = 0
+
     rainbowCollisionX = (leftRainbowX + (rightRainbowX - leftRainbowX) / 2) + rcShift
 
     for i, rainbowSprite in ipairs(rainbow) do

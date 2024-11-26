@@ -246,9 +246,9 @@ function handleUpdateRoundProgress()
     local team2ScoreDiff = (room.team2Score - room.team2PreviousScore)
 
     if team1ScoreDiff > team2ScoreDiff then
-        rcShift -= 3
+        rcShift = min(rcShift + 5, 35)
     elseif team2ScoreDiff > team1ScoreDiff then
-        rcShift += 3
+        rcShift = max(rcShift - 5, -35)
     end
 
     room.team1PreviousScore = room.team1Score
@@ -284,7 +284,7 @@ function sendRoundStartCommand()
 
     local payload = createEmptyClientPayload()
 
-    payload[CLIENT_COMMAND_INDEX] = START_ROUND_CMD;
+    payload[CLIENT_COMMAND_INDEX] = START_ROUND_CMD
 
     sendBuffer(payload)
     gameState = SEND_START_ROUND_CMD_STATE
