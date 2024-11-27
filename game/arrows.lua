@@ -21,27 +21,27 @@ zArrow = arrow:new { z = maxZ, sprite = 4, associatedAction = 16, }
 xArrow = arrow:new { z = maxZ, sprite = 6, associatedAction = 32, }
 
 leftHalfArrow = arrow:new {
-    sprite = 0, w = 1, z = 1, timestamp = 8, firstElementPadX = 8,
+    sprite = 0, w = 1, z = 1, nextElementTimestampDiff = 8, firstElementTimestampDiff = 8,
     parent = leftArrow, parentBeforeRepeatSequence = false
 }
 rightHalfArrow = arrow:new {
-    sprite = 0, flip_x = true, associatedAction = 2, w = 1, timestamp = 8, firstElementPadX = 16,
+    sprite = 0, flip_x = true, associatedAction = 2, w = 1, nextElementTimestampDiff = 8, firstElementTimestampDiff = 16,
     parent = rightArrow, parentBeforeRepeatSequence = true
 }
 topHalfArrow = arrow:new {
-    sprite = 3, associatedAction = 4, w = 1, timestamp = 5, firstElementPadX = 13,
+    sprite = 3, associatedAction = 4, w = 1, nextElementTimestampDiff = 5, firstElementTimestampDiff = 13,
     parent = topArrow, parentBeforeRepeatSequence = true
 }
 midHalfArrow = arrow:new {
-    sprite = 3, flip_y = true, associatedAction = 8, w = 1, timestamp = 5, firstElementPadX = 13,
+    sprite = 3, flip_y = true, associatedAction = 8, w = 1, nextElementTimestampDiff = 5, firstElementTimestampDiff = 13,
     parent = midArrow, parentBeforeRepeatSequence = true
 }
 zHalfArrow = arrow:new {
-    sprite = 8, associatedAction = 16, w = 1, timestamp = 5, firstElementPadX = 10,
+    sprite = 8, associatedAction = 16, w = 1, nextElementTimestampDiff = 5, firstElementTimestampDiff = 10,
     parent = zArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 xHalfArrow = arrow:new {
-    sprite = 8, associatedAction = 32, w = 1, timestamp = 5, firstElementPadX = 10,
+    sprite = 8, associatedAction = 32, w = 1, nextElementTimestampDiff = 5, firstElementTimestampDiff = 10,
     parent = xArrow, parentBeforeRepeatSequence = true, changeZSequentially = true
 }
 
@@ -60,8 +60,8 @@ visibleArrowQueue = {}
 arrowQueue = {}
 currentLevelDuration = 0
 
-levelData = "L-81,L-349,L-442,L-554,L-648,L-746,L-865,L-959,L-2684,L-2737,L-2883,L-2928,L-3075,L-3129,L-3274,L-3319,L-5121,L-5175,L-5320,L-5366,L-5512,L-5566,L-5712,L-5757,L-5897,L-5950,L-6096,L-6141,L-6288,L-6342,L-6487,L-6532,L-10662,L-10716,L-10861,L-10906,L-11053,L-11107,L-11252,L-11297,L-11444,L-11497,L-11643,L-11688,L-11835,L-11889,L-12034,L-12079,L-12222,L-12276,L-12422,L-12467,L-12614,L-12667,L-12813,L-12858"
-levelData2 = "x-4-202,X-290,X-380,X-2781,X-2828,X-2980,X-3006,X-3028,X-3056,X-3171,X-3219,x-14-3364,X-5218,X-5265,X-5418,X-5444,X-5466,X-5493,X-5609,X-5657,X-5801,X-5994,X-6041,X-6194,X-6219,X-6241,X-6269,X-6384,X-6432,x-14-6577,X-10759,X-10806,X-10959,X-10984,X-11006,X-11034,X-11149,X-11197,X-11347,X-11541,X-11588,X-11740,X-11766,X-11788,X-11816,X-11931,X-11979,x-6-12142,X-12319,X-12367,X-12519,X-12545,X-12567,X-12594,X-12710,X-12758,x-14-12902,X-13219"
+levelData = "L-132,l-8-8"
+levelData2 = "x-80-100"
 levelData3 = "R-150,R-340,R-2709,R-2762,R-2804,R-2857,R-2899,R-2958,R-3101,R-3154,R-3196,R-3248,R-3291,R-3349,R-5147,R-5200,R-5242,R-5294,R-5337,R-5396,R-5539,R-5592,R-5634,R-5685,R-5728,R-5787,R-5922,R-5976,R-6017,R-6070,R-6112,R-6171,R-6314,R-6367,R-6409,R-6461,R-6504,R-6562,R-10687,R-10740,R-10782,R-10835,R-10877,R-10936,R-11079,R-11132,R-11174,R-11226,R-11269,R-11327,R-11469,R-11522,R-11564,R-11617,R-11659,R-11718,R-11861,R-11914,R-11956,R-12008,R-12051,R-12109,R-12248,R-12301,R-12343,R-12396,R-12438,R-12497,R-12640,R-12693,R-12735,R-12787,R-12829,R-12888"
 levelDuration = 6000
 
@@ -159,12 +159,12 @@ function generateLevel()
                     end
                 end
 
-                arrowQueue[q][i + j].nextElementPadX = currentArrow.parent.nextElementPadX
+                arrowQueue[q][i + j].nextElementTimestampDiff = currentArrow.parent.nextElementTimestampDiff
 
                 if currentArrow.parentBeforeRepeatSequence then
-                    local firstElementPadX = arrowQueue[q][i].firstElementPadX
+                    local firstElementTimestampDiff = arrowQueue[q][i].firstElementTimestampDiff
                     arrowQueue[q][i] = deepCopy(currentArrow.parent)
-                    arrowQueue[q][i].nextElementPadX = firstElementPadX
+                    arrowQueue[q][i].nextElementTimestampDiff = firstElementTimestampDiff
 
                     if q == 2 then
                         arrowQueue[q][i].y += circlePadY
@@ -177,6 +177,12 @@ function generateLevel()
                     end
                 end
 
+                for k = i, i + j do
+                    if arrowQueue[q][k].nextElementTimestampDiff ~= nil then
+                        arrowQueue[q][k].timestamp = currentArrow.timestamp + arrowQueue[q][k].nextElementTimestampDiff
+                    end
+                end
+
                 i += j
 
             end
@@ -184,6 +190,9 @@ function generateLevel()
             i += 1
         end
     end
+
+    logarrows()
+    stop()
 end
 
 function restartArrows()
@@ -209,8 +218,6 @@ function restartArrows()
             end
         end
     end
-
-    --logtmparrows()
 end
 
 rightArrowHitBoundary = 80
