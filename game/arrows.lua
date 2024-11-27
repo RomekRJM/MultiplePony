@@ -60,9 +60,9 @@ visibleArrowQueue = {}
 arrowQueue = {}
 currentLevelDuration = 0
 
-levelData = "L-132,l-8-8"
-levelData2 = "x-80-100"
-levelData3 = "R-150,R-340,R-2709,R-2762,R-2804,R-2857,R-2899,R-2958,R-3101,R-3154,R-3196,R-3248,R-3291,R-3349,R-5147,R-5200,R-5242,R-5294,R-5337,R-5396,R-5539,R-5592,R-5634,R-5685,R-5728,R-5787,R-5922,R-5976,R-6017,R-6070,R-6112,R-6171,R-6314,R-6367,R-6409,R-6461,R-6504,R-6562,R-10687,R-10740,R-10782,R-10835,R-10877,R-10936,R-11079,R-11132,R-11174,R-11226,R-11269,R-11327,R-11469,R-11522,R-11564,R-11617,R-11659,R-11718,R-11861,R-11914,R-11956,R-12008,R-12051,R-12109,R-12248,R-12301,R-12343,R-12396,R-12438,R-12497,R-12640,R-12693,R-12735,R-12787,R-12829,R-12888"
+levelData = "l-8-80"
+levelData2 = "X-80"
+levelData3 = "r-8-80"
 levelDuration = 6000
 
 symbolMapping = {
@@ -177,10 +177,17 @@ function generateLevel()
                     end
                 end
 
+                local finalTimestamp = currentArrow.timestamp
                 for k = i, i + j do
                     if arrowQueue[q][k].nextElementTimestampDiff ~= nil then
-                        arrowQueue[q][k].timestamp = currentArrow.timestamp + arrowQueue[q][k].nextElementTimestampDiff
+                        finalTimestamp += arrowQueue[q][k].nextElementTimestampDiff
+                        arrowQueue[q][k].timestamp = finalTimestamp
                     end
+                end
+
+                if currentArrow.parentBeforeRepeatSequence then
+                else
+                    arrowQueue[q][i+j].timestamp = arrowQueue[q][i+j-1].timestamp + arrowQueue[q][i+j-1].nextElementTimestampDiff
                 end
 
                 i += j
@@ -192,7 +199,6 @@ function generateLevel()
     end
 
     logarrows()
-    stop()
 end
 
 function restartArrows()
