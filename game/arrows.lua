@@ -60,9 +60,9 @@ visibleArrowQueue = {}
 arrowQueue = {}
 currentLevelDuration = 0
 
-levelData = "l-8-80"
-levelData2 = "X-80"
-levelData3 = "r-8-80"
+levelData = "l-4-80"
+levelData2 = "x-4-80"
+levelData3 = "r-4-80"
 levelDuration = 6000
 
 symbolMapping = {
@@ -144,8 +144,9 @@ function generateLevel()
             if currentArrow.w == 1 then
                 -- half arrow
                 local currentZ = maxZ - 1
+                local repeats = currentArrow.parentBeforeRepeatSequence and currentArrow.r or currentArrow.r - 1
 
-                for _ = 1, currentArrow.r do
+                for _ = 1, repeats do
                     j += 1
                     arrowQueue[q][i + j] = deepCopy(currentArrow)
 
@@ -164,17 +165,11 @@ function generateLevel()
                 if currentArrow.parentBeforeRepeatSequence then
                     local firstElementTimestampDiff = arrowQueue[q][i].firstElementTimestampDiff
                     arrowQueue[q][i] = deepCopy(currentArrow.parent)
+                    arrowQueue[q][i].y += circlePadY * (q - 1)
                     arrowQueue[q][i].nextElementTimestampDiff = firstElementTimestampDiff
-
-                    if q == 2 then
-                        arrowQueue[q][i].y += circlePadY
-                    end
                 else
                     arrowQueue[q][i + j] = deepCopy(currentArrow.parent)
-
-                    if q == 2 then
-                        arrowQueue[q][i + j].y += circlePadY
-                    end
+                    arrowQueue[q][i + j].y += circlePadY * (q - 1)
                 end
 
                 local finalTimestamp = currentArrow.timestamp
@@ -186,8 +181,9 @@ function generateLevel()
                 end
 
                 if currentArrow.parentBeforeRepeatSequence then
-                else
                     arrowQueue[q][i+j].timestamp = arrowQueue[q][i+j-1].timestamp + arrowQueue[q][i+j-1].nextElementTimestampDiff
+                else
+                    arrowQueue[q][i+j].timestamp = arrowQueue[q][i+j-1].timestamp + arrowQueue[q][i+j-1].firstElementTimestampDiff
                 end
 
                 i += j
