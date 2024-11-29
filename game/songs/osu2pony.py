@@ -11,7 +11,7 @@ X_TO_ARROW = {
     },
     160: {
         'arrow': 'R',
-        'repeat_x_adjustment': -16,
+        'repeat_x_adjustment': 0,
     },
 }
 
