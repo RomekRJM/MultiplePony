@@ -1,9 +1,18 @@
 from dataclasses import dataclass
 
 X_TO_ARROW = {
-    32: 'L',
-    96: 'X',
-    160: 'R',
+    32: {
+        'arrow': 'L',
+        'repeat_x_adjustment': 0,
+    },
+    96: {
+        'arrow': 'X',
+        'repeat_x_adjustment': 0,
+    },
+    160: {
+        'arrow': 'R',
+        'repeat_x_adjustment': -16,
+    },
 }
 
 INITIAL_SHIFT_X = 64 + 8
@@ -22,14 +31,18 @@ class Event:
     repeated: bool
 
     def __init__(self, x, time, time2, type):
-        self.type = X_TO_ARROW[x]
-        self.time = round((time - INITIAL_DELAY )/ FREQUENCY)
+        self.type = X_TO_ARROW[x]['arrow']
+        self.time = round((time - INITIAL_DELAY) / FREQUENCY)
         self.levelData = (x - 32) // 64
         self.repeated = type == 128
         self.repeats = 0
 
         if self.repeated:
-            self.repeats = round((time2 - time) / (FPS * 4))
+            repeat_x_adjustment = X_TO_ARROW[x]['repeat_x_adjustment']
+            self.time += repeat_x_adjustment
+            time2 += repeat_x_adjustment
+
+            self.repeats = round((time2 - self.time) / (FPS * 4))
             self.type = self.type.lower()
 
 
