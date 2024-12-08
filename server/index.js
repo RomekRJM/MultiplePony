@@ -41,6 +41,7 @@ const roomData = [
         clock: 0,
         lastScoreUpdate: 0,
         socket: null,
+        roomId: 0,
     },
     {
         team1Players: [],
@@ -50,6 +51,7 @@ const roomData = [
         clock: 0,
         lastScoreUpdate: 0,
         socket: null,
+        roomId: 1,
     },
     {
         team1Players: [],
@@ -59,6 +61,7 @@ const roomData = [
         clock: 0,
         lastScoreUpdate: 0,
         socket: null,
+        roomId: 2,
     },
 ];
 
@@ -183,6 +186,20 @@ const allPlayersInTheRoomReady = (room) => {
     );
 }
 
+const resetRoom = (room) => {
+    room.team1Players = [];
+    room.team2Players = [];
+    room.status = RoomStatus.ACCEPTING_PLAYERS;
+    room.lastScoreUpdate = 0;
+    room.clock = 0;
+    room.adminPlayerName = null;
+
+    if (room.socket) {
+        room.socket.disconnect();
+        room.socket = null;
+    }
+}
+
 function updateTeamNames(io, roomId, roomData) {
     console.log(JSON.stringify(roomData[roomId].team1Players));
     io.in(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
@@ -253,19 +270,7 @@ io.on("connection", (socket) => {
 
     socket.on("RESET", () => {
         // hack until disconnection is properly handled
-        roomData.forEach((room) => {
-            room.team1Players = [];
-            room.team2Players = [];
-            room.status = RoomStatus.ACCEPTING_PLAYERS;
-            room.lastScoreUpdate = 0;
-            room.clock = 0;
-            room.adminPlayerName = null;
-
-            if (room.socket) {
-                room.socket.disconnect();
-                room.socket = null;
-            }
-        });
+        roomData.forEach(resetRoom);
         console.log("RESET received, rooms now empty");
 
         socket.emit("RESETED_ROOMS");
@@ -384,6 +389,11 @@ setInterval(
                 return;
             }
 
+            if (room.team1Players.length + room.team2Players.length == 0) {
+                console.log(`All players left room ${room.roomId}, resetting it.`);
+                resetRoom(room);
+            }
+
             let playerScores = roomData[roomId].team1Players.concat(roomData[roomId].team2Players).map((p) => {
                 return {
                     playerId: p.id,
@@ -402,7 +412,7 @@ setInterval(
                         lastScoreUpdate: room.lastScoreUpdate,
                     });
                 } else {
-                    room.status = RoomStatus.ACCEPTING_PLAYERS;
+                    room.status = RoomStatus.GAME_FINISHED;
                     room.lastScoreUpdate += 1;
                     console.log("Game finished in room ", roomId, " with winning team ", winningTeam);
 
@@ -413,8 +423,7 @@ setInterval(
                         lastScoreUpdate: room.lastScoreUpdate,
                     });
 
-                    // handle emptying the room and closing the socket
-                    room.adminPlayerName = null;
+                    resetRoom(room);
                 }
             }
 
