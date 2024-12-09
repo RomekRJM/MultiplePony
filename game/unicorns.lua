@@ -28,6 +28,7 @@ function restartUnicorns()
 end
 
 function drawUnicorns()
+    pal()
     spr(leftUnicorn.sprite, leftUnicorn.x, leftUnicorn.y, leftUnicorn.w, leftUnicorn.h,
             leftUnicorn.flip_x, leftUnicorn.flip_y)
     pal(7, 6)
@@ -57,7 +58,7 @@ particles = {}
 function updateParticles(sourceX, sourceY)
     for i = 1, 1 + rnd(3) do
 
-        if count(particles) >= 33 then
+        if count(particles) >= 10 then
             break
         end
 
@@ -66,7 +67,7 @@ function updateParticles(sourceX, sourceY)
             y = sourceY + rnd(3),
             speed = 0.3 * rnd(4),
             colour = 7,
-            radius = rnd(4),
+            radius = 1 + rnd(4),
             duration = 5 + rnd(16)
         })
 
@@ -74,22 +75,21 @@ function updateParticles(sourceX, sourceY)
 
     for p in all(particles) do
         p.y -= p.speed
+        p.duration -= 1
 
-    p.duration -= 1
-
-    if p.duration <= 0 then
-        del(particles, p)
-    elseif p.duration < 3 then
-        p.radius = 1
-        p.colour = 5
-    elseif p.duration < 5 then
-        if p.radius == 3 then
-            p.radius = -0.3
+        if p.duration <= 0 then
+            del(particles, p)
+        elseif p.duration < 3 then
+            p.radius = 1
+            p.colour = 5
+        elseif p.duration < 5 then
+            if p.radius == 3 then
+                p.radius = -0.3
+            end
+            p.colour = 9
+        elseif p.duration < 7 then
+            p.colour = 10
         end
-        p.colour = 9
-    elseif p.duration < 7 then
-        p.colour = 10
-    end
     end
 end
 
@@ -104,7 +104,6 @@ function drawParticles()
         circfill(p.x, p.y, p.radius, p.colour)
         circfill(p.x, 60 - p.y, p.radius, p.colour)
     end
-    pal()
 end
 
 function updateUnicorns()
