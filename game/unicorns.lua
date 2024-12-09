@@ -7,7 +7,7 @@ leftUnicorn = sprite:new {
 }
 
 rightUnicorn = sprite:new {
-    x = 128 - 5 * 8, -- screen_width - w * default_sprite_width
+    x = 128 - 5 * 8,
     y = 10,
     sprite = 33,
     w = 5,
@@ -15,30 +15,16 @@ rightUnicorn = sprite:new {
     flip_x = true
 }
 
-rainbowPart = sprite:new {
-    x = 16,
-    y = 27,
-    sprite = 32,
-    w = 1,
-    h = 1,
-    visible = false,
-}
-
-rainbowAngleMultiplier = 16 / 360
-rainbowCollisionX = 0
 leftRainbowX = 24
 rightRainbowX = 102
-leftRainbowXEnd = 0
-rightRainbowXEnd = 0
+rainbowLength = 0
+rcShift = 0
+rainbowCollisionX = 0
 
 function restartUnicorns()
-    rainbow = {}
     rainbowLength = 0
     rcShift = 0
-
-    for x = leftRainbowX, rightRainbowX, 1 do
-        add(rainbow, deepCopy(rainbowPart:new({ x = x })))
-    end
+    rainbowCollisionX = 0
 end
 
 function drawUnicorns()
@@ -56,11 +42,13 @@ end
 
 function drawRainbow()
     if leftRainbowX + frame < rainbowCollisionX then
-        sspr(0, 80, frame, 19, leftRainbowX, 22, frame, 19)
-        sspr(0, 80, frame, 19, rightRainbowX, 22, -frame, 19, false, true)
+        sspr(0, 80, frame, 19, leftRainbowX, 22, frame, 19, true)
+        sspr(0, 80, frame, 19, rightRainbowX, 22, -frame, 19, true)
     else
-        sspr(frame % rainbowLength, 80, rainbowCollisionX-leftRainbowX, 19, rainbowCollisionX, 22, rainbowCollisionX-leftRainbowX, 19)
-        sspr(frame % rainbowLength, 80, rainbowCollisionX-leftRainbowX, 19, rainbowCollisionX, 22, -(rainbowCollisionX-leftRainbowX), 19)
+        local leftRainbowLength = rainbowCollisionX-leftRainbowX
+        local rightRainbowLength = rightRainbowX-rainbowCollisionX
+        sspr(frame % (103 - rainbowLength), 80, leftRainbowLength, 19, leftRainbowX, 22, leftRainbowLength, 19,  true)
+        sspr(frame % (120 - rainbowLength), 80, rightRainbowLength, 19, rightRainbowX, 22, -rightRainbowLength, 19, true)
     end
 end
 
@@ -119,15 +107,7 @@ function drawParticles()
     pal()
 end
 
-rcShift = 0
-arrowSinoid = {}
-rainbowLength = 0
-
 function updateUnicorns()
-    local angle = 0
-    local shiftY = 0
-    local x = 0
-
     rainbowCollisionX = (leftRainbowX + (rightRainbowX - leftRainbowX) / 2) + rcShift
     if rainbowLength >= (rightRainbowX - leftRainbowX) / 2 then
         updateParticles(rainbowCollisionX, 28)
@@ -135,46 +115,3 @@ function updateUnicorns()
         rainbowLength += 1
     end
 end
-
---function updateUnicorns()
---    local angle = 0
---    local shiftY = 0
---    local x = 0
---
---    rainbowCollisionX = (leftRainbowX + (rightRainbowX - leftRainbowX) / 2) + rcShift
---
---    for i, rainbowSprite in ipairs(rainbow) do
---
---        if rainbowSprite.x <= rainbowCollisionX then
---            angle = (frame + i * 2) % 360
---            shiftY = sin(angle * rainbowAngleMultiplier)
---            x = rainbowCollisionX - rainbowSprite.x + leftRainbowX
---            arrowSinoid[i] = {
---                x = x,
---                y = rainbowSprite.y - shiftY
---            }
---
---            if x - leftRainbowX < rainbowLength then
---                rainbowSprite.visible = true
---            end
---        else
---            angle = (frame - i * 2) % 360
---            shiftY = sin(angle * rainbowAngleMultiplier)
---            x = rainbowCollisionX - rainbowSprite.x + rightRainbowX
---            arrowSinoid[i] = {
---                x = x,
---                y = rainbowSprite.y + shiftY
---            }
---
---            if rightRainbowX - x < rainbowLength then
---                rainbowSprite.visible = true
---            end
---        end
---    end
---
---    if rainbowLength >= (rightRainbowX - leftRainbowX) / 2 then
---        updateParticles(rainbowCollisionX, 28)
---    else
---        rainbowLength += 1
---    end
---end
