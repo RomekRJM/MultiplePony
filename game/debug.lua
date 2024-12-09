@@ -37,3 +37,12 @@ function addIndent(indent)
 
     return s
 end
+
+function performanceInsights(f, name)
+    local s1 = stat(1)
+    local s2 = stat(2)
+
+    f()
+
+    printh(name .. ',' .. frame .. ',' .. stat(1) - s1 .. ',' .. stat(2) - s2)
+end

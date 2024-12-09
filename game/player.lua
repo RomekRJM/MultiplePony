@@ -44,7 +44,8 @@ pointGroups = {
 
 myself = {}
 myselfId = -1
-
+teamScoreXLocation = 48
+teamScoreYLocation = 0
 arrowMaxPoints = 8
 
 function restartPlayer()
@@ -52,7 +53,7 @@ function restartPlayer()
 end
 
 function drawTeamScores()
-    print(room.team1Score .. '      ' .. room.team2Score, 48, 0)
+    print(room.team1Score .. '      ' .. room.team2Score, teamScoreXLocation, teamScoreYLocation)
 end
 
 function dbgScore()
