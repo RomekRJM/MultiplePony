@@ -15,3 +15,5 @@ allowed_origins.cfg
 # MacOS
 .DS_Store
 
+# performance optimizations
+*.csv

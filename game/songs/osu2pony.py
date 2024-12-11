@@ -1,9 +1,24 @@
 from dataclasses import dataclass
 
 X_TO_ARROW = {
-    32: 'L',
-    96: 'X',
-    160: 'R',
+    32: {
+        'arrow': 'L',
+        'repeat_x_adjustment': 0,
+        'first_element_timestamp_diff': 8,
+        'next_element_timestamp_diff': 8,
+    },
+    96: {
+        'arrow': 'X',
+        'repeat_x_adjustment': -16,
+        'first_element_timestamp_diff': 14,
+        'next_element_timestamp_diff': 3,
+    },
+    160: {
+        'arrow': 'R',
+        'repeat_x_adjustment': 0,
+        'first_element_timestamp_diff': 16,
+        'next_element_timestamp_diff': 8,
+    },
 }
 
 INITIAL_SHIFT_X = 64 + 8
@@ -11,6 +26,7 @@ FPS = 60
 MAX_ACCEPTABLE_X = 160
 FREQUENCY = 1000 / FPS
 INITIAL_DELAY = INITIAL_SHIFT_X * FREQUENCY
+BASE_ARROW_LENGTH = 16
 
 
 @dataclass
@@ -22,15 +38,24 @@ class Event:
     repeated: bool
 
     def __init__(self, x, time, time2, type):
-        self.type = X_TO_ARROW[x]
-        self.time = round((time - INITIAL_DELAY )/ FREQUENCY)
+        self.type = X_TO_ARROW[x]['arrow']
         self.levelData = (x - 32) // 64
         self.repeated = type == 128
         self.repeats = 0
 
         if self.repeated:
-            self.repeats = round((time2 - time) / (FPS * 4))
+            repeat_x_adjustment = X_TO_ARROW[x]['repeat_x_adjustment']
+            first_element_timestamp_diff = X_TO_ARROW[x]['first_element_timestamp_diff']
+
+            duration = BASE_ARROW_LENGTH + first_element_timestamp_diff + repeat_x_adjustment
+            duration /= FREQUENCY
+            frame_diff = (time2 - time) / FREQUENCY
+            all_repeats = (frame_diff - duration) / X_TO_ARROW[x]['next_element_timestamp_diff']
+            self.repeats = round(all_repeats)
             self.type = self.type.lower()
+            time += repeat_x_adjustment
+
+        self.time = round((time - INITIAL_DELAY) / FREQUENCY)
 
 
 def extract_events_from_osu(file):
