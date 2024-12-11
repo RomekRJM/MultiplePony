@@ -17,11 +17,13 @@ function _init()
 end
 
 function clsPartial()
-    rectfill(0, circleTopCentreY-circleRadius, 128, 128, 0) -- clear arrow area
+    rectfill(0, circleTopCentreY - circleRadius, 128, circleTopCentreY + circleRadius, 0) -- clear top arrow area
+    rectfill(0, circleMidCentreY - circleRadius, 128, circleMidCentreY + circleRadius, 0) -- clear mid arrow area
+    rectfill(0, circleBottomCentreY - circleRadius, 128, circleBottomCentreY + circleRadius, 0) -- clear bottom arrow area
     rectfill(teamScoreXLocation, teamScoreYLocation, 100, 7, 0) -- clear scores area
     rectfill(leftRainbowX, 24, rightRainbowX, 36, 0) -- clear rainbow area
-    rectfill(rainbowCollisionX-4, 8, rainbowCollisionX+4, 23, 0) -- clear upper particle area
-    rectfill(rainbowCollisionX-4, 37, rainbowCollisionX+4, 55, 0) -- clear lower particle area
+    rectfill(rainbowCollisionX - 4, 8, rainbowCollisionX + 4, 23, 0) -- clear upper particle area
+    rectfill(rainbowCollisionX - 4, 37, rainbowCollisionX + 4, 55, 0) -- clear lower particle area
 end
 
 function _draw()
@@ -62,10 +64,10 @@ function _update60()
     sendRoundStartCommand()
 
     if gameMode == MODE_PICO_CLIENT then
-       if gameState == 1 then
-           poke(BROWSER_GPIO_START_ADDR, START_ROUND_CMD_SERVER_RESP)
-           gameState = GAME_IN_PROGRESS_STATE
-       end
+        if gameState == 1 then
+            poke(BROWSER_GPIO_START_ADDR, START_ROUND_CMD_SERVER_RESP)
+            gameState = GAME_IN_PROGRESS_STATE
+        end
     end
 
     frame = frame + 1

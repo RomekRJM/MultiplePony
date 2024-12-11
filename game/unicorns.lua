@@ -15,6 +15,25 @@ rightUnicorn = sprite:new {
     flip_x = true
 }
 
+leftUnicornMouth = {
+    x = leftUnicorn.x + 24,
+    y = leftUnicorn.y + 14,
+    sx = 32,
+    sy = 30,
+    sw = 11,
+    sh = 8,
+}
+
+rightUnicornMouth = {
+    x = rightUnicorn.x + 4,
+    y = rightUnicorn.y + 14,
+    sx = 32,
+    sy = 30,
+    sw = 11,
+    sh = 8,
+    flip_x = true,
+}
+
 leftRainbowX = 24
 rightRainbowX = 102
 rainbowLength = 0
@@ -29,15 +48,29 @@ end
 
 function drawUnicorns()
     pal()
-    spr(leftUnicorn.sprite, leftUnicorn.x, leftUnicorn.y, leftUnicorn.w, leftUnicorn.h,
-            leftUnicorn.flip_x, leftUnicorn.flip_y)
-    pal(7, 6)
-    pal(13, 5)
-    pal(8, 2)
-    pal(14, 8)
-    pal(12, 1)
-    spr(rightUnicorn.sprite, rightUnicorn.x, rightUnicorn.y, rightUnicorn.w, rightUnicorn.h,
-            rightUnicorn.flip_x, rightUnicorn.flip_y)
+    if frame <= 3 then
+        -- draw entire unicorns
+        spr(leftUnicorn.sprite, leftUnicorn.x, leftUnicorn.y, leftUnicorn.w, leftUnicorn.h,
+                leftUnicorn.flip_x, leftUnicorn.flip_y)
+        pal(7, 6)
+        pal(13, 5)
+        pal(8, 2)
+        pal(14, 8)
+        pal(12, 1)
+        spr(rightUnicorn.sprite, rightUnicorn.x, rightUnicorn.y, rightUnicorn.w, rightUnicorn.h,
+                rightUnicorn.flip_x, rightUnicorn.flip_y)
+    else
+        -- just draw the mouth on top of rainbow -> draw call optimization
+        sspr(leftUnicornMouth.sx, leftUnicornMouth.sy, leftUnicornMouth.sw, leftUnicornMouth.sh, leftUnicornMouth.x,
+                leftUnicornMouth.y)
+        pal(7, 6)
+        pal(13, 5)
+        pal(8, 2)
+        pal(14, 8)
+        pal(12, 1)
+        sspr(rightUnicornMouth.sx, rightUnicornMouth.sy, rightUnicornMouth.sw, rightUnicornMouth.sh, rightUnicornMouth.x,
+                rightUnicornMouth.y, rightUnicornMouth.sw, rightUnicornMouth.sh, rightUnicornMouth.flip_x)
+    end
     pal()
 end
 
