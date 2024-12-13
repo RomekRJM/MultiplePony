@@ -2,6 +2,7 @@ arrow = sprite:new {
     timestamp = 32,
     associatedAction = 1,
     actioned = false,
+    x = 128,
     z = 1,
     newColor = nil,
     hasBeenHit = false,
@@ -213,14 +214,6 @@ function restartArrows()
     currentLevelDuration = 0
 
     generateLevel()
-
-    for q = 1, 3 do
-        for i, currentArrow in ipairs(arrowQueue[q]) do
-            if i <= arrowUpdateBatchLen then
-                currentArrow.x = 128
-            end
-        end
-    end
 end
 
 rightArrowHitBoundary = 80
