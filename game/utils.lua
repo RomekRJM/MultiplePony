@@ -11,3 +11,28 @@ function deepCopy(obj)
 
     return res
 end
+
+function split_str_part(strToSplit, divider, startPos, maxTokens)
+    local tokens = {}
+    local buffer = ""
+    local k = 0
+
+    for i=startPos, #strToSplit - startPos, 1 do
+        k = i
+        if #tokens >= maxTokens then
+            break
+        end
+
+        if strToSplit[i] == divider then
+            add(tokens, buffer)
+            buffer = ""
+        else
+            buffer = buffer .. strToSplit[i]
+        end
+    end
+
+    return {
+        position = k,
+        tokens = tokens,
+    }
+end
