@@ -10,9 +10,7 @@ arrow = sprite:new {
 
 maxZ = 11
 generatorCntr = {}
-generatorCntr[1] = 0
-generatorCntr[2] = 0
-generatorCntr[3] = 0
+dataStringPosition = {}
 
 leftArrow = arrow:new { z = 2, }
 rightArrow = arrow:new { flip_x = true, associatedAction = 2, }
@@ -82,21 +80,23 @@ symbolMapping = {
     ['z'] = zHalfArrow
 }
 
-function prepareLevelFromParsedData()
-    generatorCntr[1] = 0
-    generatorCntr[2] = 0
-    generatorCntr[3] = 0
-    arrowQueueLen = {}
+function prepareLevelFromParsedData(maxChunkSize)
     tmpArrowQueue = {}
 
     for q = 1, 3 do
         local levelSource = q == 1 and levelData or ( q == 2 and levelData2 or levelData3)
 
-        data = split(levelSource)
-        arrowQueueLen[q] = #data
+        data = split_str_part(levelSource, ",", dataStringPosition[q], maxChunkSize)
+
+        if data.position == 0 then
+            goto continueprepareLevelLoop
+        end
+
+        arrowQueueLen[q] += #data.tokens
+        dataStringPosition[q] = data.position
         tmpArrowQueue[q] = {}
 
-        for instruction in all(data) do
+        for instruction in all(data.tokens) do
             local parts = split(instruction, "-")
             local element = 1
             local arrowLetter = parts[element]
@@ -113,6 +113,9 @@ function prepareLevelFromParsedData()
             currentArrow.timestamp = tonum(parts[element])
             add(tmpArrowQueue[q], currentArrow)
         end
+
+        :: continueprepareLevelLoop ::
+
     end
 end
 
@@ -127,7 +130,7 @@ function nextArrowFromParsedData(qn)
 end
 
 function generateLevel()
-    prepareLevelFromParsedData()
+    prepareLevelFromParsedData(3)
 
     for q = 1, 3 do
         local i = 1
@@ -206,10 +209,16 @@ function restartArrows()
     arrowQueue[1] = {}
     arrowQueue[2] = {}
     arrowQueue[3] = {}
-    arrowQueueLen = 32
+    arrowQueueLen = { 0, 0, 0 }
     visibleArrowQueue[1] = {}
     visibleArrowQueue[2] = {}
     visibleArrowQueue[3] = {}
+    generatorCntr[1] = 0
+    generatorCntr[2] = 0
+    generatorCntr[3] = 0
+    dataStringPosition[1] = 1
+    dataStringPosition[2] = 1
+    dataStringPosition[3] = 1
     visibleArrowQueueMaxLen = 10
     currentLevelDuration = 0
 
