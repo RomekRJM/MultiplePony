@@ -9,6 +9,7 @@ arrow = sprite:new {
 }
 
 maxZ = 11
+maxArrowBufferSize = 6
 generatorCntr = {}
 dataStringPosition = {}
 
@@ -81,9 +82,12 @@ symbolMapping = {
 }
 
 function prepareLevelFromParsedData(maxChunkSize)
-    tmpArrowQueue = {}
-
     for q = 1, 3 do
+
+        if #tmpArrowQueue[q] >= maxChunkSize then
+            goto continueprepareLevelLoop
+        end
+
         local levelSource = q == 1 and levelData or ( q == 2 and levelData2 or levelData3)
 
         data = split_str_part(levelSource, ",", dataStringPosition[q], maxChunkSize)
@@ -94,7 +98,6 @@ function prepareLevelFromParsedData(maxChunkSize)
 
         arrowQueueLen[q] += #data.tokens
         dataStringPosition[q] = data.position
-        tmpArrowQueue[q] = {}
 
         for instruction in all(data.tokens) do
             local parts = split(instruction, "-")
@@ -120,17 +123,18 @@ function prepareLevelFromParsedData(maxChunkSize)
 end
 
 function nextArrowFromParsedData(qn)
-    generatorCntr[qn] += 1
+    local nextArrow = nil
 
-    if generatorCntr[qn] <= arrowQueueLen[qn] then
-        return tmpArrowQueue[qn][generatorCntr[qn]]
+    if tmpArrowQueue[qn] ~= nil then
+        nextArrow = tmpArrowQueue[qn][1]
+        deli(tmpArrowQueue[qn], 1)
     end
 
-    return nil
+    return nextArrow
 end
 
-function generateLevel()
-    prepareLevelFromParsedData(3)
+function generateLevelPartially()
+    prepareLevelFromParsedData(maxArrowBufferSize)
 
     for q = 1, 3 do
         local i = 1
@@ -205,24 +209,22 @@ end
 function restartArrows()
     arrowUpdateBatchLen = 10
     arrowSpeed = 1
-
     arrowQueue[1] = {}
     arrowQueue[2] = {}
     arrowQueue[3] = {}
     arrowQueueLen = { 0, 0, 0 }
+    tmpArrowQueue = {}
+    tmpArrowQueue[1] = {}
+    tmpArrowQueue[2] = {}
+    tmpArrowQueue[3] = {}
     visibleArrowQueue[1] = {}
     visibleArrowQueue[2] = {}
     visibleArrowQueue[3] = {}
-    generatorCntr[1] = 0
-    generatorCntr[2] = 0
-    generatorCntr[3] = 0
     dataStringPosition[1] = 1
     dataStringPosition[2] = 1
     dataStringPosition[3] = 1
     visibleArrowQueueMaxLen = 10
     currentLevelDuration = 0
-
-    generateLevel()
 end
 
 rightArrowHitBoundary = 80
@@ -322,6 +324,8 @@ function updateArrows()
     if currentLevelDuration >= levelDuration then
         gameState = GAME_END_SCREEN_STATE
     end
+
+    generateLevelPartially()
 
     currentLevelDuration += 1
 
