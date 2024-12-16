@@ -90,7 +90,7 @@ function prepareLevelFromParsedData(maxChunkSize)
 
         local levelSource = q == 1 and levelData or ( q == 2 and levelData2 or levelData3)
 
-        data = split_str_part(levelSource, ",", dataStringPosition[q], maxChunkSize)
+        data = split_str_part(levelSource, ",", dataStringPosition[q], maxChunkSize - #tmpArrowQueue[q])
 
         if data.position == 0 then
             goto continueprepareLevelLoop
@@ -111,7 +111,7 @@ function prepareLevelFromParsedData(maxChunkSize)
                 element += 1
             end
 
-            currentArrow.timestamp = tonum(parts[element]) - frame
+            currentArrow.timestamp = tonum(parts[element])
             add(tmpArrowQueue[q], currentArrow)
         end
 
@@ -154,6 +154,8 @@ function generateLevelPartially()
 
             local j = 0
             arrowQueue[q][i] = deepCopy(currentArrow)
+            currentArrow = arrowQueue[q][i]
+            currentArrow.timestamp -= frame + 1
 
             if currentArrow.w == 1 then
                 -- half arrow
