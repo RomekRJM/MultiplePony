@@ -9,6 +9,7 @@ arrow = sprite:new {
 }
 
 maxZ = 11
+maxArrowBufferSize = 6
 generatorCntr = {}
 dataStringPosition = {}
 
@@ -81,20 +82,21 @@ symbolMapping = {
 }
 
 function prepareLevelFromParsedData(maxChunkSize)
-    tmpArrowQueue = {}
-
     for q = 1, 3 do
+
+        if #tmpArrowQueue[q] >= maxChunkSize then
+            goto continueprepareLevelLoop
+        end
+
         local levelSource = q == 1 and levelData or ( q == 2 and levelData2 or levelData3)
 
-        data = split_str_part(levelSource, ",", dataStringPosition[q], maxChunkSize)
+        data = split_str_part(levelSource, ",", dataStringPosition[q], maxChunkSize - #tmpArrowQueue[q])
 
         if data.position == 0 then
             goto continueprepareLevelLoop
         end
 
-        arrowQueueLen[q] += #data.tokens
         dataStringPosition[q] = data.position
-        tmpArrowQueue[q] = {}
 
         for instruction in all(data.tokens) do
             local parts = split(instruction, "-")
@@ -106,7 +108,6 @@ function prepareLevelFromParsedData(maxChunkSize)
 
             if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
                 currentArrow.r = tonum(parts[element])
-                arrowQueueLen[q] += currentArrow.r
                 element += 1
             end
 
@@ -119,23 +120,31 @@ function prepareLevelFromParsedData(maxChunkSize)
     end
 end
 
-function nextArrowFromParsedData(qn)
-    generatorCntr[qn] += 1
+function nextArrowFromParsedData(qn, maxChunkSize)
+    local nextArrow = nil
 
-    if generatorCntr[qn] <= arrowQueueLen[qn] then
-        return tmpArrowQueue[qn][generatorCntr[qn]]
+    if #arrowQueue[qn] >= maxChunkSize then
+        return nextArrow
     end
 
-    return nil
+    if tmpArrowQueue[qn][1] ~= nil then
+        nextArrow = tmpArrowQueue[qn][1]
+        deli(tmpArrowQueue[qn], 1)
+    end
+
+    return nextArrow
 end
 
-function generateLevel()
-    prepareLevelFromParsedData(3)
+function generateLevelPartially()
+    --logtmparrows()
+    --logarrows()
+
+    prepareLevelFromParsedData(maxArrowBufferSize)
 
     for q = 1, 3 do
-        local i = 1
+        local i = #arrowQueue[q] + 1
         while true do
-            local currentArrow = nextArrowFromParsedData(q)
+            local currentArrow = nextArrowFromParsedData(q, maxArrowBufferSize)
 
             if currentArrow == nil then
                 break
@@ -145,6 +154,8 @@ function generateLevel()
 
             local j = 0
             arrowQueue[q][i] = deepCopy(currentArrow)
+            currentArrow = arrowQueue[q][i]
+            currentArrow.timestamp -= frame
 
             if currentArrow.w == 1 then
                 -- half arrow
@@ -205,24 +216,21 @@ end
 function restartArrows()
     arrowUpdateBatchLen = 10
     arrowSpeed = 1
-
     arrowQueue[1] = {}
     arrowQueue[2] = {}
     arrowQueue[3] = {}
-    arrowQueueLen = { 0, 0, 0 }
+    tmpArrowQueue = {}
+    tmpArrowQueue[1] = {}
+    tmpArrowQueue[2] = {}
+    tmpArrowQueue[3] = {}
     visibleArrowQueue[1] = {}
     visibleArrowQueue[2] = {}
     visibleArrowQueue[3] = {}
-    generatorCntr[1] = 0
-    generatorCntr[2] = 0
-    generatorCntr[3] = 0
     dataStringPosition[1] = 1
     dataStringPosition[2] = 1
     dataStringPosition[3] = 1
     visibleArrowQueueMaxLen = 10
     currentLevelDuration = 0
-
-    generateLevel()
 end
 
 rightArrowHitBoundary = 80
@@ -272,7 +280,7 @@ function logtmparrows()
     for q = 1, 3 do
         for i, arrow in ipairs(tmpArrowQueue[q]) do
             --if q == 1 and i == 1 then
-                printh(tostring(i) .. ": " .. tprint(arrow, 2), logFileName)
+                printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(arrow), logFileName)
             --end
         end
     end
@@ -294,9 +302,10 @@ end
 
 function logarrows()
     local logFileName = 'pony.log'
-    printh("arrowQueue: ", logFileName)
+    printh("arrowQueue at frame: " .. frame, logFileName)
 
     for q = 1, 3 do
+        printh('arrowQueueLen[' .. tostring(q) .. '] = ' .. tostring(#arrowQueue[q]), logFileName)
         for i, arrow in ipairs(arrowQueue[q]) do
             --if q == 2 and i == 1 then
                 printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(arrow), logFileName)
@@ -322,6 +331,8 @@ function updateArrows()
     if currentLevelDuration >= levelDuration then
         gameState = GAME_END_SCREEN_STATE
     end
+
+    generateLevelPartially()
 
     currentLevelDuration += 1
 
