@@ -124,7 +124,7 @@ end
 function nextArrowFromParsedData(qn, maxChunkSize)
     local nextArrow = nil
 
-    if arrowQueueLen[qn] >= maxChunkSize then
+    if #arrowQueue[qn] >= maxChunkSize then
         return nextArrow
     end
 
@@ -155,7 +155,6 @@ function generateLevelPartially()
 
             local j = 0
             arrowQueue[q][i] = deepCopy(currentArrow)
-            arrowQueueLen[q] += 1
 
             if currentArrow.w == 1 then
                 -- half arrow
@@ -165,7 +164,6 @@ function generateLevelPartially()
                 for _ = 1, repeats do
                     j += 1
                     arrowQueue[q][i + j] = deepCopy(currentArrow)
-                    arrowQueueLen[q] += 1
 
                     if currentArrow.changeZSequentially then
                         arrowQueue[q][i + j].z = currentZ
@@ -220,7 +218,6 @@ function restartArrows()
     arrowQueue[1] = {}
     arrowQueue[2] = {}
     arrowQueue[3] = {}
-    arrowQueueLen = { 0, 0, 0 }
     tmpArrowQueue = {}
     tmpArrowQueue[1] = {}
     tmpArrowQueue[2] = {}
@@ -307,7 +304,7 @@ function logarrows()
     printh("arrowQueue: ", logFileName)
 
     for q = 1, 3 do
-        printh('arrowQueueLen[' .. tostring(q) .. '] = ' .. tostring(arrowQueueLen[q]), logFileName)
+        printh('arrowQueueLen[' .. tostring(q) .. '] = ' .. tostring(#arrowQueue[q]), logFileName)
         for i, arrow in ipairs(arrowQueue[q]) do
             --if q == 2 and i == 1 then
                 printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(arrow), logFileName)
@@ -352,7 +349,6 @@ function updateArrows()
 
         for deletedArrow in all(inQueueScheduledForDeletion[q]) do
             del(arrowQueue[q], deletedArrow)
-            arrowQueueLen[q] -= 1
         end
         inQueueScheduledForDeletion[q] = {}
 
