@@ -105,14 +105,13 @@ function prepareLevelFromParsedData(maxChunkSize)
             element += 1
 
             local currentArrow = deepCopy(symbolMapping[arrowLetter])
-            currentArrow.timestamp -= frame
 
             if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
                 currentArrow.r = tonum(parts[element])
                 element += 1
             end
 
-            currentArrow.timestamp = tonum(parts[element])
+            currentArrow.timestamp = tonum(parts[element]) - frame
             add(tmpArrowQueue[q], currentArrow)
         end
 
@@ -301,7 +300,7 @@ end
 
 function logarrows()
     local logFileName = 'pony.log'
-    printh("arrowQueue: ", logFileName)
+    printh("arrowQueue at frame: " .. frame, logFileName)
 
     for q = 1, 3 do
         printh('arrowQueueLen[' .. tostring(q) .. '] = ' .. tostring(#arrowQueue[q]), logFileName)
