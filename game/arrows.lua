@@ -96,7 +96,6 @@ function prepareLevelFromParsedData(maxChunkSize)
             goto continueprepareLevelLoop
         end
 
-        arrowQueueLen[q] += #data.tokens
         dataStringPosition[q] = data.position
 
         for instruction in all(data.tokens) do
@@ -106,10 +105,10 @@ function prepareLevelFromParsedData(maxChunkSize)
             element += 1
 
             local currentArrow = deepCopy(symbolMapping[arrowLetter])
+            currentArrow.timestamp -= frame
 
             if ord(arrowLetter) >= 96 and ord(arrowLetter) <= 122 then
                 currentArrow.r = tonum(parts[element])
-                arrowQueueLen[q] += currentArrow.r
                 element += 1
             end
 
@@ -122,10 +121,14 @@ function prepareLevelFromParsedData(maxChunkSize)
     end
 end
 
-function nextArrowFromParsedData(qn)
+function nextArrowFromParsedData(qn, maxChunkSize)
     local nextArrow = nil
 
-    if tmpArrowQueue[qn] ~= nil then
+    if arrowQueueLen[qn] >= maxChunkSize then
+        return nextArrow
+    end
+
+    if tmpArrowQueue[qn][1] ~= nil then
         nextArrow = tmpArrowQueue[qn][1]
         deli(tmpArrowQueue[qn], 1)
     end
@@ -134,12 +137,15 @@ function nextArrowFromParsedData(qn)
 end
 
 function generateLevelPartially()
+    logtmparrows()
+    logarrows()
     prepareLevelFromParsedData(maxArrowBufferSize)
+    --stop()
 
     for q = 1, 3 do
-        local i = 1
+        local i = #arrowQueue[q]
         while true do
-            local currentArrow = nextArrowFromParsedData(q)
+            local currentArrow = nextArrowFromParsedData(q, maxArrowBufferSize)
 
             if currentArrow == nil then
                 break
@@ -149,6 +155,7 @@ function generateLevelPartially()
 
             local j = 0
             arrowQueue[q][i] = deepCopy(currentArrow)
+            arrowQueueLen[q] += 1
 
             if currentArrow.w == 1 then
                 -- half arrow
@@ -158,6 +165,7 @@ function generateLevelPartially()
                 for _ = 1, repeats do
                     j += 1
                     arrowQueue[q][i + j] = deepCopy(currentArrow)
+                    arrowQueueLen[q] += 1
 
                     if currentArrow.changeZSequentially then
                         arrowQueue[q][i + j].z = currentZ
@@ -274,7 +282,7 @@ function logtmparrows()
     for q = 1, 3 do
         for i, arrow in ipairs(tmpArrowQueue[q]) do
             --if q == 1 and i == 1 then
-                printh(tostring(i) .. ": " .. tprint(arrow, 2), logFileName)
+                printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(arrow), logFileName)
             --end
         end
     end
@@ -299,6 +307,7 @@ function logarrows()
     printh("arrowQueue: ", logFileName)
 
     for q = 1, 3 do
+        printh('arrowQueueLen[' .. tostring(q) .. '] = ' .. tostring(arrowQueueLen[q]), logFileName)
         for i, arrow in ipairs(arrowQueue[q]) do
             --if q == 2 and i == 1 then
                 printh('[' .. tostring(q) .. '][' .. tostring(i) .. "]: " .. tprint(arrow), logFileName)
@@ -343,6 +352,7 @@ function updateArrows()
 
         for deletedArrow in all(inQueueScheduledForDeletion[q]) do
             del(arrowQueue[q], deletedArrow)
+            arrowQueueLen[q] -= 1
         end
         inQueueScheduledForDeletion[q] = {}
 
