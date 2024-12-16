@@ -143,7 +143,7 @@ function generateLevelPartially()
     --stop()
 
     for q = 1, 3 do
-        local i = #arrowQueue[q]
+        local i = #arrowQueue[q] + 1
         while true do
             local currentArrow = nextArrowFromParsedData(q, maxArrowBufferSize)
 
