@@ -136,10 +136,10 @@ function nextArrowFromParsedData(qn, maxChunkSize)
 end
 
 function generateLevelPartially()
-    logtmparrows()
-    logarrows()
+    --logtmparrows()
+    --logarrows()
+
     prepareLevelFromParsedData(maxArrowBufferSize)
-    --stop()
 
     for q = 1, 3 do
         local i = #arrowQueue[q] + 1
