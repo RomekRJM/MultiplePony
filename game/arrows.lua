@@ -155,7 +155,7 @@ function generateLevelPartially()
             local j = 0
             arrowQueue[q][i] = deepCopy(currentArrow)
             currentArrow = arrowQueue[q][i]
-            currentArrow.timestamp -= frame + 1
+            currentArrow.timestamp -= frame
 
             if currentArrow.w == 1 then
                 -- half arrow
