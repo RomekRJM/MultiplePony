@@ -28,7 +28,7 @@ const createPicoSocketClient = () => {
     const startRoundCountdownServerResponse = 253;
     const updateRoundProgressServerResponse = 252;
     const audios = [
-        new Audio('audio/chippi.ogg'),
+        new Audio('audio/chippi.mp3'),
     ];
     let currentAudio;
 
@@ -60,7 +60,7 @@ const createPicoSocketClient = () => {
     }
 
     const handleUpdatePlayerScoreCommand = () => {
-        clientSocket.emit("UPDATE_PLAYER_SCORE_CMD", {
+        clientSocket.volatile.emit("UPDATE_PLAYER_SCORE_CMD", {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
@@ -203,14 +203,19 @@ const createPicoSocketClient = () => {
         });
     }
 
-    const onFrameUpdate = () => {
+    const fps = 60;
+    const timestep = 1000 / fps;
+    let lastTimestamp = 0;
+
+    const onFrameUpdate = (timestamp) => {
+        console.log(timestamp - lastTimestamp);
+        window.requestAnimationFrame(onFrameUpdate);
+
+        if (timestamp - lastTimestamp < timestep) { console.log("Await"); return; }
+
         processPico8Command();
 
-        // queue this function to run again (when the next animation frame is available)
-        // this queuing should help prevent overwhelming the browser with requests
-        setTimeout(() => {
-          window.requestAnimationFrame(onFrameUpdate);
-        }, 0);
+        lastTimestamp = timestamp;
     }
 
     const connectToRoomInterval = setInterval(() => {
