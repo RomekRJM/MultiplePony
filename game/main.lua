@@ -12,7 +12,7 @@ function _init()
     restartPlayer()
     restartCountdown()
     restartEnd()
-    clearGPIOPins()
+    clearServerGPIOPins()
     establishConnection()
 end
 

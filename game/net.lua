@@ -6,7 +6,7 @@ CLIENT_COMMAND_INDEX = 1
 
 BROWSER_GPIO_START_ADDR = 0x5f80
 BROWSER_GPIO_END_ADDR = 0x5fff
-GPIO_LENGTH = 128
+GPIO_LENGTH = 127
 CLIENT_FRAME_LENGTH = 7
 BROWSER_GPIO_CLIENT_START_ADDR = BROWSER_GPIO_END_ADDR - CLIENT_FRAME_LENGTH
 
@@ -35,16 +35,8 @@ gameState = INITIAL_STATE
 function restartNet()
 end
 
-function clearGPIOPins()
-    for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_CLIENT_START_ADDR do
-        poke(pin)
-    end
-end
-
 function clearServerGPIOPins()
-    for pin = BROWSER_GPIO_START_ADDR, BROWSER_GPIO_CLIENT_START_ADDR - 1 do
-        poke(pin, 0)
-    end
+    memset(BROWSER_GPIO_START_ADDR, 0, GPIO_LENGTH)
 end
 
 function createEmptyClientPayload()
