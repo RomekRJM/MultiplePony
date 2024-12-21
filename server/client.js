@@ -28,7 +28,7 @@ const createPicoSocketClient = () => {
     const startRoundCountdownServerResponse = 253;
     const updateRoundProgressServerResponse = 252;
     const audios = [
-        new Audio('audio/chippi.ogg'),
+        new Audio('audio/chippi.mp3'),
     ];
     let currentAudio;
 
@@ -60,7 +60,7 @@ const createPicoSocketClient = () => {
     }
 
     const handleUpdatePlayerScoreCommand = () => {
-        clientSocket.emit("UPDATE_PLAYER_SCORE_CMD", {
+        clientSocket.volatile.emit("UPDATE_PLAYER_SCORE_CMD", {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
@@ -203,14 +203,34 @@ const createPicoSocketClient = () => {
         });
     }
 
-    const onFrameUpdate = () => {
-        processPico8Command();
+    const fps = 60;
+    const timestep = 1000 / fps;
+    let lastTimestamp = 0;
 
-        // queue this function to run again (when the next animation frame is available)
-        // this queuing should help prevent overwhelming the browser with requests
+//    const onFrameUpdate = (timestamp) => {
+//        window.requestIdleCallback(() => {
+//            window.requestAnimationFrame(onFrameUpdate);
+//
+//            if (timestamp - lastTimestamp < timestep) {
+//                return;
+//            }
+//
+//            processPico8Command();
+//
+//            lastTimestamp = timestamp;
+//        });
+//    }
+
+    const onFrameUpdate = (timestamp) => {
         setTimeout(() => {
-          window.requestAnimationFrame(onFrameUpdate);
+            window.requestAnimationFrame(onFrameUpdate);
         }, 0);
+
+        setTimeout(() => {
+            processPico8Command();
+        }, 0);
+
+        // https://dev.to/localazy/how-to-pass-function-to-web-workers-4ee1 - invoke worker function, maybe processPico8Command should be handled like this
     }
 
     const connectToRoomInterval = setInterval(() => {
