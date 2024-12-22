@@ -60,7 +60,7 @@ const createPicoSocketClient = () => {
     }
 
     const handleUpdatePlayerScoreCommand = () => {
-        clientSocket.volatile.emit("UPDATE_PLAYER_SCORE_CMD", {
+        clientSocket.emit("UPDATE_PLAYER_SCORE_CMD", {
             playerId: player.id,
             roomId: player.roomId,
             team: player.team,
