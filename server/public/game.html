@@ -632,7 +632,7 @@
 
 		}
 		e.type = "application/javascript";
-		e.src = "game.js";
+		e.src = "public/game.js";
 		e.id = "e_script";
 		
 		document.body.appendChild(e); // load and run
@@ -1120,41 +1120,6 @@ canvas{
 
 <!-- Add content below the cart here -->
 
-<p id="for-worker"></p>
-
-<script type="text/javascript">
-	let worker;
-
-	function startWorker() {
-	  if (typeof(Worker) !== "undefined") {
-		if (typeof(worker) == "undefined") {
-		  worker = new Worker("web_socket_worker.js");
-		}
-		worker.onmessage = function(event) {
-		  document.getElementById("for-worker").innerHTML = event.data;
-		};
-	  } else {
-		document.getElementById("for-worker").innerHTML = "Sorry! No Web Worker support.";
-	  }
-	}
-
-	function stopWorker() {
-	  worker.terminate();
-	  worker = undefined;
-	}
-
-	window.onbeforeunload = stopWorker;
-	document.onreadystatechange = () => {
-		if (document.readyState === "complete") {
-			startWorker();
-		}
-	};
-
-	setTimeout(() => {
-		worker.postMessage({"m": "Hello from the main page!"});
-	}, 3000);
-
-</script>
 
 
 </div> <!-- body_0 -->
