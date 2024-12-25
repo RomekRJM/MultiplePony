@@ -12,17 +12,17 @@ self.addEventListener("message", function(e) {
 });
 
 clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
-    postMessage({message: "CONNECTED_TO_SERVER_RESP", payload: {roomId, playerId, team, admin}});
+    postMessage({command: "CONNECTED_TO_SERVER_RESP", payload: {roomId, playerId, team, admin}});
 });
 
 clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock, lastScoreUpdate}) => {
-    postMessage({message: "UPDATE_ROUND_PROGRESS_CMD", payload: {playerScores, winningTeam, clock, lastScoreUpdate}});
+    postMessage({command: "UPDATE_ROUND_PROGRESS_CMD", payload: {playerScores, winningTeam, clock, lastScoreUpdate}});
 });
 
 clientSocket.on("UPDATE_TEAM_NAMES", ({team1Name, team2Name}) => {
-    postMessage({message: "UPDATE_TEAM_NAMES", payload: {team1Name, team2Name}});
+    postMessage({command: "UPDATE_TEAM_NAMES", payload: {team1Name, team2Name}});
 });
 
 clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId, countdown}) => {
-    postMessage({message: "START_ROUND_COUNTDOWN_CMD", payload: {roundId, countdown}});
+    postMessage({command: "START_ROUND_COUNTDOWN_CMD", payload: {roundId, countdown}});
 });

@@ -270,13 +270,8 @@ const createPicoSocketClient = () => {
     const onFrameUpdate = (timestamp) => {
         setTimeout(() => {
             window.requestAnimationFrame(onFrameUpdate);
-        }, 0);
-
-        setTimeout(() => {
             processPico8Command();
         }, 0);
-
-        // https://dev.to/localazy/how-to-pass-function-to-web-workers-4ee1 - invoke worker function, maybe processPico8Command should be handled like this
     }
 
     const connectToRoomInterval = setInterval(() => {

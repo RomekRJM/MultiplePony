@@ -4,7 +4,6 @@ import http from "http";
 import { Server } from "socket.io";
 import fs from "fs";
 import createPicoSocketClient from "./client.js";
-import crypto from "crypto";
 
 const getServerUrl = (req) => {
     if (process.env.SERVER_URL) {
@@ -92,7 +91,10 @@ const createPicoSocketServer = ({
     });
 
     app.get(`/${workerFilePath}`, (req, res) => {
-        res.send(workerFileTemplate.replace('SERVER_URL', getServerUrl()));
+        res.send(
+            workerFileTemplate.replace('SERVER_URL', getServerUrl())
+                .replace('CURRENT_PLAYER_NAME', getOrCreateName(req))
+        );
     });
 
     server.listen(PORT, () =>
