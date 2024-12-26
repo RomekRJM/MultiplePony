@@ -14,5 +14,7 @@ wmctrl -R "$PICO_WINDOW" &&
   xdotool key Escape && xdotool type "export game.html" && xdotool key Return &&
   xdotool sleep 0.5 && xdotool type "exit()" && xdotool key Return
 
-mv "$PICO_FOLDER/game.js" server/
-mv "$PICO_FOLDER/game.html" server/
+mv "$PICO_FOLDER/game.js" server/public/
+mv "$PICO_FOLDER/game.html" server/public/
+
+sed -i 's/game.js/public\/game.js/g' server/public/game.html

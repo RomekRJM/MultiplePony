@@ -6,19 +6,31 @@
 const createPicoSocketClient = () => {
     let player = {
         id: -1,
-        token: "CURRENT_PLAYER_NAME",//crypto.randomUUID(),
         name: "",
         team: -1,
         roomId: -1,
         admin: false,
         ready: false,
     };
-    const clientSocket = io.connect(SERVER_URL || "http://localhost:5000/",
-        {
-            auth: {
-                token: player.token
-            }
-        });
+
+    let worker;
+
+    if (typeof (Worker) !== "undefined") {
+        if (typeof (worker) == "undefined") {
+            worker = new Worker("web_socket_worker.js");
+        }
+        worker.onmessage = function (event) {
+            document.getElementById("for-worker").innerHTML = event.data;
+        };
+    }
+
+    function stopWorker() {
+	  worker.terminate();
+	  worker = undefined;
+	}
+
+	window.onbeforeunload = stopWorker;
+
     const serverCommandIndex = 0;
     const clientCommandIndex = 121;
     const serverRoomIdIndex = 1;
@@ -28,7 +40,7 @@ const createPicoSocketClient = () => {
     const startRoundCountdownServerResponse = 253;
     const updateRoundProgressServerResponse = 252;
     const audios = [
-        new Audio('audio/chippi.ogg'),
+        new Audio('public/audio/chippi.ogg'),
     ];
     let currentAudio;
 
@@ -52,38 +64,50 @@ const createPicoSocketClient = () => {
     }
 
     const handleStartRoundCommand = () => {
-        clientSocket.emit("START_ROUND_CMD", {
-            playerId: player.id,
-            roomId: player.roomId,
-            team: player.team
+        worker.postMessage({
+            message: "START_ROUND_CMD",
+            payload: {
+                playerId: player.id,
+                roomId: player.roomId,
+                team: player.team,
+            }
         });
     }
 
     const handleUpdatePlayerScoreCommand = () => {
-        clientSocket.emit("UPDATE_PLAYER_SCORE_CMD", {
-            playerId: player.id,
-            roomId: player.roomId,
-            team: player.team,
-            score: bytes2Word(window.pico8_gpio.slice(clientCommandIndex + 1, clientCommandIndex + 3)),
-            frame: bytes2Word(window.pico8_gpio.slice(clientCommandIndex + 3, clientCommandIndex + 5)),
+        worker.postMessage({
+            message: "UPDATE_PLAYER_SCORE_CMD",
+            payload: {
+                playerId: player.id,
+                roomId: player.roomId,
+                team: player.team,
+                score: bytes2Word(window.pico8_gpio.slice(clientCommandIndex + 1, clientCommandIndex + 3)),
+                frame: bytes2Word(window.pico8_gpio.slice(clientCommandIndex + 3, clientCommandIndex + 5))
+            }
         });
     }
 
     const handleSwapTeamCommand = () => {
-        clientSocket.emit("SWAP_TEAM_CMD", {
-            playerId: player.id,
-            roomId: player.roomId,
-            team: player.team,
-            newTeam: window.pico8_gpio[clientCommandIndex + 1],
+        worker.postMessage({
+            message: "SWAP_TEAM_CMD",
+            payload: {
+                playerId: player.id,
+                roomId: player.roomId,
+                team: player.team,
+                newTeam: window.pico8_gpio[clientCommandIndex + 1],
+            }
         });
     }
 
     const handleUpdateReadinessCommand = () => {
-        clientSocket.emit("UPDATE_READINESS_CMD", {
-            playerId: player.id,
-            roomId: player.roomId,
-            team: player.team,
-            ready: window.pico8_gpio[clientCommandIndex + 1] > 0,
+        worker.postMessage({
+            message: "UPDATE_READINESS_CMD",
+            payload: {
+                playerId: player.id,
+                roomId: player.roomId,
+                team: player.team,
+                ready: window.pico8_gpio[clientCommandIndex + 1] > 0,
+            }
         });
     }
 
@@ -111,6 +135,108 @@ const createPicoSocketClient = () => {
         6: handlePlaySong,
     };
 
+    const handleStartRoundServerCommand = ({roundId}) => {
+//            console.log("Received round start command", roundId);
+
+        window.pico8_gpio[serverCommandIndex] = startRoundCountdownServerResponse;
+        window.pico8_gpio[serverRoomIdIndex] = player.roomId;
+        window.pico8_gpio[2] = roundId;
+    }
+
+    const handleUpdateTeamNamesServerCommand = ({adminPlayerName, team1Players, team2Players}) => {
+        let players = [...team1Players, ...team2Players];
+
+        window.pico8_gpio[serverCommandIndex] = updateTeamNamesServerResponse;
+        window.pico8_gpio[serverRoomIdIndex] = player.roomId;
+        window.pico8_gpio[3] = team1Players.length;
+        window.pico8_gpio[4] = team2Players.length;
+        window.pico8_gpio[5] = team2Readiness(team1Players);
+        window.pico8_gpio[6] = team2Readiness(team2Players);
+
+        let index = 7;
+
+        for (let p of players) {
+
+            if (p.name === adminPlayerName) {
+                window.pico8_gpio[2] = p.id;
+            }
+
+            if (player.id === p.id) {
+                player.team = team1Players.includes(p) ? 1 : 2;
+                player.ready = p.ready;
+            }
+
+            window.pico8_gpio[index] = p.id;
+            ++index;
+
+            let nameLength = 0;
+            for (let char of p.name) {
+                window.pico8_gpio[index] = char.charCodeAt(0);
+                ++index;
+                ++nameLength;
+            }
+
+            // 0 means end of name
+            window.pico8_gpio[index] = 0;
+            ++index;
+        }
+    }
+
+    const handleUpdateRoundProgressServerCommand = ({playerScores, winningTeam, clock, lastScoreUpdate}) => {
+        //            console.trace("Received update round progress command", {playerScores, winningTeam, clock, lastScoreUpdate});
+        let clockBytes = word2Bytes(clock);
+        let lastScoreUpdateBytes = word2Bytes(lastScoreUpdate);
+
+        window.pico8_gpio[serverCommandIndex] = updateRoundProgressServerResponse;
+        window.pico8_gpio[serverRoomIdIndex] = player.roomId;
+        window.pico8_gpio[2] = clockBytes[0];
+        window.pico8_gpio[3] = clockBytes[1];
+        window.pico8_gpio[4] = lastScoreUpdateBytes[0];
+        window.pico8_gpio[5] = lastScoreUpdateBytes[1];
+        window.pico8_gpio[6] = winningTeam;
+        window.pico8_gpio[7] = playerScores.length;
+
+        let index = 8;
+
+        for (let ps of playerScores) {
+            let bytes = word2Bytes(ps.score);
+
+            window.pico8_gpio[index] = ps.playerId;
+            ++index;
+
+            window.pico8_gpio[index] = bytes[0];
+            ++index;
+
+            window.pico8_gpio[index] = bytes[1];
+            ++index;
+        }
+    }
+
+    const handleConnectedToServerResponse = ({roomId, playerId, team, admin}) => {
+        //                console.log("Connected to server", {roomId, playerId, team, admin});
+        player.roomId = roomId;
+        player.id = playerId;
+        player.team = team;
+        player.admin = admin;
+
+        window.pico8_gpio[serverCommandIndex] = connectToServerResponse;
+        window.pico8_gpio[serverRoomIdIndex] = player.roomId;
+        window.pico8_gpio[2] = player.id;
+        window.pico8_gpio[3] = player.admin ? 1 : 0;
+        window.pico8_gpio[4] = player.team;
+
+        clearInterval(connectToRoomInterval);
+
+        window.requestAnimationFrame(onFrameUpdate);
+    }
+
+    const serverCommands = {
+        'START_ROUND_COUNTDOWN_CMD': handleStartRoundServerCommand,
+        'UPDATE_TEAM_NAMES': handleUpdateTeamNamesServerCommand,
+        'UPDATE_ROUND_PROGRESS_CMD': handleUpdateRoundProgressServerCommand,
+        'CONNECTED_TO_SERVER_RESP': handleConnectedToServerResponse,
+    }
+
     const processPico8Command = () => {
         const command = window.pico8_gpio[clientCommandIndex];
 //        console.log(command);
@@ -123,93 +249,10 @@ const createPicoSocketClient = () => {
         window.pico8_gpio[clientCommandIndex] = 0;
     }
 
-    const attachServerListeners = () => {
-        clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId}) => {
-//            console.log("Received round start command", roundId);
-
-            window.pico8_gpio[serverCommandIndex] = startRoundCountdownServerResponse;
-            window.pico8_gpio[serverRoomIdIndex] = player.roomId;
-            window.pico8_gpio[2] = roundId;
-        });
-
-        clientSocket.on("UPDATE_TEAM_NAMES", ({adminPlayerName, team1Players, team2Players}) => {
-//            console.log("Received update team names command", {adminPlayerName, team1Players, team2Players});
-            let players = [...team1Players, ...team2Players];
-
-            window.pico8_gpio[serverCommandIndex] = updateTeamNamesServerResponse;
-            window.pico8_gpio[serverRoomIdIndex] = player.roomId;
-            window.pico8_gpio[3] = team1Players.length;
-            window.pico8_gpio[4] = team2Players.length;
-            window.pico8_gpio[5] = team2Readiness(team1Players);
-            window.pico8_gpio[6] = team2Readiness(team2Players);
-
-            let index = 7;
-
-            for (let p of players) {
-
-                if (p.name === adminPlayerName) {
-                    window.pico8_gpio[2] = p.id;
-                }
-
-                if (player.id === p.id) {
-                    player.team = team1Players.includes(p) ? 1 : 2;
-                    player.ready = p.ready;
-                }
-
-                window.pico8_gpio[index] = p.id;
-                ++index;
-
-                let nameLength = 0;
-                for (let char of p.name) {
-                    window.pico8_gpio[index] = char.charCodeAt(0);
-                    ++index;
-                    ++nameLength;
-                }
-
-                // 0 means end of name
-                window.pico8_gpio[index] = 0;
-                ++index;
-            }
-        });
-
-        clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock, lastScoreUpdate}) => {
-//            console.trace("Received update round progress command", {playerScores, winningTeam, clock, lastScoreUpdate});
-            let clockBytes = word2Bytes(clock);
-            let lastScoreUpdateBytes = word2Bytes(lastScoreUpdate);
-
-            window.pico8_gpio[serverCommandIndex] = updateRoundProgressServerResponse;
-            window.pico8_gpio[serverRoomIdIndex] = player.roomId;
-            window.pico8_gpio[2] = clockBytes[0];
-            window.pico8_gpio[3] = clockBytes[1];
-            window.pico8_gpio[4] = lastScoreUpdateBytes[0];
-            window.pico8_gpio[5] = lastScoreUpdateBytes[1];
-            window.pico8_gpio[6] = winningTeam;
-            window.pico8_gpio[7] = playerScores.length;
-
-            let index = 8;
-
-            for (let ps of playerScores) {
-                let bytes = word2Bytes(ps.score);
-
-                window.pico8_gpio[index] = ps.playerId;
-                ++index;
-
-                window.pico8_gpio[index] = bytes[0];
-                ++index;
-
-                window.pico8_gpio[index] = bytes[1];
-                ++index;
-            }
-        });
-    }
-
-    const onFrameUpdate = () => {
-        processPico8Command();
-
-        // queue this function to run again (when the next animation frame is available)
-        // this queuing should help prevent overwhelming the browser with requests
+    const onFrameUpdate = (timestamp) => {
         setTimeout(() => {
-          window.requestAnimationFrame(onFrameUpdate);
+            processPico8Command();
+            window.requestAnimationFrame(onFrameUpdate);
         }, 0);
     }
 
@@ -218,29 +261,17 @@ const createPicoSocketClient = () => {
 
         if (command === joinServerCommand) {
             player.name = window.pico8_gpio.slice(1, 12).reduce((a, c) => a + String.fromCharCode(c), "");
-            clearInterval(connectToRoomInterval);
-            clientSocket.emit("JOIN_SERVER_CMD", player.name);
 
-            clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
-//                console.log("Connected to server", {roomId, playerId, team, admin});
-                player.roomId = roomId;
-                player.id = playerId;
-                player.team = team;
-                player.admin = admin;
-
-                window.pico8_gpio[serverCommandIndex] = connectToServerResponse;
-                window.pico8_gpio[serverRoomIdIndex] = player.roomId;
-                window.pico8_gpio[2] = player.id;
-                window.pico8_gpio[3] = player.admin ? 1 : 0;
-                window.pico8_gpio[4] = player.team;
-
-                clearInterval(connectToRoomInterval);
-                attachServerListeners();
-
-                window.requestAnimationFrame(onFrameUpdate);
+            worker.postMessage({
+                message: "JOIN_SERVER_CMD",
+                payload: player.name,
             });
         }
     }, 250);
+
+    worker.onmessage = (e) => {
+        serverCommands[e.data.command](e.data.payload);
+    }
 };
 
 export default createPicoSocketClient;

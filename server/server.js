@@ -4,7 +4,6 @@ import http from "http";
 import { Server } from "socket.io";
 import fs from "fs";
 import createPicoSocketClient from "./client.js";
-import crypto from "crypto";
 
 const getServerUrl = (req) => {
     if (process.env.SERVER_URL) {
@@ -49,6 +48,7 @@ const getCORSOrigins = (serverPort) => {
 const createPicoSocketServer = ({
                                     assetFilesPath,
                                     htmlGameFilePath,
+                                    workerFilePath,
                                 }) => {
     // host on port 5000
     const PORT = process.env.PORT || 5000;
@@ -79,13 +79,21 @@ const createPicoSocketServer = ({
     // add the client side code
     const modifiedTemplate = htmlFileTemplate.replace("</head>", clientSideCode);
 
+    const workerFileData = fs.readFileSync(workerFilePath);
+    const workerFileTemplate = workerFileData.toString();
+
     // host the static files
-    app.use(express.static(path.join(process.cwd(), assetFilesPath)));
-    app.use((req, res) => {
+    app.use(['/public'], express.static(path.join(process.cwd(), assetFilesPath)));
+
+    app.get("/", (req, res) => {
         // by default serve the modified html game file
-        return res.send(modifiedTemplate
-            .replace('CURRENT_PLAYER_NAME', getOrCreateName(req))
-            .replace('SERVER_URL', getServerUrl())
+        res.send(modifiedTemplate.replace('CURRENT_PLAYER_NAME', getOrCreateName(req)));
+    });
+
+    app.get(`/${workerFilePath}`, (req, res) => {
+        res.send(
+            workerFileTemplate.replace('SERVER_URL', getServerUrl())
+                .replace('CURRENT_PLAYER_NAME', getOrCreateName(req))
         );
     });
 

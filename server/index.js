@@ -221,10 +221,11 @@ function updateTeamNames(io, roomId, roomData) {
     });
 }
 
-const htmlGameFilePath = "game.html";
-const assetFilesPath = ".";
+const htmlGameFilePath = "public/game.html";
+const workerFilePath = "web_socket_worker.js";
+const assetFilesPath = "public";
 
-const {app, server, io} = createPicoSocketServer({assetFilesPath, htmlGameFilePath});
+const {app, server, io} = createPicoSocketServer({assetFilesPath, htmlGameFilePath, workerFilePath});
 
 io.on("connection", (socket) => {
     let playerName = socket.handshake.auth.token;
