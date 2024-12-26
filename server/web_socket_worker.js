@@ -19,8 +19,8 @@ clientSocket.on("UPDATE_ROUND_PROGRESS_CMD", ({playerScores, winningTeam, clock,
     postMessage({command: "UPDATE_ROUND_PROGRESS_CMD", payload: {playerScores, winningTeam, clock, lastScoreUpdate}});
 });
 
-clientSocket.on("UPDATE_TEAM_NAMES", ({team1Name, team2Name}) => {
-    postMessage({command: "UPDATE_TEAM_NAMES", payload: {team1Name, team2Name}});
+clientSocket.on("UPDATE_TEAM_NAMES", ({adminPlayerName, team1Players, team2Players}) => {
+    postMessage({command: "UPDATE_TEAM_NAMES", payload: {adminPlayerName, team1Players, team2Players}});
 });
 
 clientSocket.on("START_ROUND_COUNTDOWN_CMD", ({roundId, countdown}) => {
