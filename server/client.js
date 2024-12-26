@@ -249,28 +249,10 @@ const createPicoSocketClient = () => {
         window.pico8_gpio[clientCommandIndex] = 0;
     }
 
-    // const fps = 60;
-    // const timestep = 1000 / fps;
-    // let lastTimestamp = 0;
-
-//    const onFrameUpdate = (timestamp) => {
-//        window.requestIdleCallback(() => {
-//            window.requestAnimationFrame(onFrameUpdate);
-//
-//            if (timestamp - lastTimestamp < timestep) {
-//                return;
-//            }
-//
-//            processPico8Command();
-//
-//            lastTimestamp = timestamp;
-//        });
-//    }
-
     const onFrameUpdate = (timestamp) => {
         setTimeout(() => {
-            window.requestAnimationFrame(onFrameUpdate);
             processPico8Command();
+            window.requestAnimationFrame(onFrameUpdate);
         }, 0);
     }
 
