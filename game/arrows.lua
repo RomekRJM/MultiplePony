@@ -268,8 +268,7 @@ function drawArrows()
             end
         end
     end
-    --cls()
-    --print(stat(0), 100, 0)
+    print(stat(0), 100, 0)
     --print(frame, 100, 0)
 end
 

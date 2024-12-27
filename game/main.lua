@@ -16,28 +16,14 @@ function _init()
     establishConnection()
 end
 
-function clsPartial()
-    rectfill(0, circleTopCentreY - circleRadius, 128, circleTopCentreY + circleRadius, 0) -- clear top arrow area
-    rectfill(0, circleMidCentreY - circleRadius, 128, circleMidCentreY + circleRadius, 0) -- clear mid arrow area
-    rectfill(0, circleBottomCentreY - circleRadius, 128, circleBottomCentreY + circleRadius, 0) -- clear bottom arrow area
-    rectfill(teamScoreXLocation, teamScoreYLocation, 100, 7, 0) -- clear scores area
-    rectfill(leftRainbowX, 24, rightRainbowX, 36, 0) -- clear rainbow area
-    rectfill(rainbowCollisionX - 4, 8, rainbowCollisionX + 4, 23, 0) -- clear upper particle area
-    rectfill(rainbowCollisionX - 4, 37, rainbowCollisionX + 4, 55, 0) -- clear lower particle area
-end
-
 function _draw()
-    if gameState ~= GAME_IN_PROGRESS_STATE or frame == 3 then
-        cls()
-    end
-    --print('game state ' .. tonum(gameState), 0, 8)
+    cls()
 
     if gameState == COUNTING_DOWN_TO_GAME_START_STATE then
         drawCountdown()
     elseif gameState == RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
         drawLobby()
     elseif gameState == GAME_IN_PROGRESS_STATE then
-        clsPartial()
         drawUnicornsWithRainbow()
         drawArrows()
         drawTeamScores()
