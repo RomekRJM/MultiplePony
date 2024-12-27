@@ -48,8 +48,8 @@ function drawRainbow()
     else
         local leftRainbowLength = rainbowCollisionX-leftRainbowX
         local rightRainbowLength = rightRainbowX-rainbowCollisionX
-        sspr(frame % (103 - rainbowLength), 80, leftRainbowLength, 19, leftRainbowX, 22, leftRainbowLength, 19,  true)
-        sspr(frame % (120 - rainbowLength), 80, rightRainbowLength, 19, rightRainbowX, 22, -rightRainbowLength, 19, true)
+        sspr(frame % (87 - rainbowLength), 80, leftRainbowLength, 19, leftRainbowX, 22, leftRainbowLength, 19,  true)
+        sspr(frame % (87 - rainbowLength), 80, rightRainbowLength, 19, rightRainbowX, 22, -rightRainbowLength, 19, true)
     end
 end
 
