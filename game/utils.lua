@@ -17,7 +17,7 @@ function split_str_part(strToSplit, divider, startPos, maxTokens)
     local buffer = ""
     local k = 0
 
-    for i=startPos, #strToSplit - startPos, 1 do
+    for i=startPos, #strToSplit, 1 do
         k = i
         if #tokens >= maxTokens then
             break
