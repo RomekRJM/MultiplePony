@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
-    "start": "node index.js --watch server --inspect ./server/index.js"
+    "start": "node index.js --watch server --inspect ./index.js"
   },
   "author": "Roman Subik",
   "license": "ISC",
