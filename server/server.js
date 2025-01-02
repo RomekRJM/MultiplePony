@@ -5,15 +5,13 @@ import { Server } from "socket.io";
 import fs from "fs";
 import createPicoSocketClient from "./client.js";
 
-const getServerUrl = (req) => {
-    if (process.env.SERVER_URL) {
-        return `'${process.env.SERVER_URL}'`;
-    }
+const getServerUrl = (port) => {
+    let corsOrigins = getCORSOrigins(port);
+    let serverUrl = `'${corsOrigins[0]}'`;
 
-    let defaultServerUrl = "'http://localhost:5000'";
-    console.log(`SERVER_URL was not defined, so using ${defaultServerUrl}, note it will not work over the internet`);
+    console.log(`Using first cors origin as SERVER_URL: ${serverUrl}. Note local / private addresses do not work over the internet.`);
 
-	return defaultServerUrl;
+	return serverUrl;
 };
 
 const getOrCreateName = (req) => {
@@ -93,7 +91,7 @@ const createPicoSocketServer = ({
     app.get(`/${workerFilePath}`, (req, res) => {
         res.setHeader('content-type', 'text/javascript');
         res.send(
-            workerFileTemplate.replace('SERVER_URL', getServerUrl())
+            workerFileTemplate.replace('SERVER_URL', getServerUrl(PORT))
                 .replace('CURRENT_PLAYER_NAME', getOrCreateName(req))
         );
     });
