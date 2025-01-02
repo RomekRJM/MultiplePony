@@ -91,6 +91,7 @@ const createPicoSocketServer = ({
     });
 
     app.get(`/${workerFilePath}`, (req, res) => {
+        res.setHeader('content-type', 'text/javascript');
         res.send(
             workerFileTemplate.replace('SERVER_URL', getServerUrl())
                 .replace('CURRENT_PLAYER_NAME', getOrCreateName(req))
