@@ -80,6 +80,7 @@ const createPicoSocketServer = ({
     const workerFileData = fs.readFileSync(workerFilePath);
     const workerFileTemplate = workerFileData.toString();
     let playerName;
+    let serverUrl = getServerUrl(PORT);
 
     // host the static files
     app.use(['/public'], express.static(path.join(process.cwd(), assetFilesPath)));
@@ -87,19 +88,19 @@ const createPicoSocketServer = ({
     app.get("/", (req, res) => {
         playerName = getOrCreateName(req);
         // by default serve the modified html game file
-        res.send(modifiedTemplate.replace('CURRENT_PLAYER_NAME', ));
+        res.send(modifiedTemplate.replace('CURRENT_PLAYER_NAME', playerName));
     });
 
     app.get(`/${workerFilePath}`, (req, res) => {
         res.setHeader('content-type', 'text/javascript');
         res.send(
-            workerFileTemplate.replace('SERVER_URL', getServerUrl(PORT))
+            workerFileTemplate.replace('SERVER_URL', serverUrl)
                 .replace('CURRENT_PLAYER_NAME', playerName)
         );
     });
 
     server.listen(PORT, () =>
-        console.log(`Server Running http://localhost:${PORT}`)
+        console.log(`Server Running on ${serverUrl}`)
     );
 
     return { app, server, io };
