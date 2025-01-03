@@ -66,9 +66,9 @@ function updatePlayerAndTeamScore(playerId, score)
     end
 
     if playerTeam == 1 then
-        room.team1[playerIndex].score += score
+        room.team1[playerIndex].score = score
     else
-        room.team2[playerIndex].score += score
+        room.team2[playerIndex].score = score
     end
 end
 
