@@ -19,6 +19,8 @@
     "socket.io-client": "^4.8.1",
     "assert": "^2.1.0",
     "test": "^3.3.0",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "express-session": "^1.18.1",
+    "memorystore": "^1.6.7"
   }
 }

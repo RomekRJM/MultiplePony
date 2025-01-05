@@ -1,5 +1,7 @@
 import path from "path";
 import express from "express";
+import session from "express-session";
+import createMemoryStore from "memorystore";
 import http from "http";
 import { Server } from "socket.io";
 import fs from "fs";
@@ -14,8 +16,9 @@ const getServerUrl = (port) => {
 	return serverUrl;
 };
 
-const getOrCreateName = (req) => {
+const injectPlayerIntoSession = (req) => {
     if (req.query.name) {
+        req.session.name = req.query.name;
         return req.query.name;
     }
 
@@ -25,9 +28,12 @@ const getOrCreateName = (req) => {
 	];
 
 	let color = colors[Math.floor(Math.random() * colors.length)];
-	let number = Math.floor(Math.random() * 10);
+	let number = Math.floor(Math.random() * 100);
 
-	return color + number;
+	let name = color + number;
+    req.session.name = name;
+
+    return name;
 };
 
 const getCORSOrigins = (serverPort) => {
@@ -79,14 +85,24 @@ const createPicoSocketServer = ({
 
     const workerFileData = fs.readFileSync(workerFilePath);
     const workerFileTemplate = workerFileData.toString();
-    let playerName;
     let serverUrl = getServerUrl(PORT);
+    const MemoryStore = createMemoryStore(session);
+
+    app.use(session({
+        cookie: { maxAge: 86400000 },
+        store: new MemoryStore({
+            checkPeriod: 86400000
+        }),
+        secret: 'sid',
+        resave: false,
+        saveUninitialized: false,
+    }));
 
     // host the static files
     app.use(['/public'], express.static(path.join(process.cwd(), assetFilesPath)));
 
     app.get("/", (req, res) => {
-        playerName = getOrCreateName(req);
+        let playerName = injectPlayerIntoSession(req);
         // by default serve the modified html game file
         res.send(modifiedTemplate.replace('CURRENT_PLAYER_NAME', playerName));
     });
@@ -95,7 +111,7 @@ const createPicoSocketServer = ({
         res.setHeader('content-type', 'text/javascript');
         res.send(
             workerFileTemplate.replace('SERVER_URL', serverUrl)
-                .replace('CURRENT_PLAYER_NAME', playerName)
+                .replace('CURRENT_PLAYER_NAME', req.session.name)
         );
     });
 
