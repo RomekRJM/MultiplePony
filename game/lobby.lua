@@ -51,10 +51,6 @@ function updatePlayerAndTeamScore(playerId, score)
         end
     end
 
-    if playerIndex == 0 then
-        return
-    end
-
     if playerTeam == 1 then
         room.team1Score += score
     else

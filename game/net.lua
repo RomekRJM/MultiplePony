@@ -124,6 +124,7 @@ function handleConnectedToServer()
 
     myself = player:new { id = playerId, team = team, isAdmin = admin > 0, score = 0, ready = false }
     myselfId = playerId
+    printh('handleConnectedToServer myselfId: ' .. tostring(myselfId))
 
     gameState = RECEIVED_CONNECTED_TO_SERVER_RESP_STATE
 end
@@ -183,6 +184,7 @@ function handleUpdateTeamNames()
 
         if currentPlayer.id == myselfId then
             myself.id = myselfId
+            printh('handleUpdateTeamNames myselfId: ' .. tostring(myselfId))
             myself.name = currentPlayer.name
             myself.team = currentPlayer.team
             myself.isAdmin = currentPlayer.isAdmin
@@ -191,7 +193,7 @@ function handleUpdateTeamNames()
 
         index = index + 1
 
-    until (parsedPlayers >= team1Length + team2Length) or ( index > 117 )
+    until (parsedPlayers >= team1Length + team2Length) or (index > 117)
 
     setPlayers(room, adminId, players)
     clearServerGPIOPins()
@@ -229,7 +231,7 @@ function handleUpdateRoundProgress()
         index += 3
         parsedScores += 1
 
-    until (parsedScores > playerScoresLength) or ( index > 117 )
+    until (parsedScores >= playerScoresLength) or (index > 117)
 
     room.lastScoreUpdate = lastScoreUpdate
     room.winningTeam = winningTeam

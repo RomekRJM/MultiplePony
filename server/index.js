@@ -390,7 +390,7 @@ setInterval(
                 return;
             }
 
-            if (room.team1Players.length + room.team2Players.length == 0) {
+            if (room.team1Players.length + room.team2Players.length === 0) {
                 console.log(`All players left room ${room.roomId}, resetting it.`);
                 resetRoom(room);
             }
