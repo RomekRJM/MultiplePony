@@ -37,10 +37,41 @@ describe.sequential("multiple pony server", () => {
             clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
                 expect(playerId).toEqual(0);
                 expect(roomId).toEqual(0);
-                expect(team).toBeGreaterThan(0);
+                expect(team).toEqual(2);
                 expect(admin).toEqual(true);
                 clientSocket.disconnect();
                 resolve();
+            });
+        });
+    });
+
+    it("should only allow player to connect once", () => {
+        return new Promise((resolve) => {
+            let clientSocket = ioc.connect("http://localhost:5000/",
+                {
+                    auth: {
+                        token: "1234"
+                    }
+                });
+            let p1Name = 'PLAYER1';
+            let connectionCount = 10;
+
+            for (let i = 0; i < connectionCount; i++) {
+                clientSocket.emit("JOIN_SERVER_CMD", p1Name);
+            }
+
+            clientSocket.on("CONNECTED_TO_SERVER_RESP", ({roomId, playerId, team, admin}) => {
+                connectionCount--;
+
+                expect(playerId).toEqual(0);
+                expect(roomId).toEqual(0);
+                expect(team).toEqual(2);
+                expect(admin).toEqual(true);
+
+                if (connectionCount === 0) {
+                    clientSocket.disconnect();
+                    resolve();
+                }
             });
         });
     });

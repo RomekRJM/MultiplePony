@@ -109,6 +109,12 @@ const getPlayer = (playerId, roomId, team) => {
 }
 
 const createPlayerAndAssignToARoom = (playerName) => {
+    let existingPlayer = findPlayerInRooms(playerName);
+
+    if (existingPlayer) {
+        return existingPlayer;
+    }
+
     let roomIdToJoin = roomData.findIndex((room) => {
         if (room.status !== RoomStatus.ACCEPTING_PLAYERS) {
             return false;
