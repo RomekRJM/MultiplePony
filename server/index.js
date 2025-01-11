@@ -112,6 +112,8 @@ const createPlayerAndAssignToARoom = (playerName) => {
     let existingPlayer = findPlayerInRooms(playerName);
 
     if (existingPlayer) {
+        console.log("Blocked room join as player already exist, name ", playerName, " in room ", existingPlayer.roomId,
+            " and team ", existingPlayer.team, " with id ", existingPlayer.id);
         return existingPlayer;
     }
 
