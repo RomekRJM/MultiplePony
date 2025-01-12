@@ -235,18 +235,8 @@ end
 
 rightArrowHitBoundary = 80
 leftArrowHitBoundary = 48
-circleCentreX = (rightArrowHitBoundary - leftArrowHitBoundary) / 2 + leftArrowHitBoundary - 1
-circleTopCentreY = defaultSpriteY + 8 * (defaultSpriteH - 1)
-circlePadY = 25
-circleMidCentreY = circleTopCentreY + circlePadY
-circleBottomCentreY = circleMidCentreY + circlePadY
-circleRadius = defaultSpriteH * 4 + 2
 
 function drawArrows()
-    circ(circleCentreX, circleTopCentreY, circleRadius, 7)
-    circ(circleCentreX, circleMidCentreY, circleRadius, 7)
-    circ(circleCentreX, circleBottomCentreY, circleRadius, 7)
-
     for q = 1, 3 do
         for z = 1, maxZ do
             for visible_arrow in all(visibleArrowQueue[q]) do

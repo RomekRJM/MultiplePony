@@ -1,13 +1,14 @@
 frame = 0
 MODE_WEB_BROWSER = 1
 MODE_PICO_CLIENT = 0
-gameMode = MODE_WEB_BROWSER
+gameMode = MODE_PICO_CLIENT
 
 function _init()
     frame = 0
     restartNet()
     restartLobby()
     restartUnicorns()
+    restartCircles()
     restartArrows()
     restartPlayer()
     restartCountdown()
@@ -25,6 +26,7 @@ function _draw()
         drawLobby()
     elseif gameState == GAME_IN_PROGRESS_STATE then
         drawUnicornsWithRainbow()
+        drawCircles()
         drawArrows()
         drawTeamScores()
     elseif gameState == GAME_END_SCREEN_STATE then
@@ -36,6 +38,7 @@ function _update60()
     if gameState == GAME_IN_PROGRESS_STATE then
         updateUnicorns()
         updateArrows()
+        updateCircles()
         updatePlayer()
     elseif gameState == RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
         updateLobby()
