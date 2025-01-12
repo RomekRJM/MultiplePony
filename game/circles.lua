@@ -7,21 +7,22 @@ circleRadius = defaultSpriteH * 4 + 2
 
 fireflyLeftLookupTable = {}
 fireflyRightLookupTable = {}
-fireflyLookupTableLength = 120
-noFireflies = 30
+fireflyLookupTableLength = 90
+noFireflies = 2
 
 function restartCircles()
+    noFireflies = 2
     local step = 1.0 / (fireflyLookupTableLength * 2)
     for a = 0, 0.5, step do
         add(fireflyLeftLookupTable, {
-            x = circleCentreX + sin(a) * circleRadius,
-            y = circleTopCentreY + cos(a) * circleRadius,
+            x = flr(0.5 + circleCentreX + sin(a) * circleRadius),
+            y = flr(0.5 + circleTopCentreY + cos(a) * circleRadius),
         })
     end
     for a = 1.0, 0.5, -step do
         add(fireflyRightLookupTable, {
-            x = circleCentreX + sin(a) * circleRadius,
-            y = circleTopCentreY + cos(a) * circleRadius,
+            x = flr(0.5 + circleCentreX + sin(a) * circleRadius),
+            y = flr(0.5 + circleTopCentreY + cos(a) * circleRadius),
         })
     end
 end
@@ -38,6 +39,9 @@ function drawCircles()
     for i = 1, noFireflies do
         local fireflyLookupTable = (i % 2 == 0) and fireflyLeftLookupTable or fireflyRightLookupTable
         local fireflyCoordinates = fireflyLookupTable[((frame + i) % fireflyLookupTableLength) + 1]
+
         pset(fireflyCoordinates.x, fireflyCoordinates.y, 12)
+        pset(fireflyCoordinates.x, fireflyCoordinates.y + circlePadY, 12)
+        pset(fireflyCoordinates.x, fireflyCoordinates.y + 2 * circlePadY, 12)
     end
 end
