@@ -213,7 +213,11 @@ const createPicoSocketClient = () => {
     }
 
     const handleConnectedToServerResponse = ({roomId, playerId, team, admin}) => {
+        if (player.roomId !== -1) {
+            return;
+        }
         //                console.log("Connected to server", {roomId, playerId, team, admin});
+
         player.roomId = roomId;
         player.id = playerId;
         player.team = team;
