@@ -91,7 +91,7 @@ function updatePlayer()
                 currentArrow[q].newColor = pointGroup.arrowColorChange
                 currentArrow[q].hasBeenHit = true
                 myself.score += pointGroup.points
-                noFireflies += 1
+                launchCircleAnimation(q)
 
                 if gameMode == MODE_WEB_BROWSER then
                     sendScore(myself)
