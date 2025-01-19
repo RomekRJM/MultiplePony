@@ -12,6 +12,20 @@ function deepCopy(obj)
     return res
 end
 
+function concatPlayers()
+    local tb = {}
+
+    for e in all(room.team1) do
+        add(tb, e)
+    end
+
+    for e in all(room.team2) do
+        add(tb, e)
+    end
+
+    return tb
+end
+
 function split_str_part(strToSplit, divider, startPos, maxTokens)
     local tokens = {}
     local buffer = ""

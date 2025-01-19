@@ -21,14 +21,7 @@ function updateEnd()
         return
     end
 
-    for p in all(room.team1) do
-        add(leaderBoard, p)
-    end
-
-    for p in all(room.team2) do
-        add(leaderBoard, p)
-    end
-
+    leaderBoard = concatPlayers()
     sortLeaderBoard()
     leaderBoardDone = true
 end

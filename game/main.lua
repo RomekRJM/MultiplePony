@@ -1,13 +1,14 @@
 frame = 0
 MODE_WEB_BROWSER = 1
 MODE_PICO_CLIENT = 0
-gameMode = MODE_WEB_BROWSER
+gameMode = MODE_PICO_CLIENT
 
 function _init()
     frame = 0
     restartNet()
     restartLobby()
     restartUnicorns()
+    restartProgress()
     restartCircles()
     restartArrows()
     restartPlayer()
@@ -15,6 +16,22 @@ function _init()
     restartEnd()
     clearServerGPIOPins()
     establishConnection()
+
+    if gameMode == MODE_PICO_CLIENT then
+        myself.name = 'myself'
+        myself.isAdmin = true
+        setPlayers(0, 5, {
+            myself,
+            player:new { id = 1, name = 'printf', team = 1, isAdmin = false, ready = true, score = 1000 },
+            player:new { id = 2, name = 'shin', team = 1, isAdmin = false, ready = false, score = 500 },
+            player:new { id = 3, name = 'dark', team = 1, isAdmin = false, ready = false, score = 512 },
+            player:new { id = 4, name = 'elazer', team = 1, isAdmin = false, ready = true, score = 777 },
+            player:new { id = 5, name = 'reynor', team = 2, isAdmin = false, ready = true, score = 900 },
+            player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, ready = false, score = 800 },
+            player:new { id = 7, name = 'has', team = 2, isAdmin = false, ready = true, score = 830 },
+            player:new { id = 8, name = 'zest', team = 2, isAdmin = false, ready = false, score = 871 },
+        })
+    end
 end
 
 function _draw()
@@ -26,6 +43,7 @@ function _draw()
         drawLobby()
     elseif gameState == GAME_IN_PROGRESS_STATE then
         drawUnicornsWithRainbow()
+        drawProgress()
         drawCircles()
         drawArrows()
         drawTeamScores()
@@ -37,6 +55,7 @@ end
 function _update60()
     if gameState == GAME_IN_PROGRESS_STATE then
         updateUnicorns()
+        updateProgress()
         updateArrows()
         updateCircles()
         updatePlayer()
