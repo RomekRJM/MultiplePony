@@ -23,6 +23,7 @@ function _init()
         myself.team = 1
         myself.name = 'myself'
         myself.isAdmin = true
+        myself.score = 500
         setPlayers(0, 5, {
             myself,
             player:new { id = 2, name = 'printf', team = 1, isAdmin = false, ready = true, score = 1000 },

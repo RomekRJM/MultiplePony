@@ -22,15 +22,16 @@ function updateProgress()
         end
     end
 
-    local scoreGap = maxScore - minScore
+    local idx = #allPlayers
     progress = {}
 
     for p in all(allPlayers) do
-        add(progress, {
-            x = flr(0.5 + progressLeftBoundary + (p.score / scoreGap) * progressWidth),
+        progress[idx] = {
+            x = flr(0.5 + progressLeftBoundary + (p.score / maxScore) * progressWidth),
             name = p.name,
             color = p.id == myselfId and (frame % blinkInterval == 0 and 15 or 11) or (p.team == myself.team and 3 or 8)
-        })
+        }
+        idx -= 1
     end
 
     logprogress()
