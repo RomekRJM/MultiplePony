@@ -1,21 +1,16 @@
+blinkInterval = 16
 progress = {}
 progressLeftBoundary = 4
 progressRightBoundary = 128 - progressLeftBoundary
 progressWidth = progressRightBoundary - progressLeftBoundary
-
-function getMaxScore()
-    for p in ipairs(leaderBoard) do
-
-    end
-end
 
 function restartProgress()
 end
 
 function updateProgress()
     local allPlayers = concatPlayers()
-    local minScore = 32000
-    local maxScore = 0
+    local minScore = 32767
+    local maxScore = -32768
 
     for p in all(allPlayers) do
         if p.score > maxScore then
@@ -34,7 +29,7 @@ function updateProgress()
         add(progress, {
             x = flr(0.5 + progressLeftBoundary + (p.score / scoreGap) * progressWidth),
             name = p.name,
-            color = p.id == myselfId and 11 or 1
+            color = p.id == myselfId and (frame % blinkInterval == 0 and 15 or 11) or (p.team == myself.team and 3 or 8)
         })
     end
 

@@ -18,18 +18,21 @@ function _init()
     establishConnection()
 
     if gameMode == MODE_PICO_CLIENT then
+        myselfId = 1
+        myself.id = myselfId
+        myself.team = 1
         myself.name = 'myself'
         myself.isAdmin = true
         setPlayers(0, 5, {
             myself,
-            player:new { id = 1, name = 'printf', team = 1, isAdmin = false, ready = true, score = 1000 },
-            player:new { id = 2, name = 'shin', team = 1, isAdmin = false, ready = false, score = 500 },
-            player:new { id = 3, name = 'dark', team = 1, isAdmin = false, ready = false, score = 512 },
-            player:new { id = 4, name = 'elazer', team = 1, isAdmin = false, ready = true, score = 777 },
-            player:new { id = 5, name = 'reynor', team = 2, isAdmin = false, ready = true, score = 900 },
-            player:new { id = 6, name = 'gumiho', team = 2, isAdmin = false, ready = false, score = 800 },
-            player:new { id = 7, name = 'has', team = 2, isAdmin = false, ready = true, score = 830 },
-            player:new { id = 8, name = 'zest', team = 2, isAdmin = false, ready = false, score = 871 },
+            player:new { id = 2, name = 'printf', team = 1, isAdmin = false, ready = true, score = 1000 },
+            player:new { id = 3, name = 'shin', team = 1, isAdmin = false, ready = false, score = 500 },
+            player:new { id = 4, name = 'dark', team = 1, isAdmin = false, ready = false, score = 512 },
+            player:new { id = 5, name = 'elazer', team = 1, isAdmin = false, ready = true, score = 777 },
+            player:new { id = 6, name = 'reynor', team = 2, isAdmin = false, ready = true, score = 900 },
+            player:new { id = 7, name = 'gumiho', team = 2, isAdmin = false, ready = false, score = 800 },
+            player:new { id = 8, name = 'has', team = 2, isAdmin = false, ready = true, score = 830 },
+            player:new { id = 9, name = 'zest', team = 2, isAdmin = false, ready = false, score = 871 },
         })
     end
 end
