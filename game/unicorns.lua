@@ -25,7 +25,7 @@ function drawRainbow()
     --end
 end
 
-particles = {}
+--particles = {}
 
 --function updateParticles(sourceX, sourceY)
 --    for i = 1, 1 + rnd(3) do
