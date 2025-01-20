@@ -1,7 +1,7 @@
 frame = 0
 MODE_WEB_BROWSER = 1
 MODE_PICO_CLIENT = 0
-gameMode = MODE_PICO_CLIENT
+gameMode = MODE_WEB_BROWSER
 
 function _init()
     frame = 0
@@ -23,7 +23,7 @@ function _init()
         myself.team = 1
         myself.name = 'myself'
         myself.isAdmin = true
-        myself.score = 500
+
         setPlayers(0, 5, {
             myself,
             player:new { id = 2, name = 'printf', team = 1, isAdmin = false, ready = true, score = 591 },
