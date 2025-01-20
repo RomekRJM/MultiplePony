@@ -1,4 +1,6 @@
-blinkInterval = 16
+nameChangeInterval = 180
+idsToShow = {}
+maxNamesToShow = 4
 progress = {}
 progressLeftBoundary = 4
 progressRightBoundary = 128 - progressLeftBoundary
@@ -10,6 +12,42 @@ progressHeight = progressXBottom - progressXTop + 1
 
 function restartProgress()
     playerParticles = {}
+    idsToShow = { }
+end
+
+function updateIdsToShow(allPlayers, maxPid)
+    if #idsToShow == 0 then
+        local addedIds = 1
+        add(idsToShow, myselfId)
+
+        for p in all(allPlayers) do
+            if p.id ~= myselfId then
+                add(idsToShow, p.id)
+                addedIds += 1
+            end
+
+            if addedIds > maxNamesToShow then
+                break
+            end
+        end
+    end
+
+    local skippedMyselfId = false
+
+    for i = 1, #idsToShow do
+        if skippedMyselfId then
+           idsToShow[i] += 1
+        end
+
+        if idsToShow[i] ~= myselfId then
+            idsToShow[i] = (idsToShow[i] + 1) % maxPid
+        end
+
+        if idsToShow[i] == myselfId then
+            skippedMyselfId = true
+            idsToShow[i] += (idsToShow[i] + 1) % maxPid
+        end
+    end
 end
 
 function updatePlayerParticles(sourceX)
@@ -23,7 +61,7 @@ function updatePlayerParticles(sourceX)
             x = sourceX,
             y = progressXTop + rnd(progressHeight),
             speed = 0.3,
-            colour = 7,
+            color = 7,
             duration = 5 + rnd(20)
         })
 
@@ -36,11 +74,11 @@ function updatePlayerParticles(sourceX)
         if p.duration <= 0 then
             del(playerParticles, p)
         elseif p.duration < 3 then
-            p.colour = 5
+            p.color = 5
         elseif p.duration < 5 then
-            p.colour = 9
+            p.color = 9
         elseif p.duration < 7 then
-            p.colour = 10
+            p.color = 10
         end
     end
 end
@@ -49,6 +87,7 @@ function updateProgress()
     local allPlayers = concatPlayers()
     local minScore = 32767
     local maxScore = -32768
+    local maxPid = -32768
 
     for p in all(allPlayers) do
         if p.score > maxScore then
@@ -58,6 +97,14 @@ function updateProgress()
         if p.score < minScore then
             minScore = p.score
         end
+
+        if p.id > maxPid then
+            maxPid = p.id
+        end
+    end
+
+    if frame % nameChangeInterval == 0 then
+        updateIdsToShow(allPlayers, maxPid)
     end
 
     local idx = #allPlayers
@@ -69,7 +116,10 @@ function updateProgress()
 
         progress[idx] = {
             x = xCoordinate,
-            name = p.name,
+            nameX = xCoordinate - 6,
+            nameY = idx & 1 == 0 and (progressXTop - 4) or (progressXBottom + 4),
+            name = p.id == myselfId and p.nam or sub(p.name, 1, 3),
+            showName = count(idsToShow, p.id) > 0,
             color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == myself.team and 3 or 8)
         }
 
@@ -96,9 +146,13 @@ end
 function drawProgress()
     for pr in all(progress) do
         line(pr.x, progressXTop, pr.x, progressXBottom, pr.color)
+
+        if pr.showName then
+            print(pr.name, pr.nameX, pr.nameY, pr.color)
+        end
     end
 
     for pa in all(playerParticles) do
-        pset(pa.x, pa.y, pa.colour)
+        pset(pa.x, pa.y, pa.color)
     end
 end
