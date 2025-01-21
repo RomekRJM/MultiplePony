@@ -1,6 +1,5 @@
 nameChangeInterval = 180
 idsToShow = {}
-maxNamesToShow = 4
 progress = {}
 progressLeftBoundary = 4
 progressRightBoundary = 128 - progressLeftBoundary
@@ -12,41 +11,34 @@ progressHeight = progressXBottom - progressXTop + 1
 
 function restartProgress()
     playerParticles = {}
-    idsToShow = { }
 end
 
-function updateIdsToShow(allPlayers, maxPid)
-    if #idsToShow == 0 then
-        local addedIds = 1
-        add(idsToShow, myselfId)
+function updateIdsToShow()
+    idsToShow = {}
 
-        for p in all(allPlayers) do
-            if p.id ~= myselfId then
-                add(idsToShow, p.id)
-                addedIds += 1
-            end
+    for i = 1, #progress - 1 do
+        local pr1 = progress[i]
 
-            if addedIds > maxNamesToShow then
+        if pr1.id == myselfId then
+            goto continue_ids_to_show
+        end
+
+        local canBeShown = true
+
+        for j = i + 1, #progress do
+            local pr2 = progress[j]
+
+            if abs(pr2.x - pr1.x) < 5 then
+                canBeShown = false
                 break
             end
         end
-    end
 
-    local skippedMyselfId = false
-
-    for i = 1, #idsToShow do
-        if skippedMyselfId then
-           idsToShow[i] += 1
+        if canBeShown then
+            add(idsToShow, pr1.id)
         end
 
-        if idsToShow[i] ~= myselfId then
-            idsToShow[i] = (idsToShow[i] + 1) % maxPid
-        end
-
-        if idsToShow[i] == myselfId then
-            skippedMyselfId = true
-            idsToShow[i] += (idsToShow[i] + 1) % maxPid
-        end
+        :: continue_ids_to_show ::
     end
 end
 
@@ -87,7 +79,6 @@ function updateProgress()
     local allPlayers = concatPlayers()
     local minScore = 32767
     local maxScore = -32768
-    local maxPid = -32768
 
     for p in all(allPlayers) do
         if p.score > maxScore then
@@ -97,14 +88,6 @@ function updateProgress()
         if p.score < minScore then
             minScore = p.score
         end
-
-        if p.id > maxPid then
-            maxPid = p.id
-        end
-    end
-
-    if frame % nameChangeInterval == 0 then
-        updateIdsToShow(allPlayers, maxPid)
     end
 
     local idx = #allPlayers
@@ -120,7 +103,8 @@ function updateProgress()
             nameY = progressXTop - 4,
             name = p.id == myselfId and p.name or sub(p.name, 1, 3),
             showName = count(idsToShow, p.id) > 0,
-            color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == myself.team and 3 or 8)
+            color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == myself.team and 3 or 8),
+            id = p.id,
         }
 
         if p.id == myself.id then
@@ -128,6 +112,10 @@ function updateProgress()
         end
 
         idx -= 1
+    end
+
+    if frame % nameChangeInterval == 0 then
+        updateIdsToShow(progress)
     end
 
     updatePlayerParticles(sourceX)
