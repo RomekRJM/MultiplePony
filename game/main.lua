@@ -28,7 +28,7 @@ function _init()
             myself,
             player:new { id = 2, name = 'printf', team = 1, isAdmin = false, ready = true, score = 591 },
             player:new { id = 3, name = 'shin', team = 1, isAdmin = false, ready = false, score = 600 },
-            player:new { id = 4, name = 'dark', team = 1, isAdmin = false, ready = false, score = 512 },
+            player:new { id = 4, name = 'da', team = 1, isAdmin = false, ready = false, score = 512 },
             player:new { id = 5, name = 'elazer', team = 1, isAdmin = false, ready = true, score = 777 },
             player:new { id = 6, name = 'reynor', team = 2, isAdmin = false, ready = true, score = 750 },
             player:new { id = 7, name = 'gumiho', team = 2, isAdmin = false, ready = false, score = 713 },

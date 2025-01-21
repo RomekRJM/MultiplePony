@@ -116,9 +116,9 @@ function updateProgress()
 
         progress[idx] = {
             x = xCoordinate,
-            nameX = xCoordinate - 6,
-            nameY = idx & 1 == 0 and (progressXTop - 4) or (progressXBottom + 4),
-            name = p.id == myselfId and p.nam or sub(p.name, 1, 3),
+            nameX = xCoordinate - 1,
+            nameY = progressXTop - 4,
+            name = p.id == myselfId and p.name or sub(p.name, 1, 3),
             showName = count(idsToShow, p.id) > 0,
             color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == myself.team and 3 or 8)
         }
@@ -145,10 +145,14 @@ end
 
 function drawProgress()
     for pr in all(progress) do
-        line(pr.x, progressXTop, pr.x, progressXBottom, pr.color)
-
         if pr.showName then
-            print(pr.name, pr.nameX, pr.nameY, pr.color)
+            for i = 1, 3 do
+                if pr.name[i] then
+                    print(pr.name[i], pr.nameX, pr.nameY + (i - 1) * 6, pr.color)
+                end
+            end
+        else
+            line(pr.x, progressXTop, pr.x, progressXBottom, pr.color)
         end
     end
 
