@@ -1,16 +1,23 @@
 nameChangeInterval = 180
 idsToShow = {}
 progress = {}
-progressLeftBoundary = 4
+progressLeftBoundary = 0
 progressRightBoundary = 128 - progressLeftBoundary
 progressWidth = progressRightBoundary - progressLeftBoundary
 playerParticles = {}
 progressXTop = 20
 progressXBottom = 30
+rcShift = 0
 progressHeight = progressXBottom - progressXTop + 1
+teamCollisionX = 0
 
 function restartProgress()
     playerParticles = {}
+    rcShift = 0
+end
+
+function updateTeamCollision()
+    teamCollisionX = (progressLeftBoundary + (progressRightBoundary - progressLeftBoundary) / 2) + rcShift
 end
 
 function updateIdsToShow()
@@ -119,6 +126,7 @@ function updateProgress()
     end
 
     updatePlayerParticles(sourceX)
+    updateTeamCollision()
     --logprogress()
 end
 
@@ -147,4 +155,10 @@ function drawProgress()
     for pa in all(playerParticles) do
         pset(pa.x, pa.y, pa.color)
     end
+
+    local collisionX = teamCollisionX - progressLeftBoundary
+
+    rectfill(progressLeftBoundary, 0, collisionX, 6, 8)
+    rectfill(collisionX, 0, progressRightBoundary, 6, 12)
+    line(collisionX, 0, collisionX, 6, frame % 16)
 end

@@ -240,9 +240,9 @@ function handleUpdateRoundProgress()
     local team2ScoreDiff = (room.team2Score - room.team2PreviousScore)
 
     if team1ScoreDiff > team2ScoreDiff then
-        rcShift = min(rcShift + 5, 35)
+        rcShift = min(rcShift + 1, 47)
     elseif team2ScoreDiff > team1ScoreDiff then
-        rcShift = max(rcShift - 5, -35)
+        rcShift = max(rcShift - 1, -48)
     end
 
     room.team1PreviousScore = room.team1Score

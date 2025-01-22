@@ -7,7 +7,6 @@ function _init()
     frame = 0
     restartNet()
     restartLobby()
-    restartUnicorns()
     restartProgress()
     restartCircles()
     restartArrows()
@@ -46,7 +45,6 @@ function _draw()
     elseif gameState == RECEIVED_CONNECTED_TO_SERVER_RESP_STATE then
         drawLobby()
     elseif gameState == GAME_IN_PROGRESS_STATE then
-        drawUnicornsWithRainbow()
         drawProgress()
         drawCircles()
         drawArrows()
@@ -58,7 +56,6 @@ end
 
 function _update60()
     if gameState == GAME_IN_PROGRESS_STATE then
-        updateUnicorns()
         updateProgress()
         updateArrows()
         updateCircles()
