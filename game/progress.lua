@@ -4,6 +4,9 @@ progress = {}
 progressLeftBoundary = 0
 progressRightBoundary = 128 - progressLeftBoundary
 progressWidth = progressRightBoundary - progressLeftBoundary
+nameLeftBoundary = 1
+nameRightBoundary = 128 - 2
+nameWidth = nameRightBoundary - nameLeftBoundary
 playerParticles = {}
 progressXTop = 20
 progressXBottom = 30
@@ -102,7 +105,7 @@ function updateProgress()
     progress = {}
 
     for p in all(allPlayers) do
-        local xCoordinate = flr(0.5 + progressLeftBoundary + (p.score / maxScore) * progressWidth)
+        local xCoordinate = flr(0.5 + nameLeftBoundary + (p.score / maxScore) * nameWidth)
 
         progress[idx] = {
             x = xCoordinate,

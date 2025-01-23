@@ -52,10 +52,17 @@ function restartPlayer()
 end
 
 function drawTeamScores()
-    print(room.team1Score, 1, teamScoreYLocation, 7)
+    print(room.team1Score .. (myself.team == 1 and '●' or ''), 1, teamScoreYLocation, 7)
 
     local score2 = tostring(room.team2Score)
-    print(room.team2Score, 128 - 4 * #score2, teamScoreYLocation, 7)
+    local score2x = 128 - 4 * #score2
+
+    if myself.team == 2 then
+        score2 = '●' .. score2
+        score2x -= 8
+    end
+
+    print(score2, score2x, teamScoreYLocation, 7)
 end
 
 function dbgScore()
