@@ -20,7 +20,7 @@ circleParticles = {}
 circleParticlesLookupTable = {}
 
 function restartCircles()
-    circleParticles = {}
+    circleParticles = {{}, {}, {}}
     circleParticlesLookupTable = {}
     animateCircles = { false, false, false }
     circlesAnimationFrame = { 1, 1, 1 }
@@ -50,50 +50,53 @@ function restartCircles()
 end
 
 function updateCircles()
-    for i = 1, 1 + rnd(3) do
+    for q = 1, 3 do
+        for i = 1, 1 + rnd(3) do
 
-        if count(circleParticles) >= 10 then
-            break
+            if #circleParticles[q] >= 32 then
+                break
+            end
+
+            local circleParticle = rnd(circleParticlesLookupTable)
+
+            add(circleParticles[q], {
+                x = circleParticle.x,
+                y = circleParticle.y,
+                speed = 0.3 * rnd(4),
+                colour = 7,
+                radius = 1 + rnd(2),
+                duration = 5 + rnd(16)
+            })
+
         end
 
-        local circleParticle = rnd(circleParticlesLookupTable)
+        for p in all(circleParticles[q]) do
+            p.y -= p.speed
+            p.duration -= 1
 
-        add(circleParticles, {
-            x = circleParticle.x,
-            y = circleParticle.y,
-            speed = 0.3 * rnd(4),
-            colour = 7,
-            radius = 1 + rnd(4),
-            duration = 5 + rnd(16)
-        })
-
-    end
-
-    for p in all(circleParticles) do
-        p.y -= p.speed
-        p.duration -= 1
-
-        if p.duration <= 0 then
-            del(circleParticles, p)
-        elseif p.duration < 3 then
-            p.radius = 1
-            p.colour = 5
-        elseif p.duration < 5 then
-            if p.radius == 3 then
-                p.radius = -0.3
+            if p.duration <= 0 then
+                del(circleParticles[q], p)
+            elseif p.duration < 3 then
+                p.radius = 1
+                p.colour = 5
+            elseif p.duration < 5 then
+                if p.radius == 3 then
+                    p.radius = -0.3
+                end
+                p.colour = 9
+            elseif p.duration < 7 then
+                p.colour = 10
             end
-            p.colour = 9
-        elseif p.duration < 7 then
-            p.colour = 10
         end
     end
 end
 
 function drawCircles()
-    for pa in all(circleParticles) do
-        circfill(pa.x, pa.y + circleTopCentreY, pa.radius, pa.colour)
-        circfill(pa.x, pa.y + circleMidCentreY, pa.radius, pa.colour)
-        circfill(pa.x, pa.y + circleBottomCentreY, pa.radius, pa.colour)
+    for q = 1, 3 do
+        local yOffset = circleTopCentreY + (q - 1) * circlePadY
+        for pa in all(circleParticles[q]) do
+            circfill(pa.x, pa.y + yOffset, pa.radius, pa.colour)
+        end
     end
 
     circ(circleCentreX, circleTopCentreY, circleRadius, 7)
