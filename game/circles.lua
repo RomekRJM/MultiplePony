@@ -18,9 +18,12 @@ fireflyColors = { 13, 9, 10, 12, 11 }
 
 circleParticles = {}
 circleParticlesLookupTable = {}
+flameDuration = {}
+defaultFlameDuration = 60
 
 function restartCircles()
     circleParticles = {{}, {}, {}}
+    flameDuration = {0, 0, 0}
     circleParticlesLookupTable = {}
     animateCircles = { false, false, false }
     circlesAnimationFrame = { 1, 1, 1 }
@@ -51,6 +54,12 @@ end
 
 function updateCircles()
     for q = 1, 3 do
+        if flameDuration[q] <= 0 then
+            goto addMorecircleParticles
+        end
+
+        flameDuration[q] -= 1
+
         for i = 1, 1 + rnd(3) do
 
             if #circleParticles[q] >= 32 then
@@ -70,6 +79,10 @@ function updateCircles()
 
         end
 
+        ::addMorecircleParticles::
+    end
+
+    for q = 1, 3 do
         for p in all(circleParticles[q]) do
             p.y -= p.speed
             p.duration -= 1
@@ -122,6 +135,8 @@ function drawCircles()
 end
 
 function launchCircleAnimation(q)
+    flameDuration[q] = defaultFlameDuration
+
     if animateCircles[q] == false then
         animateCircles[q] = true
     end
