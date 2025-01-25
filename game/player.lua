@@ -99,8 +99,8 @@ function updatePlayer()
                 --printh(tostring(q) .. ': ' .. tostring(pointGroup.points))
                 currentArrow[q].newColor = pointGroup.arrowColorChange
                 currentArrow[q].hasBeenHit = true
-                myself.score += pointGroup.points
-                launchCircleAnimation(q)
+
+                launchCircleAnimation(q, pointGroup.points)
 
                 if gameMode == MODE_WEB_BROWSER then
                     sendScore(myself)

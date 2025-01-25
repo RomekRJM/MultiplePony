@@ -50,3 +50,23 @@ function split_str_part(strToSplit, divider, startPos, maxTokens)
         tokens = tokens,
     }
 end
+
+function lerp(p1, p2, stepCount)
+    local v = {}
+    local xStep = (p2.x - p1.x) / stepCount
+    local yStep = (p2.y - p1.y) / stepCount
+    local xOffset = 0
+    local yOffset = 0
+
+    for i = 1, stepCount do
+        add(v, {
+            x = p1.x + xOffset,
+            y = p1.y + yOffset,
+        })
+
+        xOffset += xStep
+        yOffset += yStep
+    end
+
+    return v
+end

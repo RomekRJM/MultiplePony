@@ -20,10 +20,14 @@ circleParticles = {}
 circleParticlesLookupTable = {}
 flameDuration = {}
 defaultFlameDuration = 60
+plusPath = {}
+plusPathLen = 30
+pluses = {}
 
 function restartCircles()
-    circleParticles = {{}, {}, {}}
-    flameDuration = {0, 0, 0}
+    circleParticles = { {}, {}, {} }
+    pluses = {{}, {}, {}}
+    flameDuration = { 0, 0, 0 }
     circleParticlesLookupTable = {}
     animateCircles = { false, false, false }
     circlesAnimationFrame = { 1, 1, 1 }
@@ -49,6 +53,20 @@ function restartCircles()
             x = flr(0.5 + circleCentreX + cos(a) * circleRadius),
             y = flr(0.5 - sin(a) * circleRadius),
         })
+    end
+
+    for q = 1, 3 do
+        plusPath[q] = lerp(
+                {
+                    x = circleCentreX - 6,
+                    y = circleTopCentreY + (q - 1) * circlePadY + 1,
+                },
+                {
+                    x = player.team == 1 and 124 or 1,
+                    y = teamScoreYLocation,
+                },
+                plusPathLen
+        )
     end
 end
 
@@ -102,6 +120,19 @@ function updateCircles()
             end
         end
     end
+
+    for q = 1, 3 do
+        for pl in all(pluses[q]) do
+            if pl.i < #plusPath[q] then
+                pl.i += 1
+                pl.x = plusPath[q][pl.i].x
+                pl.y = plusPath[q][pl.i].y
+            else
+                myself.score += pl.points
+                del(pluses[q], pl)
+            end
+        end
+    end
 end
 
 function drawCircles()
@@ -132,14 +163,30 @@ function drawCircles()
             animateCircles[q] = false
         end
     end
+
+    for q = 1, 3 do
+        for pl in all(pluses[q]) do
+            print(pl.text, pl.x, pl.y)
+        end
+    end
 end
 
-function launchCircleAnimation(q)
+function launchCircleAnimation(q, points)
     flameDuration[q] = defaultFlameDuration
 
     if animateCircles[q] == false then
         animateCircles[q] = true
     end
+
+    add(pluses[q],
+            {
+                i = 0,
+                points = points,
+                text = "+" .. points,
+                x = 0,
+                y = 0,
+            }
+    )
 
     circlesAnimationFrame[q] = 1
     noFireflies += 1
