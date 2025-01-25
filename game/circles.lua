@@ -1,6 +1,6 @@
 circleCentreX = (rightArrowHitBoundary - leftArrowHitBoundary) / 2 + leftArrowHitBoundary - 1
 circleTopCentreY = defaultSpriteY + 8 * (defaultSpriteH - 1)
-circlePadY = 25
+circlePadY = 28
 circleMidCentreY = circleTopCentreY + circlePadY
 circleBottomCentreY = circleMidCentreY + circlePadY
 circleRadius = defaultSpriteH * 4 + 2
@@ -16,7 +16,10 @@ circlesAnimationFrame = { 1, 1, 1 }
 fireflyColorIndex = 1
 fireflyColors = { 13, 9, 10, 12, 11 }
 
+circleParticles = {}
+
 function restartCircles()
+    circleParticles = {}
     animateCircles = { false, false, false }
     circlesAnimationFrame = { 1, 1, 1 }
     noFireflies = minFireflies
@@ -38,7 +41,39 @@ function restartCircles()
 end
 
 function updateCircles()
+    for i = 1, 1 + rnd(3) do
 
+        if count(circleParticles) >= 20 then
+            break
+        end
+
+        local randX = rnd(2*circleRadius) - circleRadius
+        local yOffset = (randX <= 0) and fireflyLeftLookupTable[#fireflyRightLookupTable/2 + randX] or fireflyRightLookupTable[#fireflyRightLookupTable - randX]
+
+        add(circleParticles, {
+            x = circleCentreX + randX,
+            y = ((yOffset ~= nil) and yOffset or 0) - circleRadius,
+            speed = 0.3,
+            color = 7,
+            duration = 5 + rnd(20)
+        })
+
+    end
+
+    for p in all(circleParticles) do
+        p.y -= p.speed
+        p.duration -= 1
+
+        if p.duration <= 0 then
+            del(circleParticles, p)
+        elseif p.duration < 3 then
+            p.color = 5
+        elseif p.duration < 5 then
+            p.color = 9
+        elseif p.duration < 7 then
+            p.color = 10
+        end
+    end
 end
 
 function drawCircles()
@@ -61,6 +96,12 @@ function drawCircles()
             circlesAnimationFrame[q] = 1
             animateCircles[q] = false
         end
+    end
+    
+    for pa in all(circleParticles) do
+        pset(pa.x, pa.y + circleTopCentreY, pa.color)
+        pset(pa.x, pa.y + circleMidCentreY, pa.color)
+        pset(pa.x, pa.y + circleBottomCentreY, pa.color)
     end
 end
 

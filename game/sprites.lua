@@ -1,4 +1,4 @@
-defaultSpriteY = 58
+defaultSpriteY = 50
 defaultSpriteW = 2
 defaultSpriteH = 2
 

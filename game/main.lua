@@ -1,7 +1,7 @@
 frame = 0
 MODE_WEB_BROWSER = 1
 MODE_PICO_CLIENT = 0
-gameMode = MODE_WEB_BROWSER
+gameMode = MODE_PICO_CLIENT
 
 function _init()
     frame = 0
