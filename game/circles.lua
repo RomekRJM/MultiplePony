@@ -17,9 +17,11 @@ fireflyColorIndex = 1
 fireflyColors = { 13, 9, 10, 12, 11 }
 
 circleParticles = {}
+circleParticlesLookupTable = {}
 
 function restartCircles()
     circleParticles = {}
+    circleParticlesLookupTable = {}
     animateCircles = { false, false, false }
     circlesAnimationFrame = { 1, 1, 1 }
     noFireflies = minFireflies
@@ -38,24 +40,31 @@ function restartCircles()
             y = flr(0.5 + circleTopCentreY + cos(a) * circleRadius),
         })
     end
+
+    for a = 0.5, 1.0, step do
+        add(circleParticlesLookupTable, {
+            x = flr(0.5 + circleCentreX + cos(a) * circleRadius),
+            y = flr(0.5 - sin(a) * circleRadius),
+        })
+    end
 end
 
 function updateCircles()
     for i = 1, 1 + rnd(3) do
 
-        if count(circleParticles) >= 20 then
+        if count(circleParticles) >= 10 then
             break
         end
 
-        local randX = rnd(2*circleRadius) - circleRadius
-        local yOffset = (randX <= 0) and fireflyLeftLookupTable[#fireflyRightLookupTable/2 + randX] or fireflyRightLookupTable[#fireflyRightLookupTable - randX]
+        local circleParticle = rnd(circleParticlesLookupTable)
 
         add(circleParticles, {
-            x = circleCentreX + randX,
-            y = ((yOffset ~= nil) and yOffset or 0) - circleRadius,
-            speed = 0.3,
-            color = 7,
-            duration = 5 + rnd(20)
+            x = circleParticle.x,
+            y = circleParticle.y,
+            speed = 0.3 * rnd(4),
+            colour = 7,
+            radius = 1 + rnd(4),
+            duration = 5 + rnd(16)
         })
 
     end
@@ -67,16 +76,26 @@ function updateCircles()
         if p.duration <= 0 then
             del(circleParticles, p)
         elseif p.duration < 3 then
-            p.color = 5
+            p.radius = 1
+            p.colour = 5
         elseif p.duration < 5 then
-            p.color = 9
+            if p.radius == 3 then
+                p.radius = -0.3
+            end
+            p.colour = 9
         elseif p.duration < 7 then
-            p.color = 10
+            p.colour = 10
         end
     end
 end
 
 function drawCircles()
+    for pa in all(circleParticles) do
+        circfill(pa.x, pa.y + circleTopCentreY, pa.radius, pa.colour)
+        circfill(pa.x, pa.y + circleMidCentreY, pa.radius, pa.colour)
+        circfill(pa.x, pa.y + circleBottomCentreY, pa.radius, pa.colour)
+    end
+
     circ(circleCentreX, circleTopCentreY, circleRadius, 7)
     circ(circleCentreX, circleMidCentreY, circleRadius, 7)
     circ(circleCentreX, circleBottomCentreY, circleRadius, 7)
@@ -96,12 +115,6 @@ function drawCircles()
             circlesAnimationFrame[q] = 1
             animateCircles[q] = false
         end
-    end
-    
-    for pa in all(circleParticles) do
-        pset(pa.x, pa.y + circleTopCentreY, pa.color)
-        pset(pa.x, pa.y + circleMidCentreY, pa.color)
-        pset(pa.x, pa.y + circleBottomCentreY, pa.color)
     end
 end
 
