@@ -19,9 +19,9 @@ fireflyColors = { 13, 9, 10, 12, 11 }
 circleParticles = {}
 circleParticlesLookupTable = {}
 flameDuration = {}
-defaultFlameDuration = 60
+defaultFlameDuration = 30
 plusPath = {}
-plusPathLen = 30
+plusPathLen = 60
 pluses = {}
 
 function restartCircles()
@@ -62,7 +62,7 @@ function restartCircles()
                     y = circleTopCentreY + (q - 1) * circlePadY + 1,
                 },
                 {
-                    x = player.team == 1 and 124 or 1,
+                    x = player.team == 1 and 1 or 124,
                     y = teamScoreYLocation,
                 },
                 plusPathLen
