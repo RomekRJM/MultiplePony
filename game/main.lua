@@ -64,6 +64,7 @@ function _update60()
         updateLobby()
     elseif gameState == COUNTING_DOWN_TO_GAME_START_STATE then
         updateCountdown()
+        preCirclesShow()
         frame = -1
     elseif gameState == GAME_END_SCREEN_STATE then
         updateEnd()

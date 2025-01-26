@@ -113,7 +113,7 @@ function updateProgress()
             nameY = progressXTop - 4,
             name = p.id == myselfId and p.name or sub(p.name, 1, 3),
             showName = count(idsToShow, p.id) > 0,
-            color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == myself.team and 3 or 8),
+            color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == 1 and 12 or 8),
             id = p.id,
         }
 
@@ -161,7 +161,7 @@ function drawProgress()
 
     local collisionX = teamCollisionX - progressLeftBoundary
 
-    rectfill(progressLeftBoundary, 0, collisionX, 6, 8)
-    rectfill(collisionX, 0, progressRightBoundary, 6, 12)
+    rectfill(progressLeftBoundary, 0, collisionX, 6, 12)
+    rectfill(collisionX, 0, progressRightBoundary, 6, 8)
     line(collisionX, 0, collisionX, 6, frame % 16)
 end

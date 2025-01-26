@@ -54,6 +54,10 @@ function restartCircles()
             y = flr(0.5 - sin(a) * circleRadius),
         })
     end
+end
+
+function preCirclesShow()
+    plusPath = {}
 
     for q = 1, 3 do
         plusPath[q] = lerp(
@@ -62,7 +66,7 @@ function restartCircles()
                     y = circleTopCentreY + (q - 1) * circlePadY + 1,
                 },
                 {
-                    x = player.team == 1 and 1 or 124,
+                    x = (myself.team == 1) and 1 or 124,
                     y = teamScoreYLocation,
                 },
                 plusPathLen
