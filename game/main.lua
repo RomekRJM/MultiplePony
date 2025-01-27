@@ -34,6 +34,8 @@ function _init()
             player:new { id = 8, name = 'has', team = 2, isAdmin = false, ready = true, score = 630 },
             player:new { id = 9, name = 'zest', team = 2, isAdmin = false, ready = false, score = 671 },
         })
+
+        preCirclesShow()
     end
 end
 

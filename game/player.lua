@@ -49,6 +49,7 @@ arrowMaxPoints = 8
 
 function restartPlayer()
     myself = { score = 0 }
+    addPointsScoredListener(handlePointsScored)
 end
 
 function drawTeamScores()
@@ -101,17 +102,20 @@ function updatePlayer()
                 currentArrow[q].hasBeenHit = true
 
                 launchCircleAnimation(q, pointGroup.points)
-
-                if gameMode == MODE_WEB_BROWSER then
-                    sendScore(myself)
-                else
-                    room.team1Score = myself.score
-                end
-
                 break
             end
         end
 
         :: continueInnerPlayerLoop ::
+    end
+end
+
+function handlePointsScored(points)
+    myself.score += points
+
+    if gameMode == MODE_WEB_BROWSER then
+        sendScore(myself)
+    else
+        room.team1Score = myself.score
     end
 end

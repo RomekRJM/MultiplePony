@@ -24,7 +24,10 @@ plusPath = {}
 plusPathLen = 60
 pluses = {}
 
+pointsScoredListeners = {}
+
 function restartCircles()
+    pointsScoredListeners = {}
     circleParticles = { {}, {}, {} }
     pluses = {{}, {}, {}}
     flameDuration = { 0, 0, 0 }
@@ -127,12 +130,12 @@ function updateCircles()
 
     for q = 1, 3 do
         for pl in all(pluses[q]) do
-            if pl.i < #plusPath[q] then
+            if pl.i < plusPathLen then
                 pl.i += 1
                 pl.x = plusPath[q][pl.i].x
                 pl.y = plusPath[q][pl.i].y
             else
-                myself.score += pl.points
+                firePointScoredListener(pl.points)
                 del(pluses[q], pl)
             end
         end
@@ -202,5 +205,15 @@ function launchCircleAnimation(q, points)
         else
             noFireflies = maxFireflies
         end
+    end
+end
+
+function addPointsScoredListener(listener)
+    add(pointsScoredListeners, listener)
+end
+
+function firePointScoredListener(points)
+    for listener in all(pointsScoredListeners) do
+        listener(points)
     end
 end
