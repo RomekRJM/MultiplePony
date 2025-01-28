@@ -61,28 +61,13 @@ function updateProgress()
     local maxScore = leaderBoard[1].score
     local sourceX = -1
     local xCoordinate = 0
-    local xOffset = 0
-    local diffToLastX = 0
-    local lastXCoordinate = progressRightBoundary
     progress = {}
-    printh("\nprogress at frame: " .. frame, 'progress.log')
+
     for idx, p in ipairs(leaderBoard) do
         xCoordinate = flr(0.5 + nameLeftBoundary + (p.score / maxScore) * nameWidth)
-        diffToLastX = lastXCoordinate - xCoordinate
-
-        printh("init xCoordinate: " .. xCoordinate, 'progress.log')
-        printh("lastXCoordinate: " .. lastXCoordinate, 'progress.log')
-        printh("diffToLastX: " .. diffToLastX, 'progress.log')
-
-        if diffToLastX <= 8 then
-            xOffset = diffToLastX
-        end
-
-        printh("xOffset: " .. xOffset, 'progress.log')
-        printh("xCoordinate: " .. (xCoordinate - xOffset - 1), 'progress.log')
 
         progress[idx] = {
-            x = xCoordinate - (p.id ~= myself.id and xOffset or 0),
+            x = xCoordinate - 1,
             y = progressXTop - 4,
             name = p.id == myselfId and p.name or sub(p.name, 1, 3),
             color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == 1 and 12 or 8),
@@ -91,9 +76,31 @@ function updateProgress()
 
         if p.id == myself.id then
             sourceX = xCoordinate
-        else
-            lastXCoordinate = xCoordinate
         end
+    end
+
+    local diffToLastX = 0
+    for i = 1, #progress - 1 do
+        if progress[i].id == myselfId then
+            goto continueOuterNameMoveLoop
+        end
+
+        for j = i + 1, #progress do
+            if progress[j].id == myselfId then
+                goto continueInnerNameMoveLoop
+            end
+
+            diffToLastX = progress[i].x - progress[j].x
+            printh("diffToLastX: " .. diffToLastX, 'progress.log')
+
+            if diffToLastX <= 5 then
+                progress[j].x -= diffToLastX
+            end
+
+            :: continueInnerNameMoveLoop ::
+        end
+
+        :: continueOuterNameMoveLoop ::
     end
 
     updatePlayerParticles(sourceX)
