@@ -1,5 +1,4 @@
 nameChangeInterval = 180
-idsToShow = {}
 progress = {}
 progressLeftBoundary = 0
 progressRightBoundary = 128 - progressLeftBoundary
@@ -21,35 +20,6 @@ end
 
 function updateTeamCollision()
     teamCollisionX = (progressLeftBoundary + (progressRightBoundary - progressLeftBoundary) / 2) + rcShift
-end
-
-function updateIdsToShow()
-    idsToShow = {}
-
-    for i = 1, #progress - 1 do
-        local pr1 = progress[i]
-
-        if pr1.id == myselfId then
-            goto continue_ids_to_show
-        end
-
-        local canBeShown = true
-
-        for j = i + 1, #progress do
-            local pr2 = progress[j]
-
-            if abs(pr2.x - pr1.x) < 5 then
-                canBeShown = false
-                break
-            end
-        end
-
-        if canBeShown then
-            add(idsToShow, pr1.id)
-        end
-
-        :: continue_ids_to_show ::
-    end
 end
 
 function updatePlayerParticles(sourceX)
@@ -86,46 +56,44 @@ function updatePlayerParticles(sourceX)
 end
 
 function updateProgress()
-    local allPlayers = concatPlayers()
-    local minScore = 32767
-    local maxScore = -32768
+    leaderBoard = sortLeaderBoard(concatPlayers(room))
 
-    for p in all(allPlayers) do
-        if p.score > maxScore then
-            maxScore = p.score
-        end
-
-        if p.score < minScore then
-            minScore = p.score
-        end
-    end
-
-    local idx = #allPlayers
+    local maxScore = leaderBoard[1].score
     local sourceX = -1
+    local xCoordinate = 0
+    local xOffset = 0
+    local diffToLastX = 0
+    local lastXCoordinate = progressRightBoundary
     progress = {}
+    printh("\nprogress at frame: " .. frame, 'progress.log')
+    for idx, p in ipairs(leaderBoard) do
+        xCoordinate = flr(0.5 + nameLeftBoundary + (p.score / maxScore) * nameWidth)
+        diffToLastX = lastXCoordinate - xCoordinate
 
-    for p in all(allPlayers) do
-        local xCoordinate = flr(0.5 + nameLeftBoundary + (p.score / maxScore) * nameWidth)
+        printh("init xCoordinate: " .. xCoordinate, 'progress.log')
+        printh("lastXCoordinate: " .. lastXCoordinate, 'progress.log')
+        printh("diffToLastX: " .. diffToLastX, 'progress.log')
+
+        if diffToLastX <= 8 then
+            xOffset = diffToLastX
+        end
+
+        printh("xOffset: " .. xOffset, 'progress.log')
+        printh("xCoordinate: " .. (xCoordinate - xOffset - 1), 'progress.log')
 
         progress[idx] = {
-            x = xCoordinate,
-            nameX = xCoordinate - 1,
-            nameY = progressXTop - 4,
+            x = xCoordinate - (p.id ~= myself.id and xOffset or 0),
+            y = progressXTop - 4,
             name = p.id == myselfId and p.name or sub(p.name, 1, 3),
-            showName = count(idsToShow, p.id) > 0,
             color = p.id == myselfId and (frame & 8 > 3 and 9 or 10) or (p.team == 1 and 12 or 8),
             id = p.id,
         }
 
         if p.id == myself.id then
             sourceX = xCoordinate
+        else
+            lastXCoordinate = xCoordinate
         end
-
-        idx -= 1
-    end
-
-    if frame % nameChangeInterval == 0 then
-        updateIdsToShow(progress)
     end
 
     updatePlayerParticles(sourceX)
@@ -144,10 +112,10 @@ end
 
 function drawProgress()
     for pr in all(progress) do
-        if pr.showName then
+        if pr.id ~= myselfId then
             for i = 1, 3 do
                 if pr.name[i] then
-                    print(pr.name[i], pr.nameX, pr.nameY + (i - 1) * 6, pr.color)
+                    print(pr.name[i], pr.x, pr.y + (i - 1) * 6, pr.color)
                 end
             end
         else

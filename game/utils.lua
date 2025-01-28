@@ -12,7 +12,7 @@ function deepCopy(obj)
     return res
 end
 
-function concatPlayers()
+function concatPlayers(room)
     local tb = {}
 
     for e in all(room.team1) do
@@ -69,4 +69,16 @@ function lerp(p1, p2, stepCount)
     end
 
     return v
+end
+
+function sortLeaderBoard(leaderBoard)
+	for i=1,#leaderBoard do
+		local j = i
+		while j > 1 and leaderBoard[j-1].score < leaderBoard[j].score do
+			leaderBoard[j], leaderBoard[j-1] = leaderBoard[j-1], leaderBoard[j]
+			j = j - 1
+		end
+	end
+
+    return leaderBoard
 end

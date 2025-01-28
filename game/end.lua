@@ -6,23 +6,12 @@ function restartEnd()
     leaderBoardDone = false
 end
 
-function sortLeaderBoard()
-	for i=1,#leaderBoard do
-		local j = i
-		while j > 1 and leaderBoard[j-1].score < leaderBoard[j].score do
-			leaderBoard[j], leaderBoard[j-1] = leaderBoard[j-1], leaderBoard[j]
-			j = j - 1
-		end
-	end
-end
-
 function updateEnd()
     if leaderBoardDone then
         return
     end
 
-    leaderBoard = concatPlayers()
-    sortLeaderBoard()
+    leaderBoard = sortLeaderBoard(concatPlayers(room))
     leaderBoardDone = true
 end
 
