@@ -12,6 +12,7 @@ progressXBottom = 30
 rcShift = 0
 progressHeight = progressXBottom - progressXTop + 1
 teamCollisionX = 0
+minXSpacingBetweenNames = 4
 
 function restartProgress()
     playerParticles = {}
@@ -81,26 +82,13 @@ function updateProgress()
 
     local diffToLastX = 0
     for i = 1, #progress - 1 do
-        if progress[i].id == myselfId then
-            goto continueOuterNameMoveLoop
-        end
-
         for j = i + 1, #progress do
-            if progress[j].id == myselfId then
-                goto continueInnerNameMoveLoop
-            end
-
             diffToLastX = progress[i].x - progress[j].x
-            printh("diffToLastX: " .. diffToLastX, 'progress.log')
 
-            if diffToLastX <= 5 then
-                progress[j].x -= diffToLastX
+            if diffToLastX < minXSpacingBetweenNames then
+                progress[j].x -= (minXSpacingBetweenNames - diffToLastX)
             end
-
-            :: continueInnerNameMoveLoop ::
         end
-
-        :: continueOuterNameMoveLoop ::
     end
 
     updatePlayerParticles(sourceX)
@@ -118,7 +106,7 @@ function logprogress()
 end
 
 function drawProgress()
-    for pr in all(progress) do
+    for k, pr in ipairs(progress) do
         if pr.id ~= myselfId then
             for i = 1, 3 do
                 if pr.name[i] then
@@ -127,6 +115,7 @@ function drawProgress()
             end
         else
             line(pr.x, progressXTop, pr.x, progressXBottom, pr.color)
+            print(k, pr.x - 1, pr.y - 6, pr.color)
         end
     end
 
