@@ -24,6 +24,9 @@ plusPath = {}
 plusPathLen = 60
 pluses = {}
 
+temperatureCircleLookupTable = {}
+temperature = 66
+
 pointsScoredListeners = {}
 
 function restartCircles()
@@ -56,6 +59,11 @@ function restartCircles()
             x = flr(0.5 + circleCentreX + cos(a) * circleRadius),
             y = flr(0.5 - sin(a) * circleRadius),
         })
+    end
+
+    for i = 1, #fireflyLeftLookupTable do
+        temperatureCircleLookupTable[(#fireflyLeftLookupTable - i) * 2] = fireflyLeftLookupTable[i]
+        temperatureCircleLookupTable[(#fireflyLeftLookupTable - i) * 2 - 1] = fireflyRightLookupTable[i]
     end
 end
 
@@ -172,6 +180,12 @@ function drawCircles()
     end
 
     for q = 1, 3 do
+
+        for i = 1, temperature do
+            local temperatureCoordinates = temperatureCircleLookupTable[i]
+            pset(temperatureCoordinates.x, temperatureCoordinates.y + (q - 1) * circlePadY, 8)
+        end
+
         for pl in all(pluses[q]) do
             print(pl.text, pl.x, pl.y)
         end
