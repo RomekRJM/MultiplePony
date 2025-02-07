@@ -78,8 +78,6 @@ function restartCircles()
             y = flr(0.5 - sin(a) * circleRadius),
         })
     end
-
-    printh(tprint(temperatureCircleLookupTable, 2), 'tclt.log')
 end
 
 function preCirclesShow()
@@ -269,7 +267,7 @@ function launchCircleAnimation(q, points)
     circlesAnimationFrame[q] = 1
     noFireflies += 1
 
-    if noFireflies % 100 then
+    if (noFireflies % 100) and (temperature[q] < #temperatureCircleLookupTable) then
         temperature[q] += 1
         add(temperatureCircle[q], temperatureCircleLookupTable[temperature[q]])
     end
