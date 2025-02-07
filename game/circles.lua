@@ -28,8 +28,8 @@ temperatureCircle = { {}, {}, {} }
 temperatureCircleParticles = { {}, {}, {} }
 temperatureCircleLookupTable = {}
 temperature = {0, 0, 0}
-minSmokeX = {0, 0, 0}
-maxSmokeX = {0, 0, 0}
+cooldownInterval = 120
+timeLastPointScored = { 0, 0, 0 }
 
 pointsScoredListeners = {}
 
@@ -42,8 +42,7 @@ function restartCircles()
     pluses = {{}, {}, {}}
     flameDuration = { 0, 0, 0 }
     temperature = {0, 0, 0}
-    minSmokeX = {0, 0, 0}
-    maxSmokeX = {0, 0, 0}
+    timeLastPointScored = { 0, 0, 0 }
     circleParticlesLookupTable = {}
     animateCircles = { false, false, false }
     circlesAnimationFrame = { 1, 1, 1 }
@@ -142,6 +141,17 @@ function animateCircleParticles(particlesTable)
     end
 end
 
+function animateTemperatureCircleParticles(particlesTable)
+    for p in all(particlesTable) do
+        p.y -= p.speed
+        p.duration -= 1
+
+        if p.duration <= 0 then
+            del(particlesTable, p)
+        end
+    end
+end
+
 function logprogress()
     local logFileName = 'tempcir.log'
     printh("temperature at frame: " .. frame, logFileName)
@@ -154,6 +164,13 @@ end
 
 function updateCircles()
     for q = 1, 3 do
+        if (frame - timeLastPointScored[q]) % cooldownInterval == 0 then
+            if temperature[q] > 0 then
+                deli(temperatureCircleParticles[q])
+                temperature[q] -= 1
+            end
+        end
+
         if flameDuration[q] <= 0 then
             if temperature[q] > 0 then
                 emitCircleParticles(temperatureCircleParticles[q], 11, temperatureCircle[q], {5, 6, 13}, 2, 8)
@@ -165,7 +182,7 @@ function updateCircles()
     end
 
     for q = 1, 3 do
-        animateCircleParticles(temperatureCircleParticles[q])
+        animateTemperatureCircleParticles(temperatureCircleParticles[q])
         animateCircleParticles(circleParticles[q])
     end
 
@@ -215,8 +232,8 @@ function drawCircles()
     for q = 1, 3 do
 
         if temperature[q] > 0 then
-            for _, temperatureCoordinates in ipairs(temperatureCircleParticles[q]) do
-                pset(temperatureCoordinates.x, temperatureCoordinates.y + (q - 1) * circlePadY, 8)
+            for temperatureCoordinates in all(temperatureCircleParticles[q]) do
+                pset(temperatureCoordinates.x, temperatureCoordinates.y + (q - 1) * circlePadY, temperatureCoordinates.colour)
             end
 
             for i = 1, temperature[q] do
@@ -232,6 +249,7 @@ function drawCircles()
 end
 
 function launchCircleAnimation(q, points)
+    timeLastPointScored[q] = frame
     flameDuration[q] = defaultFlameDuration
 
     if animateCircles[q] == false then
