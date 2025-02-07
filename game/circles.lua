@@ -156,7 +156,7 @@ function updateCircles()
     for q = 1, 3 do
         if flameDuration[q] <= 0 then
             if temperature[q] > 0 then
-                emitCircleParticles(temperatureCircleParticles[q], 11, temperatureCircleLookupTable, {5, 6, 13}, 2, 8)
+                emitCircleParticles(temperatureCircleParticles[q], 11, temperatureCircle[q], {5, 6, 13}, 2, 8)
             end
         else
             flameDuration[q] -= 1
@@ -251,9 +251,10 @@ function launchCircleAnimation(q, points)
     circlesAnimationFrame[q] = 1
     noFireflies += 1
 
-    --if noFireflies % 100 then
-    temperature[q] += 1
-    --end
+    if noFireflies % 100 then
+        temperature[q] += 1
+        add(temperatureCircle[q], temperatureCircleLookupTable[temperature[q]])
+    end
 
     if noFireflies > maxFireflies then
         if fireflyColorIndex < #fireflyColors then
