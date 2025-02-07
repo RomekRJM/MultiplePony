@@ -24,13 +24,25 @@ plusPath = {}
 plusPathLen = 60
 pluses = {}
 
+temperatureCircle = { {}, {}, {} }
+temperatureCircleParticles = { {}, {}, {} }
+temperatureCircleLookupTable = {}
+temperature = {0, 0, 0}
+cooldownInterval = 120
+timeLastPointScored = { 0, 0, 0 }
+
 pointsScoredListeners = {}
 
 function restartCircles()
     pointsScoredListeners = {}
+    temperatureCircle = { {}, {}, {} }
+    temperatureCircleLookupTable = {}
+    temperatureCircleParticles = { {}, {}, {} }
     circleParticles = { {}, {}, {} }
     pluses = {{}, {}, {}}
     flameDuration = { 0, 0, 0 }
+    temperature = {0, 0, 0}
+    timeLastPointScored = { 0, 0, 0 }
     circleParticlesLookupTable = {}
     animateCircles = { false, false, false }
     circlesAnimationFrame = { 1, 1, 1 }
@@ -49,6 +61,15 @@ function restartCircles()
             x = flr(0.5 + circleCentreX + sin(a) * circleRadius),
             y = flr(0.5 + circleTopCentreY + cos(a) * circleRadius),
         })
+    end
+
+    local j = 1
+    for i = fireflyLookupTableLength, fireflyLookupTableLength / 2, -1 do
+        temperatureCircleLookupTable[j] = fireflyLeftLookupTable[i]
+        j += 1
+
+        temperatureCircleLookupTable[j] = fireflyRightLookupTable[i]
+        j += 1
     end
 
     for a = 0.5, 1.0, step do
@@ -77,55 +98,90 @@ function preCirclesShow()
     end
 end
 
+function emitCircleParticles(particlesTable, maxParticles, particleRandomSource, colors, radiusEnhancer, durationEnhancer)
+    for i = 1, 1 + rnd(3) do
+
+        if #particlesTable >= maxParticles then
+            break
+        end
+
+        local circleParticle = rnd(particleRandomSource)
+
+        add(particlesTable, {
+            x = circleParticle.x,
+            y = circleParticle.y,
+            speed = 0.3 * rnd(4),
+            colour = rnd(colors),
+            radius = 1 + rnd(radiusEnhancer),
+            duration = 5 + rnd(durationEnhancer)
+        })
+    end
+end
+
+function animateCircleParticles(particlesTable)
+    for p in all(particlesTable) do
+        p.y -= p.speed
+        p.duration -= 1
+
+        if p.duration <= 0 then
+            del(particlesTable, p)
+        elseif p.duration < 3 then
+            p.radius = 1
+            p.colour = 5
+        elseif p.duration < 5 then
+            if p.radius == 3 then
+                p.radius = -0.3
+            end
+            p.colour = 9
+        elseif p.duration < 7 then
+            p.colour = 10
+        end
+    end
+end
+
+function animateTemperatureCircleParticles(particlesTable)
+    for p in all(particlesTable) do
+        p.y -= p.speed
+        p.duration -= 1
+
+        if p.duration <= 0 then
+            del(particlesTable, p)
+        end
+    end
+end
+
+function logprogress()
+    local logFileName = 'tempcir.log'
+    printh("temperature at frame: " .. frame, logFileName)
+
+    for q = 1, 3 do
+        printh("q: " .. q, logFileName)
+        printh(tprint(temperatureCircle[q], 2), logFileName)
+    end
+end
+
 function updateCircles()
     for q = 1, 3 do
-        if flameDuration[q] <= 0 then
-            goto addMorecircleParticles
-        end
-
-        flameDuration[q] -= 1
-
-        for i = 1, 1 + rnd(3) do
-
-            if #circleParticles[q] >= 32 then
-                break
+        if (frame - timeLastPointScored[q]) % cooldownInterval == 0 then
+            if temperature[q] > 0 then
+                deli(temperatureCircleParticles[q])
+                temperature[q] -= 1
             end
-
-            local circleParticle = rnd(circleParticlesLookupTable)
-
-            add(circleParticles[q], {
-                x = circleParticle.x,
-                y = circleParticle.y,
-                speed = 0.3 * rnd(4),
-                colour = 7,
-                radius = 1 + rnd(2),
-                duration = 5 + rnd(16)
-            })
-
         end
 
-        ::addMorecircleParticles::
+        if flameDuration[q] <= 0 then
+            if temperature[q] > 0 then
+                emitCircleParticles(temperatureCircleParticles[q], 11, temperatureCircle[q], {5, 6, 13}, 2, 8)
+            end
+        else
+            flameDuration[q] -= 1
+            emitCircleParticles(circleParticles[q], 32, circleParticlesLookupTable, {7}, 2, 16)
+        end
     end
 
     for q = 1, 3 do
-        for p in all(circleParticles[q]) do
-            p.y -= p.speed
-            p.duration -= 1
-
-            if p.duration <= 0 then
-                del(circleParticles[q], p)
-            elseif p.duration < 3 then
-                p.radius = 1
-                p.colour = 5
-            elseif p.duration < 5 then
-                if p.radius == 3 then
-                    p.radius = -0.3
-                end
-                p.colour = 9
-            elseif p.duration < 7 then
-                p.colour = 10
-            end
-        end
+        animateTemperatureCircleParticles(temperatureCircleParticles[q])
+        animateCircleParticles(circleParticles[q])
     end
 
     for q = 1, 3 do
@@ -172,6 +228,18 @@ function drawCircles()
     end
 
     for q = 1, 3 do
+
+        if temperature[q] > 0 then
+            for temperatureCoordinates in all(temperatureCircleParticles[q]) do
+                pset(temperatureCoordinates.x, temperatureCoordinates.y + (q - 1) * circlePadY, temperatureCoordinates.colour)
+            end
+
+            for i = 1, temperature[q] do
+                local temperatureCircleCoordinates = temperatureCircleLookupTable[i]
+                pset(temperatureCircleCoordinates.x, temperatureCircleCoordinates.y + (q - 1) * circlePadY, 8)
+            end
+        end
+
         for pl in all(pluses[q]) do
             print(pl.text, pl.x, pl.y)
         end
@@ -179,6 +247,7 @@ function drawCircles()
 end
 
 function launchCircleAnimation(q, points)
+    timeLastPointScored[q] = frame
     flameDuration[q] = defaultFlameDuration
 
     if animateCircles[q] == false then
@@ -197,6 +266,11 @@ function launchCircleAnimation(q, points)
 
     circlesAnimationFrame[q] = 1
     noFireflies += 1
+
+    if (noFireflies % 100) and (temperature[q] < #temperatureCircleLookupTable) then
+        temperature[q] += 1
+        add(temperatureCircle[q], temperatureCircleLookupTable[temperature[q]])
+    end
 
     if noFireflies > maxFireflies then
         if fireflyColorIndex < #fireflyColors then
