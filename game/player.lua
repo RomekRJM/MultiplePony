@@ -101,7 +101,7 @@ function updatePlayer()
                 currentArrow[q].newColor = pointGroup.arrowColorChange
                 currentArrow[q].hasBeenHit = true
 
-                launchCircleAnimation(q, pointGroup.points)
+                launchCircleAnimation(q, pointGroup)
                 break
             end
         end

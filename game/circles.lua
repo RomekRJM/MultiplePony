@@ -14,7 +14,7 @@ noFireflies = 2
 animateCircles = { false, false, false }
 circlesAnimationFrame = { 1, 1, 1 }
 fireflyColorIndex = 1
-fireflyColors = { 13, 9, 10, 12, 11 }
+fireflyColors = { 6, 4, 15, 9, 10 }
 
 circleParticles = {}
 circleParticlesLookupTable = {}
@@ -28,7 +28,7 @@ temperatureCircle = { {}, {}, {} }
 temperatureCircleParticles = { {}, {}, {} }
 temperatureCircleLookupTable = {}
 temperature = {0, 0, 0}
-cooldownInterval = 120
+cooldownInterval = 60
 timeLastPointScored = { 0, 0, 0 }
 
 pointsScoredListeners = {}
@@ -241,12 +241,12 @@ function drawCircles()
         end
 
         for pl in all(pluses[q]) do
-            print(pl.text, pl.x, pl.y)
+            print(pl.text, pl.x, pl.y, pl.colour)
         end
     end
 end
 
-function launchCircleAnimation(q, points)
+function launchCircleAnimation(q, pointGroup)
     timeLastPointScored[q] = frame
     flameDuration[q] = defaultFlameDuration
 
@@ -257,10 +257,11 @@ function launchCircleAnimation(q, points)
     add(pluses[q],
             {
                 i = 0,
-                points = points,
-                text = "+" .. points,
+                points = pointGroup.points,
+                text = "+" .. pointGroup.points,
                 x = 0,
                 y = 0,
+                colour = pointGroup.arrowColorChange,
             }
     )
 
