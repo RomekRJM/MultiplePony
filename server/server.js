@@ -4,6 +4,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import http from "http";
 import { Server } from "socket.io";
+import sharedsession from "express-socket.io-session"
 import fs from "fs";
 import createPicoSocketClient from "./client.js";
 
@@ -87,8 +88,7 @@ const createPicoSocketServer = ({
     const workerFileTemplate = workerFileData.toString();
     let serverUrl = getServerUrl(PORT);
     const MemoryStore = createMemoryStore(session);
-
-    app.use(session({
+    let mysession = session({
         cookie: { maxAge: 86400000 },
         store: new MemoryStore({
             checkPeriod: 86400000
@@ -96,7 +96,15 @@ const createPicoSocketServer = ({
         secret: 'sid',
         resave: false,
         saveUninitialized: false,
-    }));
+    })
+
+    app.use(mysession);
+
+    io.use(
+        sharedsession(mysession, {
+            autoSave: true
+        })
+    );
 
     // host the static files
     app.use(['/public'], express.static(path.join(process.cwd(), assetFilesPath)));
