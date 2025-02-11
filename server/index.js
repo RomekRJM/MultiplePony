@@ -1,5 +1,6 @@
 import getCountdownDuration from "./constants.js";
 import createPicoSocketServer from "./server.js";
+import { inspect } from "util";
 
 const maxPlayersInTeam = 5;
 const maxPlayersInRoom = 2 * maxPlayersInTeam;
@@ -8,7 +9,7 @@ const pointsToWin = 10000;
 const clockCycle = 250;
 
 class Player {
-    constructor(name, id, roomId, team) {
+    constructor(name, id, roomId, team, sessionId) {
         this.name = name;
         this.id = id;
         this.roomId = roomId;
@@ -16,6 +17,7 @@ class Player {
         this.score = 0;
         this.ready = false;
         this.lastFrameUpdate = 0;
+        this.sessionId = sessionId;
     }
 
     resetPlayer() {
@@ -80,13 +82,17 @@ const checkWinningTeam = (room) => {
     return 0;
 }
 
-const findPlayerInRooms = (playerName) => {
+const findPlayerInRoomsBySessionId = (playerSessionId) => {
+    return findPlayerInRooms((player) => player.sessionId === playerSessionId);
+}
+
+const findPlayerInRooms = (predicate) => {
     let player = null;
 
     for (const room of roomData) {
         player = [
-            room.team1Players.find((player) => player.name === playerName),
-            room.team2Players.find((player) => player.name === playerName),
+            room.team1Players.find(predicate),
+            room.team2Players.find(predicate),
         ].find((player) => player);
 
         if (player) {
@@ -108,12 +114,12 @@ const getPlayer = (playerId, roomId, team) => {
     return null;
 }
 
-const createPlayerAndAssignToARoom = (playerName) => {
-    let existingPlayer = findPlayerInRooms(playerName);
+const createPlayerAndAssignToARoom = (playerName, sessionId) => {
+    let existingPlayer = findPlayerInRoomsBySessionId(sessionId);
 
     if (existingPlayer) {
         console.log("Blocked room join as player already exist, name ", playerName, " in room ", existingPlayer.roomId,
-            " and team ", existingPlayer.team, " with id ", existingPlayer.id);
+            " and team ", existingPlayer.team, " with id ", existingPlayer.id, "with session id", existingPlayer.sessionId);
         return existingPlayer;
     }
 
@@ -134,10 +140,10 @@ const createPlayerAndAssignToARoom = (playerName) => {
     let player;
 
     if (roomToJoin.team1Players.length >= roomToJoin.team2Players.length) {
-        player = new Player(playerName, playerId, roomIdToJoin, 2);
+        player = new Player(playerName, playerId, roomIdToJoin, 2, sessionId);
         roomToJoin.team2Players.push(player);
     } else {
-        player = new Player(playerName, playerId, roomIdToJoin, 1);
+        player = new Player(playerName, playerId, roomIdToJoin, 1, sessionId);
         roomToJoin.team1Players.push(player);
     }
 
@@ -210,6 +216,7 @@ const resetRoom = (room) => {
 
 function updateTeamNames(io, roomId, roomData) {
     console.log(JSON.stringify(roomData[roomId].team1Players));
+    console.log(JSON.stringify(roomData[roomId].team2Players));
     io.in(roomId.toString()).emit("UPDATE_TEAM_NAMES", {
         adminPlayerName: roomData[roomId].adminPlayerName,
         team1Players: roomData[roomId].team1Players.map((p) => {
@@ -235,12 +242,17 @@ const assetFilesPath = "public";
 
 const {app, server, io} = createPicoSocketServer({assetFilesPath, htmlGameFilePath, workerFilePath});
 
+app.get("/info", (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(inspect(roomData));
+});
+
 io.on("connection", (socket) => {
     let playerName = socket.handshake.auth.token;
     console.log("Player ", playerName, " connected");
 
     socket.on("disconnecting", (_reason) => {
-        let player = findPlayerInRooms(playerName);
+        let player = findPlayerInRoomsBySessionId(socket.handshake.sessionID);
 
         if (!player) {
             return;
@@ -286,7 +298,11 @@ io.on("connection", (socket) => {
     })
     // attach a room id to the socket connection
     socket.on("JOIN_SERVER_CMD", () => {
-        let player = createPlayerAndAssignToARoom(playerName);
+        let player = createPlayerAndAssignToARoom(playerName, socket.handshake.sessionID);
+        if (!player) {
+            console.log("Blocked room join as no room available or player already exist, name ", playerName);
+            return;
+        }
 
         if (!roomData[player.roomId].socket) {
             roomData[player.roomId].socket = socket;
