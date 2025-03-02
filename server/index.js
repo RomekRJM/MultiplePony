@@ -244,7 +244,7 @@ const {app, server, io} = createPicoSocketServer({assetFilesPath, htmlGameFilePa
 
 app.get("/info", (req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    res.send(inspect(roomData));
+    res.send(inspect(roomData, true, 4));
 });
 
 io.on("connection", (socket) => {
