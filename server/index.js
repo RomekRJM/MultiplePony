@@ -114,6 +114,21 @@ const getPlayer = (playerId, roomId, team) => {
     return null;
 }
 
+const getFirstAvailablePlayerIdInRoom = (room) => {
+    let unavailableIds = [];
+
+    room.team1Players.forEach((player) => {unavailableIds.push(player.id);});
+    room.team2Players.forEach((player) => {unavailableIds.push(player.id);});
+
+    for (let i = 0; i < 256; i++) {
+        if (!unavailableIds.includes(i)) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 const createPlayerAndAssignToARoom = (playerName, sessionId) => {
     let existingPlayer = findPlayerInRoomsBySessionId(sessionId);
 
@@ -136,7 +151,7 @@ const createPlayerAndAssignToARoom = (playerName, sessionId) => {
     }
 
     let roomToJoin = roomData[roomIdToJoin];
-    let playerId = roomToJoin.team1Players.length + roomToJoin.team2Players.length;
+    let playerId = getFirstAvailablePlayerIdInRoom(roomToJoin);
     let player;
 
     if (roomToJoin.team1Players.length >= roomToJoin.team2Players.length) {
