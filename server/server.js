@@ -8,6 +8,8 @@ import sharedsession from "express-socket.io-session"
 import fs from "fs";
 import createPicoSocketClient from "./client.js";
 
+const maxPlayerNameLength = 8;
+
 const getServerUrl = (port) => {
     let corsOrigins = getCORSOrigins(port);
     let serverUrl = `'${corsOrigins[0]}'`;
@@ -17,10 +19,15 @@ const getServerUrl = (port) => {
 	return serverUrl;
 };
 
+const normalizePlayerName = (name) => {
+    return name.substring(0, maxPlayerNameLength);
+}
+
 const injectPlayerIntoSession = (req) => {
     if (req.query.name) {
-        req.session.name = req.query.name;
-        return req.query.name;
+        let name = normalizePlayerName(req.query.name);
+        req.session.name = name;
+        return name;
     }
 
     let colors = [
@@ -31,7 +38,7 @@ const injectPlayerIntoSession = (req) => {
 	let color = colors[Math.floor(Math.random() * colors.length)];
 	let number = Math.floor(Math.random() * 100);
 
-	let name = color + number;
+	let name = normalizePlayerName(color + number);
     req.session.name = name;
 
     return name;
