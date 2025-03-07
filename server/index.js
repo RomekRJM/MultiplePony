@@ -194,7 +194,11 @@ const changeTeam = (player, newTeam) => {
 }
 
 const tryElectingAdmin = (room) => {
-    if (room.adminPlayerName) {
+    if (room.team1Players.find((player) => player.name === room.adminPlayerName)) {
+        return;
+    }
+
+    if (room.team2Players.find((player) => player.name === room.adminPlayerName)) {
         return;
     }
 
@@ -291,10 +295,7 @@ io.on("connection", (socket) => {
         }
 
         for (const room of roomData) {
-            if (roomData[player.roomId].adminPlayerName === playerName) {
-                roomData[player.roomId].adminPlayerName = null;
-                tryElectingAdmin(roomData[player.roomId]);
-            }
+            tryElectingAdmin(roomData[player.roomId]);
 
             if (room !== socket.id) {
                 updateTeamNames(io, player.roomId, roomData);
