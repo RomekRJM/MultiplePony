@@ -111,11 +111,10 @@ function updatePlayer()
 end
 
 function handlePointsScored(points)
-    myself.score += points
-
     if gameMode == MODE_WEB_BROWSER then
-        sendScore(myself)
+        sendScore(myself, points)
     else
+        myself.score += points
         room.team1Score = myself.score
     end
 end

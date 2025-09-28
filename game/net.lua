@@ -91,15 +91,16 @@ function swapTeam(p)
     sendBuffer(payload)
 end
 
-function sendScore(p)
+function sendScore(p, points)
     if gameState ~= GAME_IN_PROGRESS_STATE then
         return
     end
 
     local payload = createEmptyClientPayload()
+    local score = p.score + points
     payload[CLIENT_COMMAND_INDEX] = UPDATE_PLAYER_SCORE_CMD
-    payload[2] = p.score >> 8
-    payload[3] = p.score & 255
+    payload[2] = score >> 8
+    payload[3] = score & 255
     payload[4] = frame >> 8
     payload[5] = frame & 255
 
